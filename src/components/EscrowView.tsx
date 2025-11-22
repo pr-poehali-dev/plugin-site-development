@@ -23,7 +23,7 @@ export const EscrowView = ({ user, onShowAuthDialog }: EscrowViewProps) => {
   const [loading, setLoading] = useState(true);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [selectedDeal, setSelectedDeal] = useState<EscrowDeal | null>(null);
-  const [statusFilter, setStatusFilter] = useState<'all' | 'open' | 'in_progress' | 'completed' | 'dispute'>('all');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'open' | 'in_progress' | 'completed' | 'dispute'>('open');
   
   const [newDeal, setNewDeal] = useState({
     title: '',
