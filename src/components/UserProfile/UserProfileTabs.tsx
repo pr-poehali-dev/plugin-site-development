@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { WithdrawalView } from '@/components/WithdrawalView';
 
 interface UserProfileTabsProps {
   user: User;
@@ -27,10 +28,11 @@ export const UserProfileTabs = ({
 }: UserProfileTabsProps) => {
   return (
     <Tabs value={activeTab} onValueChange={onTabChange} className="w-full">
-      <TabsList className="grid w-full grid-cols-3">
+      <TabsList className="grid w-full grid-cols-4">
         <TabsTrigger value="settings">Настройки</TabsTrigger>
         <TabsTrigger value="overview">Обзор</TabsTrigger>
         <TabsTrigger value="transactions">Транзакции</TabsTrigger>
+        <TabsTrigger value="withdrawal">Вывод</TabsTrigger>
       </TabsList>
 
       <TabsContent value="overview" className="space-y-4 mt-4">
@@ -234,6 +236,13 @@ export const UserProfileTabs = ({
             </div>
           </>
         )}
+      </TabsContent>
+
+      <TabsContent value="withdrawal" className="space-y-4 mt-4">
+        <WithdrawalView 
+          user={user}
+          onShowAuthDialog={() => {}}
+        />
       </TabsContent>
     </Tabs>
   );

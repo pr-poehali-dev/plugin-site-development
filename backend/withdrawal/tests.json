@@ -1,0 +1,27 @@
+{
+  "tests": [
+    {
+      "name": "Get user withdrawals",
+      "method": "GET",
+      "path": "/?action=my_withdrawals",
+      "headers": {
+        "X-User-Id": "1"
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "withdrawals": "array"
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Unauthorized access",
+      "method": "GET",
+      "path": "/?action=my_withdrawals",
+      "expectedStatus": 401,
+      "expectedBody": {
+        "error": "string"
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}

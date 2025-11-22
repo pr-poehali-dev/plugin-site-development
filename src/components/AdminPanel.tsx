@@ -7,6 +7,7 @@ import AdminTopicsTab from '@/components/admin/AdminTopicsTab';
 import AdminBalanceDialog from '@/components/admin/AdminBalanceDialog';
 import AdminTopicEditDialog from '@/components/admin/AdminTopicEditDialog';
 import AdminDisputesTab from '@/components/admin/AdminDisputesTab';
+import AdminWithdrawalsTab from '@/components/admin/AdminWithdrawalsTab';
 import { useToast } from '@/hooks/use-toast';
 
 interface AdminPanelProps {
@@ -17,13 +18,15 @@ interface AdminPanelProps {
 const FORUM_URL = 'https://functions.poehali.dev/045d6571-633c-4239-ae69-8d76c933532c';
 const ADMIN_URL = 'https://functions.poehali.dev/d4678b1c-2acd-40bb-b8c5-cefe8d14fad4';
 const ESCROW_URL = 'https://functions.poehali.dev/82c75fbc-83e4-4448-9ff8-1c8ef9bbec09';
+const WITHDRAWAL_URL = 'https://functions.poehali.dev/09f16983-ec42-41fe-a7bd-695752ee11c5';
 
 const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
   const { toast } = useToast();
   const [users, setUsers] = useState<User[]>([]);
   const [topics, setTopics] = useState<ForumTopic[]>([]);
   const [disputes, setDisputes] = useState<EscrowDeal[]>([]);
-  const [activeTab, setActiveTab] = useState<'users' | 'topics' | 'disputes'>('users');
+  const [withdrawals, setWithdrawals] = useState<any[]>([]);
+  const [activeTab, setActiveTab] = useState<'users' | 'topics' | 'disputes' | 'withdrawals'>('users');
   const [editingTopic, setEditingTopic] = useState<ForumTopic | null>(null);
   const [editTitle, setEditTitle] = useState('');
   const [editContent, setEditContent] = useState('');
@@ -39,6 +42,8 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
       fetchTopics();
     } else if (activeTab === 'disputes') {
       fetchDisputes();
+    } else if (activeTab === 'withdrawals') {
+      fetchWithdrawals();
     }
   }, [activeTab]);
 
@@ -71,6 +76,18 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
       setDisputes(data.deals || []);
     } catch (error) {
       console.error('Ошибка загрузки споров:', error);
+    }
+  };
+
+  const fetchWithdrawals = async () => {
+    try {
+      const response = await fetch(`${WITHDRAWAL_URL}?action=all_withdrawals&status=all`, {
+        headers: { 'X-User-Id': currentUser.id.toString() }
+      });
+      const data = await response.json();
+      setWithdrawals(data.withdrawals || []);
+    } catch (error) {
+      console.error('Ошибка загрузки заявок на вывод:', error);
     }
   };
 
@@ -336,6 +353,16 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
             >
               Споры гаранта
             </button>
+            <button
+              onClick={() => setActiveTab('withdrawals')}
+              className={`px-6 py-2 rounded-lg transition-all ${
+                activeTab === 'withdrawals'
+                  ? 'bg-primary text-primary-foreground'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              Выводы
+            </button>
           </div>
           {activeTab === 'users' && (
             <Button
@@ -371,6 +398,14 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
             disputes={disputes}
             currentUser={currentUser}
             onUpdate={fetchDisputes}
+          />
+        )}
+
+        {activeTab === 'withdrawals' && (
+          <AdminWithdrawalsTab
+            withdrawals={withdrawals}
+            currentUser={currentUser}
+            onUpdate={fetchWithdrawals}
           />
         )}
 
