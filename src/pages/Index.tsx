@@ -6,6 +6,7 @@ import Dialogs from '@/components/Dialogs';
 import AdminPanel from '@/components/AdminPanel';
 import UserProfileDialog from '@/components/UserProfileDialog';
 import MessagesPanel from '@/components/MessagesPanel';
+import NotificationsPanel from '@/components/NotificationsPanel';
 import { Plugin, Category, User, ForumTopic, ForumComment, SearchResult } from '@/types';
 
 const BACKEND_URL = 'https://functions.poehali.dev/1e67c3bd-abb5-4647-aa02-57410816c1f0';
@@ -38,7 +39,9 @@ const Index = () => {
   const [showUserProfile, setShowUserProfile] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
   const [showMessagesPanel, setShowMessagesPanel] = useState(false);
-  const [unreadCount, setUnreadCount] = useState(0);
+  const [showNotificationsPanel, setShowNotificationsPanel] = useState(false);
+  const [notificationsUnread, setNotificationsUnread] = useState(0);
+  const [messagesUnread, setMessagesUnread] = useState(0);
 
   useEffect(() => {
     if (activeView === 'plugins') {
@@ -79,7 +82,8 @@ const Index = () => {
           if (notifRes.ok && msgRes.ok) {
             const notifData = await notifRes.json();
             const msgData = await msgRes.json();
-            setUnreadCount((notifData.unread_count || 0) + (msgData.unread_count || 0));
+            setNotificationsUnread(notifData.unread_count || 0);
+            setMessagesUnread(msgData.unread_count || 0);
           }
         } catch (error) {
           console.error('Failed to fetch unread count:', error);
@@ -379,7 +383,7 @@ const Index = () => {
             onShowProfileDialog={() => setShowProfileDialog(true)}
             onShowAdminPanel={() => setShowAdminPanel(true)}
             onShowMessagesPanel={() => setShowMessagesPanel(true)}
-            unreadCount={unreadCount}
+            messagesUnread={messagesUnread}
           />
 
       <div className={`flex-1 transition-all duration-300 ${sidebarOpen ? 'ml-64' : 'ml-0'}`}>
@@ -398,6 +402,8 @@ const Index = () => {
             setAuthDialogOpen(true);
           }}
           onLogout={handleLogout}
+          notificationsUnread={notificationsUnread}
+          onShowNotifications={() => setShowNotificationsPanel(true)}
         />
 
         <MainContent
@@ -445,36 +451,37 @@ const Index = () => {
       />
 
       {user && (
-        <MessagesPanel
-          open={showMessagesPanel}
-          onOpenChange={(open) => {
-            setShowMessagesPanel(open);
-            if (!open && user) {
-              const fetchUnreadCount = async () => {
-                try {
-                  const [notifRes, msgRes] = await Promise.all([
-                    fetch(`${NOTIFICATIONS_URL}?action=notifications`, {
-                      headers: { 'X-User-Id': user.id.toString() }
-                    }),
-                    fetch(`${NOTIFICATIONS_URL}?action=messages`, {
-                      headers: { 'X-User-Id': user.id.toString() }
-                    })
-                  ]);
-
-                  if (notifRes.ok && msgRes.ok) {
-                    const notifData = await notifRes.json();
-                    const msgData = await msgRes.json();
-                    setUnreadCount((notifData.unread_count || 0) + (msgData.unread_count || 0));
-                  }
-                } catch (error) {
-                  console.error('Failed to fetch unread count:', error);
-                }
-              };
-              fetchUnreadCount();
-            }
-          }}
-          userId={user.id}
-        />
+        <>
+          <NotificationsPanel
+            open={showNotificationsPanel}
+            onOpenChange={(open) => {
+              setShowNotificationsPanel(open);
+              if (!open) {
+                fetch(`${NOTIFICATIONS_URL}?action=notifications`, {
+                  headers: { 'X-User-Id': user.id.toString() }
+                }).then(res => res.json()).then(data => {
+                  setNotificationsUnread(data.unread_count || 0);
+                }).catch(() => {});
+              }
+            }}
+            userId={user.id}
+          />
+          
+          <MessagesPanel
+            open={showMessagesPanel}
+            onOpenChange={(open) => {
+              setShowMessagesPanel(open);
+              if (!open) {
+                fetch(`${NOTIFICATIONS_URL}?action=messages`, {
+                  headers: { 'X-User-Id': user.id.toString() }
+                }).then(res => res.json()).then(data => {
+                  setMessagesUnread(data.unread_count || 0);
+                }).catch(() => {});
+              }
+            }}
+            userId={user.id}
+          />
+        </>
       )}
         </>
       )}

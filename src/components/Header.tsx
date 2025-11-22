@@ -10,12 +10,14 @@ interface HeaderProps {
   searchResults: SearchResult[];
   showSearchResults: boolean;
   user: User | null;
+  notificationsUnread?: number;
   onToggleSidebar: () => void;
   onSearchChange: (query: string) => void;
   onSearchFocus: () => void;
   onSearchResultClick: (result: SearchResult) => void;
   onAuthDialogOpen: (mode: 'login' | 'register') => void;
   onLogout: () => void;
+  onShowNotifications?: () => void;
 }
 
 const Header = ({
@@ -24,12 +26,14 @@ const Header = ({
   searchResults,
   showSearchResults,
   user,
+  notificationsUnread = 0,
   onToggleSidebar,
   onSearchChange,
   onSearchFocus,
   onSearchResultClick,
   onAuthDialogOpen,
   onLogout,
+  onShowNotifications,
 }: HeaderProps) => {
   return (
     <header className="sticky top-0 z-20 bg-card border-b border-border backdrop-blur-sm bg-opacity-95">
@@ -92,8 +96,13 @@ const Header = ({
         <div className="flex items-center gap-3">
           {user ? (
             <>
-              <Button variant="ghost" size="icon">
+              <Button variant="ghost" size="icon" className="relative" onClick={onShowNotifications}>
                 <Icon name="Bell" size={20} />
+                {notificationsUnread > 0 && (
+                  <span className="absolute -top-1 -right-1 px-1.5 py-0.5 text-xs bg-red-500 text-white rounded-full min-w-[20px] text-center">
+                    {notificationsUnread}
+                  </span>
+                )}
               </Button>
               <div className="flex items-center gap-3">
                 <div className="text-right">

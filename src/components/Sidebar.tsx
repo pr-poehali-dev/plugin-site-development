@@ -12,7 +12,7 @@ interface SidebarProps {
   onShowProfileDialog: () => void;
   onShowAdminPanel?: () => void;
   onShowMessagesPanel?: () => void;
-  unreadCount?: number;
+  messagesUnread?: number;
 }
 
 const Sidebar = ({
@@ -25,7 +25,7 @@ const Sidebar = ({
   onShowProfileDialog,
   onShowAdminPanel,
   onShowMessagesPanel,
-  unreadCount = 0,
+  messagesUnread = 0,
 }: SidebarProps) => {
   return (
     <aside className={`fixed top-0 left-0 h-full bg-sidebar border-r border-sidebar-border transition-all duration-300 z-30 ${sidebarOpen ? 'w-64' : 'w-0 -translate-x-full'}`}>
@@ -65,9 +65,9 @@ const Sidebar = ({
               >
                 <Icon name="Mail" size={18} />
                 <span className="text-sm font-medium">Сообщения</span>
-                {unreadCount > 0 && (
+                {messagesUnread > 0 && (
                   <span className="absolute right-4 px-1.5 py-0.5 text-xs bg-red-500 text-white rounded-full">
-                    {unreadCount}
+                    {messagesUnread}
                   </span>
                 )}
               </button>
