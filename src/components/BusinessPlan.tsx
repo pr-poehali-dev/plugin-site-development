@@ -106,7 +106,7 @@ const BusinessPlan = () => {
                 <li><strong>Функции:</strong> mint(), burn(), transfer(), flashMint()</li>
                 <li><strong>Безопасность:</strong> OpenZeppelin Contracts + Reentrancy Guard</li>
                 <li><strong>Аудит:</strong> CertiK + internal security review</li>
-                <li><strong>Gas оптимизация:</strong> <1 TRX за транзакцию</li>
+                <li><strong>Gas оптимизация:</strong> {'<'}1 TRX за транзакцию</li>
               </ul>
             </Card>
           </div>
