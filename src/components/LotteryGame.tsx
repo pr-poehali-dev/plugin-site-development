@@ -62,11 +62,14 @@ const LotteryGame = ({ user, onShowAuthDialog, onRefreshUserBalance }: LotteryGa
   useEffect(() => {
     loadLottery();
     loadChat();
+    checkDraw();
     const lotteryInterval = setInterval(loadLottery, 5000);
     const chatInterval = setInterval(loadChat, 3000);
+    const drawInterval = setInterval(checkDraw, 10000);
     return () => {
       clearInterval(lotteryInterval);
       clearInterval(chatInterval);
+      clearInterval(drawInterval);
     };
   }, [user]);
 
@@ -108,6 +111,11 @@ const LotteryGame = ({ user, onShowAuthDialog, onRefreshUserBalance }: LotteryGa
         })
       });
 
+      if (!response.ok) {
+        console.error('Failed to load lottery:', response.status);
+        return;
+      }
+
       const data = await response.json();
       if (data.success) {
         setCurrentRound(data.round);
@@ -138,12 +146,46 @@ const LotteryGame = ({ user, onShowAuthDialog, onRefreshUserBalance }: LotteryGa
         })
       });
 
+      if (!response.ok) {
+        console.error('Failed to load chat:', response.status);
+        return;
+      }
+
       const data = await response.json();
       if (data.success) {
         setChatMessages(data.messages || []);
       }
     } catch (error) {
       console.error('Error loading chat:', error);
+    }
+  };
+
+  const checkDraw = async () => {
+    try {
+      const response = await fetch(AUTH_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          action: 'check_lottery_draw'
+        })
+      });
+
+      if (!response.ok) {
+        console.error('Failed to check lottery draw:', response.status);
+        return;
+      }
+
+      const data = await response.json();
+      if (data.success && data.processed_rounds > 0) {
+        loadLottery();
+        if (onRefreshUserBalance) {
+          onRefreshUserBalance();
+        }
+      }
+    } catch (error) {
+      console.error('Error checking lottery draw:', error);
     }
   };
 
