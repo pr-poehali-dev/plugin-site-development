@@ -50,7 +50,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     FROM forum_topics ft
                     LEFT JOIN users u ON ft.author_id = u.id
                     LEFT JOIN plugins p ON ft.plugin_id = p.id
-                    WHERE ft.id = %s
+                    WHERE ft.id = %s AND ft.removed_at IS NULL
                 """, (topic_id,))
                 topic = cur.fetchone()
                 
@@ -68,7 +68,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                         u.id as author_id, u.username as author_name, u.avatar_url as author_avatar
                     FROM forum_comments fc
                     LEFT JOIN users u ON fc.author_id = u.id
-                    WHERE fc.topic_id = %s
+                    WHERE fc.topic_id = %s AND fc.removed_at IS NULL
                     ORDER BY fc.created_at ASC
                 """, (topic_id,))
                 comments = cur.fetchall()
@@ -94,12 +94,13 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                         COUNT(fc.id) as comments_count
                     FROM forum_topics ft
                     LEFT JOIN users u ON ft.author_id = u.id
-                    LEFT JOIN forum_comments fc ON ft.id = fc.topic_id
+                    LEFT JOIN forum_comments fc ON ft.id = fc.topic_id AND fc.removed_at IS NULL
+                    WHERE ft.removed_at IS NULL
                 """
                 query_params: List[Any] = []
                 
                 if plugin_id:
-                    query += " WHERE ft.plugin_id = %s"
+                    query += " AND ft.plugin_id = %s"
                     query_params.append(plugin_id)
                 
                 query += " GROUP BY ft.id, u.username ORDER BY ft.is_pinned DESC, ft.created_at DESC LIMIT 50"

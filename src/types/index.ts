@@ -28,6 +28,8 @@ export interface User {
   telegram?: string;
   discord?: string;
   bio?: string;
+  role?: string;
+  is_blocked?: boolean;
 }
 
 export interface ForumTopic {

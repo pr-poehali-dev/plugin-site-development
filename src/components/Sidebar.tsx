@@ -53,13 +53,22 @@ const Sidebar = ({
           ))}
           
           {user && (
-            <button
-              onClick={onShowProfileDialog}
-              className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg transition-colors hover:bg-sidebar-accent/50 mt-4"
-            >
-              <Icon name="User" size={18} />
-              <span className="text-sm font-medium">Личный кабинет</span>
-            </button>
+            <>
+              <button
+                onClick={onShowProfileDialog}
+                className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg transition-colors hover:bg-sidebar-accent/50 mt-4"
+              >
+                <Icon name="User" size={18} />
+                <span className="text-sm font-medium">Личный кабинет</span>
+              </button>
+              {user.role === 'admin' && (
+                <div className="mt-2 pt-2 border-t border-sidebar-border/50">
+                  <div className="px-4 py-1 mb-1">
+                    <span className="text-xs font-semibold text-primary">АДМИНИСТРАТОР</span>
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </nav>
 
