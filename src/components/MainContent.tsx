@@ -6,6 +6,7 @@ import Icon from '@/components/ui/icon';
 import ForumRoleBadge from '@/components/ForumRoleBadge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Plugin, Category, ForumTopic, ForumComment, User } from '@/types';
+import { useState } from 'react';
 
 interface MainContentProps {
   activeView: 'plugins' | 'forum';
@@ -44,6 +45,8 @@ const MainContent = ({
   onUserClick,
   onNavigateToForum,
 }: MainContentProps) => {
+  const [forumSortBy, setForumSortBy] = useState<'newest' | 'new' | 'hot' | 'views'>('newest');
+  
   const filteredPlugins = plugins.filter(p => 
     activeCategory === 'all' || p.category_name === categories.find(c => c.slug === activeCategory)?.name
   );
@@ -54,6 +57,35 @@ const MainContent = ({
     const now = new Date();
     const diffMinutes = Math.floor((now.getTime() - lastSeen.getTime()) / (1000 * 60));
     return diffMinutes < 5;
+  };
+
+  const sortForumTopics = (topics: ForumTopic[]) => {
+    const sorted = [...topics];
+    if (forumSortBy === 'newest') {
+      return sorted.sort((a, b) => {
+        if (a.is_pinned !== b.is_pinned) return a.is_pinned ? -1 : 1;
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      });
+    }
+    if (forumSortBy === 'new') {
+      return sorted.sort((a, b) => {
+        if (a.is_pinned !== b.is_pinned) return a.is_pinned ? -1 : 1;
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      });
+    }
+    if (forumSortBy === 'hot') {
+      return sorted.sort((a, b) => {
+        if (a.is_pinned !== b.is_pinned) return a.is_pinned ? -1 : 1;
+        return (b.comments_count || 0) - (a.comments_count || 0);
+      });
+    }
+    if (forumSortBy === 'views') {
+      return sorted.sort((a, b) => {
+        if (a.is_pinned !== b.is_pinned) return a.is_pinned ? -1 : 1;
+        return (b.views || 0) - (a.views || 0);
+      });
+    }
+    return sorted;
   };
 
   const sortPlugins = (sortBy: string) => {
@@ -370,7 +402,7 @@ const MainContent = ({
           </div>
 
           <div className="flex items-center justify-between mb-6">
-            <Tabs defaultValue="newest">
+            <Tabs value={forumSortBy} onValueChange={(v) => setForumSortBy(v as any)}>
               <TabsList>
                 <TabsTrigger value="newest">Последние посты</TabsTrigger>
                 <TabsTrigger value="new">Новые темы</TabsTrigger>
@@ -388,7 +420,7 @@ const MainContent = ({
           </div>
 
           <div className="space-y-3">
-            {forumTopics.map((topic, index) => (
+            {sortForumTopics(forumTopics).map((topic, index) => (
               <div
                 key={topic.id}
                 className="bg-card border border-border rounded-xl p-4 hover:border-primary/50 transition-all cursor-pointer group animate-slide-up"
