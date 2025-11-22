@@ -1,9 +1,9 @@
 '''
-Business: Обработка сброса пароля через email с токеном
+Business: Обработка сброса пароля через email с токеном (Gmail)
 Args: event - dict с httpMethod, body, queryStringParameters
       context - объект с атрибутами: request_id, function_name
 Returns: HTTP response dict
-Version: 2.0
+Version: 2.1
 '''
 
 import json
