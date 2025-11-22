@@ -15,6 +15,7 @@ const AUTH_URL = 'https://functions.poehali.dev/2497448a-6aff-4df5-97ef-9181cf79
 const FORUM_URL = 'https://functions.poehali.dev/045d6571-633c-4239-ae69-8d76c933532c';
 const ADMIN_URL = 'https://functions.poehali.dev/d4678b1c-2acd-40bb-b8c5-cefe8d14fad4';
 const NOTIFICATIONS_URL = 'https://functions.poehali.dev/6c968792-7d48-41a9-af0a-c92adb047acb';
+const CRYPTO_URL = 'https://functions.poehali.dev/8caa3b76-72e5-42b5-9415-91d1f9b05210';
 
 const Index = () => {
   const [plugins, setPlugins] = useState<Plugin[]>([]);
@@ -92,15 +93,39 @@ const Index = () => {
         }
       };
 
+      const checkPendingPayments = async () => {
+        try {
+          const response = await fetch(`${CRYPTO_URL}?action=check_pending`, {
+            headers: { 'X-User-Id': user.id.toString() }
+          });
+          const data = await response.json();
+          if (data.success && data.count > 0) {
+            const savedUser = localStorage.getItem('user');
+            if (savedUser) {
+              const currentUser = JSON.parse(savedUser);
+              const updatedBalance = (currentUser.balance || 0) + data.auto_confirmed.reduce((sum: number, p: any) => sum + p.amount, 0);
+              const updatedUser = { ...currentUser, balance: updatedBalance };
+              setUser(updatedUser);
+              localStorage.setItem('user', JSON.stringify(updatedUser));
+            }
+          }
+        } catch (error) {
+          console.error('Failed to check pending payments:', error);
+        }
+      };
+
       updateActivity();
       fetchUnreadCount();
+      checkPendingPayments();
       
       const activityInterval = setInterval(updateActivity, 60 * 1000);
       const unreadInterval = setInterval(fetchUnreadCount, 30 * 1000);
+      const paymentsInterval = setInterval(checkPendingPayments, 30 * 1000);
       
       return () => {
         clearInterval(activityInterval);
         clearInterval(unreadInterval);
+        clearInterval(paymentsInterval);
       };
     }
   }, [user]);

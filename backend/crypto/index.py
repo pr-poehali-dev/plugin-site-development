@@ -7,15 +7,58 @@ Returns: HTTP response dict с адресом кошелька или стату
 
 import json
 import os
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 from datetime import datetime, timedelta
 import psycopg2
 from psycopg2.extras import RealDictCursor
+import requests
 
 def get_db_connection():
     """Получить подключение к БД"""
     database_url = os.environ.get('DATABASE_URL')
     return psycopg2.connect(database_url, cursor_factory=RealDictCursor)
+
+def check_tron_transaction(wallet_address: str, amount: float, min_timestamp: int) -> Optional[Dict[str, Any]]:
+    """Проверить USDT транзакцию на TRON"""
+    try:
+        trongrid_api_key = os.environ.get('TRONGRID_API_KEY', '')
+        headers = {'TRON-PRO-API-KEY': trongrid_api_key} if trongrid_api_key else {}
+        
+        url = f'https://api.trongrid.io/v1/accounts/{wallet_address}/transactions/trc20'
+        params = {
+            'limit': 20,
+            'min_timestamp': min_timestamp
+        }
+        
+        response = requests.get(url, params=params, headers=headers, timeout=10)
+        if response.status_code != 200:
+            return None
+        
+        data = response.json()
+        transactions = data.get('data', [])
+        
+        usdt_contract = 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t'
+        
+        for tx in transactions:
+            token_info = tx.get('token_info', {})
+            if token_info.get('address', '').lower() != usdt_contract.lower():
+                continue
+            
+            tx_amount = float(tx.get('value', 0)) / (10 ** token_info.get('decimals', 6))
+            
+            if abs(tx_amount - amount) < 0.01:
+                return {
+                    'tx_hash': tx.get('transaction_id'),
+                    'amount': tx_amount,
+                    'timestamp': tx.get('block_timestamp'),
+                    'from': tx.get('from'),
+                    'to': tx.get('to')
+                }
+        
+        return None
+    except Exception as e:
+        print(f'Error checking TRON transaction: {e}')
+        return None
 
 def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     method: str = event.get('httpMethod', 'GET')
@@ -94,7 +137,6 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             
             elif action == 'confirm_payment':
                 payment_id = body_data.get('payment_id')
-                tx_hash = body_data.get('tx_hash', '')
                 
                 if not payment_id:
                     return {
@@ -126,11 +168,27 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                         'isBase64Encoded': False
                     }
                 
+                created_timestamp = int(payment['created_at'].timestamp() * 1000)
+                
+                tron_tx = check_tron_transaction(
+                    payment['wallet_address'],
+                    float(payment['amount']),
+                    created_timestamp
+                )
+                
+                if not tron_tx:
+                    return {
+                        'statusCode': 400,
+                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({'error': 'Транзакция не найдена в блокчейне. Подождите несколько минут.'}),
+                        'isBase64Encoded': False
+                    }
+                
                 cur.execute(
                     """UPDATE crypto_payments 
                        SET status = %s, confirmed_at = CURRENT_TIMESTAMP, tx_hash = %s 
                        WHERE id = %s""",
-                    ('confirmed', tx_hash, int(payment_id))
+                    ('confirmed', tron_tx['tx_hash'], int(payment_id))
                 )
                 
                 cur.execute(
@@ -159,9 +217,74 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         elif method == 'GET':
             params = event.get('queryStringParameters', {})
             payment_id = params.get('payment_id')
+            action = params.get('action', '')
             
             headers = event.get('headers', {})
             user_id = headers.get('X-User-Id') or headers.get('x-user-id')
+            
+            if action == 'check_pending':
+                if not user_id:
+                    return {
+                        'statusCode': 401,
+                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({'error': 'Требуется авторизация'}),
+                        'isBase64Encoded': False
+                    }
+                
+                cur.execute(
+                    """SELECT * FROM crypto_payments 
+                       WHERE user_id = %s AND status = 'pending' 
+                       AND created_at > NOW() - INTERVAL '2 hours'
+                       ORDER BY created_at DESC""",
+                    (int(user_id),)
+                )
+                pending_payments = cur.fetchall()
+                
+                auto_confirmed = []
+                for payment in pending_payments:
+                    created_timestamp = int(payment['created_at'].timestamp() * 1000)
+                    tron_tx = check_tron_transaction(
+                        payment['wallet_address'],
+                        float(payment['amount']),
+                        created_timestamp
+                    )
+                    
+                    if tron_tx:
+                        cur.execute(
+                            """UPDATE crypto_payments 
+                               SET status = %s, confirmed_at = CURRENT_TIMESTAMP, tx_hash = %s 
+                               WHERE id = %s""",
+                            ('confirmed', tron_tx['tx_hash'], payment['id'])
+                        )
+                        
+                        cur.execute(
+                            "UPDATE users SET balance = COALESCE(balance, 0) + %s WHERE id = %s",
+                            (float(payment['amount']), int(user_id))
+                        )
+                        
+                        cur.execute(
+                            "INSERT INTO transactions (user_id, amount, type, description) VALUES (%s, %s, %s, %s)",
+                            (int(user_id), float(payment['amount']), 'crypto_deposit', f"Автоматическое зачисление USDT {payment['network']}")
+                        )
+                        
+                        auto_confirmed.append({
+                            'payment_id': payment['id'],
+                            'amount': float(payment['amount']),
+                            'tx_hash': tron_tx['tx_hash']
+                        })
+                
+                conn.commit()
+                
+                return {
+                    'statusCode': 200,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({
+                        'success': True,
+                        'auto_confirmed': auto_confirmed,
+                        'count': len(auto_confirmed)
+                    }),
+                    'isBase64Encoded': False
+                }
             
             if not user_id:
                 return {
