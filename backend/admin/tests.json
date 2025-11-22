@@ -1,0 +1,29 @@
+{
+  "tests": [
+    {
+      "name": "GET users list requires auth",
+      "method": "GET",
+      "path": "/?action=users",
+      "expectedStatus": 401,
+      "expectedBody": {
+        "error": "Требуется авторизация"
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "POST block user requires auth",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "action": "block_user",
+        "user_id": 1,
+        "reason": "Test"
+      },
+      "expectedStatus": 401,
+      "expectedBody": {
+        "error": "Требуется авторизация"
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}
