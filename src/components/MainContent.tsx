@@ -45,7 +45,7 @@ const MainContent = ({
   onUserClick,
   onNavigateToForum,
 }: MainContentProps) => {
-  const [forumSortBy, setForumSortBy] = useState<'newest' | 'new' | 'hot' | 'views'>('newest');
+  const [forumSortBy, setForumSortBy] = useState<'newest' | 'hot' | 'views'>('newest');
   
   const filteredPlugins = plugins.filter(p => 
     activeCategory === 'all' || p.category_name === categories.find(c => c.slug === activeCategory)?.name
@@ -89,12 +89,6 @@ const MainContent = ({
   const sortForumTopics = (topics: ForumTopic[]) => {
     const sorted = [...topics];
     if (forumSortBy === 'newest') {
-      return sorted.sort((a, b) => {
-        if (a.is_pinned !== b.is_pinned) return a.is_pinned ? -1 : 1;
-        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-      });
-    }
-    if (forumSortBy === 'new') {
       return sorted.sort((a, b) => {
         if (a.is_pinned !== b.is_pinned) return a.is_pinned ? -1 : 1;
         return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
@@ -432,7 +426,6 @@ const MainContent = ({
             <Tabs value={forumSortBy} onValueChange={(v) => setForumSortBy(v as any)}>
               <TabsList>
                 <TabsTrigger value="newest">Последние посты</TabsTrigger>
-                <TabsTrigger value="new">Новые темы</TabsTrigger>
                 <TabsTrigger value="hot">Горячие темы</TabsTrigger>
                 <TabsTrigger value="views">Наиболее просматриваемые</TabsTrigger>
               </TabsList>
