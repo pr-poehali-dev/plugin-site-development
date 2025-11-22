@@ -21,6 +21,7 @@ interface MainContentProps {
   onBackToTopics: () => void;
   onCommentChange: (comment: string) => void;
   onCreateComment: () => void;
+  onUserClick: (userId: number) => void;
 }
 
 const MainContent = ({
@@ -38,6 +39,7 @@ const MainContent = ({
   onBackToTopics,
   onCommentChange,
   onCreateComment,
+  onUserClick,
 }: MainContentProps) => {
   const filteredPlugins = plugins.filter(p => 
     activeCategory === 'all' || p.category_name === categories.find(c => c.slug === activeCategory)?.name
@@ -154,14 +156,17 @@ const MainContent = ({
             </Button>
             <div className="bg-card border border-border rounded-xl p-6">
               <div className="flex items-start gap-4 mb-6">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-lg font-bold">
+                <div 
+                  className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-lg font-bold cursor-pointer hover:scale-110 transition-transform"
+                  onClick={() => selectedTopic.author_id && onUserClick(selectedTopic.author_id)}
+                >
                   {selectedTopic.author_name[0].toUpperCase()}
                 </div>
                 <div className="flex-1">
                   <h1 className="text-2xl font-bold mb-2">{selectedTopic.title}</h1>
                   <div className="flex items-center gap-3 text-sm text-muted-foreground flex-wrap">
                     <span className="flex items-center gap-2">
-                      Автор: {selectedTopic.author_name}
+                      Автор: <button onClick={() => selectedTopic.author_id && onUserClick(selectedTopic.author_id)} className="hover:text-primary transition-colors">{selectedTopic.author_name}</button>
                       <ForumRoleBadge role={selectedTopic.author_forum_role} />
                     </span>
                     <span>•</span>
@@ -199,12 +204,15 @@ const MainContent = ({
             {topicComments.map((comment) => (
               <div key={comment.id} className="bg-card border border-border rounded-xl p-4">
                 <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center text-sm font-bold">
+                  <div 
+                    className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center text-sm font-bold cursor-pointer hover:scale-110 transition-transform"
+                    onClick={() => onUserClick(comment.author_id)}
+                  >
                     {comment.author_name[0].toUpperCase()}
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2 flex-wrap">
-                      <span className="font-semibold">{comment.author_name}</span>
+                      <button onClick={() => onUserClick(comment.author_id)} className="font-semibold hover:text-primary transition-colors">{comment.author_name}</button>
                       <ForumRoleBadge role={comment.author_forum_role} />
                       <span className="text-xs text-muted-foreground">
                         {new Date(comment.created_at).toLocaleDateString('ru')} в {new Date(comment.created_at).toLocaleTimeString('ru', { hour: '2-digit', minute: '2-digit' })}
@@ -248,12 +256,17 @@ const MainContent = ({
             {forumTopics.map((topic) => (
               <div
                 key={topic.id}
-                onClick={() => onTopicSelect(topic)}
                 className="bg-card border border-border rounded-xl p-4 hover:border-primary/50 transition-all cursor-pointer group"
               >
                 <div className="flex items-start justify-between gap-4">
-                  <div className="flex items-start gap-3 flex-1">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-sm font-bold">
+                  <div className="flex items-start gap-3 flex-1" onClick={() => onTopicSelect(topic)}>
+                    <div 
+                      className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-sm font-bold hover:scale-110 transition-transform"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        topic.author_id && onUserClick(topic.author_id);
+                      }}
+                    >
                       {topic.author_name[0].toUpperCase()}
                     </div>
                     <div className="flex-1 min-w-0">
@@ -270,7 +283,7 @@ const MainContent = ({
                       </h3>
                       <div className="flex items-center gap-2 text-sm text-muted-foreground flex-wrap">
                         <span className="flex items-center gap-2">
-                          Автор: {topic.author_name}
+                          Автор: <button onClick={(e) => { e.stopPropagation(); topic.author_id && onUserClick(topic.author_id); }} className="hover:text-primary transition-colors">{topic.author_name}</button>
                           <ForumRoleBadge role={topic.author_forum_role} />
                         </span>
                         <span>•</span>

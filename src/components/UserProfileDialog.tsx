@@ -1,0 +1,165 @@
+import { useEffect, useState } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import Icon from '@/components/ui/icon';
+import ForumRoleBadge from '@/components/ForumRoleBadge';
+
+interface UserProfile {
+  id: number;
+  username: string;
+  avatar_url?: string;
+  bio?: string;
+  vk_url?: string;
+  telegram?: string;
+  discord?: string;
+  forum_role?: string;
+  created_at: string;
+  topics_count: number;
+  comments_count: number;
+}
+
+interface UserProfileDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  userId: number | null;
+}
+
+const USER_PROFILE_URL = 'https://functions.poehali.dev/a008e6c5-bf95-43d8-a6b2-7df0242184da';
+
+const UserProfileDialog = ({ open, onOpenChange, userId }: UserProfileDialogProps) => {
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (open && userId) {
+      fetchProfile();
+    }
+  }, [open, userId]);
+
+  const fetchProfile = async () => {
+    if (!userId) return;
+    
+    setLoading(true);
+    try {
+      const response = await fetch(`${USER_PROFILE_URL}?user_id=${userId}`);
+      const data = await response.json();
+      if (data.success) {
+        setProfile(data.user);
+      }
+    } catch (error) {
+      console.error('Ошибка загрузки профиля:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('ru-RU', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-2xl">
+        <DialogHeader>
+          <DialogTitle>Профиль пользователя</DialogTitle>
+        </DialogHeader>
+
+        {loading ? (
+          <div className="flex justify-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          </div>
+        ) : profile ? (
+          <div className="space-y-6">
+            <div className="flex items-start gap-4">
+              <Avatar className="w-20 h-20">
+                <AvatarImage src={profile.avatar_url} />
+                <AvatarFallback className="bg-gradient-to-br from-purple-500 to-pink-500 text-white text-2xl">
+                  {profile.username.charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-2">
+                  <h3 className="text-xl font-bold">{profile.username}</h3>
+                  {profile.forum_role && <ForumRoleBadge role={profile.forum_role} />}
+                </div>
+                
+                {profile.bio && (
+                  <p className="text-muted-foreground mb-3">{profile.bio}</p>
+                )}
+                
+                <p className="text-sm text-muted-foreground">
+                  На сайте с {formatDate(profile.created_at)}
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4 p-4 bg-secondary/30 rounded-lg">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-primary">{profile.topics_count}</div>
+                <div className="text-sm text-muted-foreground">Тем создано</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-primary">{profile.comments_count}</div>
+                <div className="text-sm text-muted-foreground">Комментариев</div>
+              </div>
+            </div>
+
+            {(profile.vk_url || profile.telegram || profile.discord) && (
+              <div className="space-y-2">
+                <h4 className="font-semibold text-sm text-muted-foreground uppercase">Социальные сети</h4>
+                <div className="flex flex-wrap gap-2">
+                  {profile.vk_url && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="gap-2"
+                      onClick={() => window.open(profile.vk_url, '_blank')}
+                    >
+                      <Icon name="Link" size={16} />
+                      VK
+                    </Button>
+                  )}
+                  
+                  {profile.telegram && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="gap-2"
+                      onClick={() => window.open(`https://t.me/${profile.telegram.replace('@', '')}`, '_blank')}
+                    >
+                      <Icon name="Send" size={16} />
+                      {profile.telegram}
+                    </Button>
+                  )}
+                  
+                  {profile.discord && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="gap-2"
+                    >
+                      <Icon name="MessageCircle" size={16} />
+                      {profile.discord}
+                    </Button>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="text-center py-8 text-muted-foreground">
+            Пользователь не найден
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+export default UserProfileDialog;

@@ -4,6 +4,7 @@ import Header from '@/components/Header';
 import MainContent from '@/components/MainContent';
 import Dialogs from '@/components/Dialogs';
 import AdminPanel from '@/components/AdminPanel';
+import UserProfileDialog from '@/components/UserProfileDialog';
 import { Plugin, Category, User, ForumTopic, ForumComment, SearchResult } from '@/types';
 
 const BACKEND_URL = 'https://functions.poehali.dev/1e67c3bd-abb5-4647-aa02-57410816c1f0';
@@ -32,6 +33,8 @@ const Index = () => {
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [showSearchResults, setShowSearchResults] = useState(false);
   const [showAdminPanel, setShowAdminPanel] = useState(false);
+  const [showUserProfile, setShowUserProfile] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
 
   useEffect(() => {
     if (activeView === 'plugins') {
@@ -304,6 +307,11 @@ const Index = () => {
     }
   };
 
+  const handleUserClick = (userId: number) => {
+    setSelectedUserId(userId);
+    setShowUserProfile(true);
+  };
+
   return (
     <div className="min-h-screen bg-background text-foreground flex" onClick={() => setShowSearchResults(false)}>
       {showAdminPanel && user?.role === 'admin' ? (
@@ -354,6 +362,7 @@ const Index = () => {
           onBackToTopics={() => setSelectedTopic(null)}
           onCommentChange={setNewComment}
           onCreateComment={handleCreateComment}
+          onUserClick={handleUserClick}
         />
       </div>
 
@@ -374,6 +383,12 @@ const Index = () => {
         onCreateTopic={handleCreateTopic}
         onProfileDialogChange={setShowProfileDialog}
         onUpdateProfile={handleUpdateProfile}
+      />
+
+      <UserProfileDialog
+        open={showUserProfile}
+        onOpenChange={setShowUserProfile}
+        userId={selectedUserId}
       />
         </>
       )}

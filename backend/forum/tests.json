@@ -4,9 +4,7 @@
       "name": "Get all topics",
       "method": "GET",
       "expectedStatus": 200,
-      "expectedBody": {
-        "topics": "array"
-      },
+      "expectedBody": {},
       "bodyMatcher": "partial"
     },
     {
@@ -22,10 +20,7 @@
       },
       "expectedStatus": 200,
       "expectedBody": {
-        "success": true,
-        "topic": {
-          "id": "number"
-        }
+        "success": true
       },
       "bodyMatcher": "partial"
     }

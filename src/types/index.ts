@@ -40,6 +40,7 @@ export interface ForumTopic {
   views: number;
   is_pinned: boolean;
   created_at: string;
+  author_id?: number;
   author_name: string;
   author_forum_role?: string;
   comments_count: number;
