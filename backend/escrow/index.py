@@ -550,10 +550,10 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                         'isBase64Encoded': False
                     }
                 
-                cursor.execute('SELECT is_admin FROM users WHERE id = %s', (user_id,))
+                cursor.execute('SELECT role FROM users WHERE id = %s', (user_id,))
                 user_data = cursor.fetchone()
                 
-                if not user_data or not user_data['is_admin']:
+                if not user_data or user_data['role'] != 'admin':
                     cursor.close()
                     return {
                         'statusCode': 403,
