@@ -26,7 +26,7 @@ export const EscrowView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Esc
   const [loading, setLoading] = useState(true);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [selectedDeal, setSelectedDeal] = useState<EscrowDeal | null>(null);
-  const [statusFilter, setStatusFilter] = useState<'all' | 'open' | 'in_progress' | 'completed' | 'dispute'>('open');
+  const [statusFilter, setStatusFilter] = useState<'open' | 'completed' | 'dispute'>('open');
   
   const [newDeal, setNewDeal] = useState({
     title: '',
@@ -310,9 +310,7 @@ export const EscrowView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Esc
 
       <div className="flex items-center gap-2 overflow-x-auto pb-2">
         {[
-          { id: 'all', label: 'Все', icon: 'List' },
           { id: 'open', label: 'Открытые', icon: 'Clock' },
-          { id: 'in_progress', label: 'В процессе', icon: 'Loader2' },
           { id: 'completed', label: 'Завершенные', icon: 'Check' },
           { id: 'dispute', label: 'Споры', icon: 'AlertTriangle' }
         ].map((filter) => (
@@ -681,8 +679,59 @@ const DealDetailDialog = ({ deal, user, onClose, onUpdate, onRefreshUserBalance 
     }
   };
 
+  const openDispute = async () => {
+    if (!user) return;
+    
+    const reason = window.prompt('Укажите причину спора:');
+    if (!reason || !reason.trim()) return;
+    
+    setLoading(true);
+
+    try {
+      const response = await fetch(ESCROW_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-User-Id': user.id.toString()
+        },
+        body: JSON.stringify({
+          action: 'open_dispute',
+          deal_id: currentDeal.id,
+          reason: reason.trim()
+        })
+      });
+      
+      const data = await response.json();
+      if (data.success) {
+        toast({
+          title: 'Спор открыт',
+          description: 'Администрация рассмотрит ситуацию и примет решение. Все сообщения в чате сохранены как доказательства.',
+          duration: 5000
+        });
+        await fetchDealDetails();
+        onUpdate();
+      } else {
+        toast({
+          title: 'Ошибка',
+          description: data.error || 'Ошибка открытия спора',
+          variant: 'destructive'
+        });
+      }
+    } catch (error) {
+      console.error('Ошибка:', error);
+      toast({
+        title: 'Ошибка',
+        description: 'Ошибка подключения к серверу',
+        variant: 'destructive'
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const isSeller = user?.id === currentDeal.seller_id;
   const isBuyer = user?.id === currentDeal.buyer_id;
+  const isAdmin = user?.role === 'admin';
 
   return (
     <Dialog open={true} onOpenChange={onClose}>
@@ -761,43 +810,52 @@ const DealDetailDialog = ({ deal, user, onClose, onUpdate, onRefreshUserBalance 
 
           <Card className="p-4 max-h-[300px] overflow-y-auto bg-muted/30">
             <div className="space-y-2">
-              {messages.map((msg) => (
-                <div
-                  key={msg.id}
-                  className={`p-3 rounded-lg ${
-                    msg.is_system
-                      ? 'bg-blue-500/10 border border-blue-500/20 text-center text-sm'
-                      : msg.user_id === user?.id
-                      ? 'bg-green-800/20 border border-green-800/30 ml-8'
-                      : 'bg-card mr-8'
-                  }`}
-                >
-                  {!msg.is_system && (
-                    <div className="flex items-center gap-2 mb-1">
-                      <Avatar className="w-5 h-5">
-                        <AvatarImage src={msg.avatar_url} />
-                        <AvatarFallback className={`bg-gradient-to-br ${getAvatarGradient(msg.username || '')} text-white text-xs`}>
-                          {msg.username?.[0].toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                      <span className="text-xs font-medium">{msg.username}</span>
-                    </div>
-                  )}
-                  <p className={msg.is_system ? 'text-blue-400 font-medium' : ''}>{msg.message}</p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {new Date(msg.created_at).toLocaleString('ru-RU')}
-                  </p>
-                </div>
-              ))}
+              {messages.map((msg) => {
+                const isAdminMessage = msg.user_role === 'admin';
+                return (
+                  <div
+                    key={msg.id}
+                    className={`p-3 rounded-lg ${
+                      msg.is_system
+                        ? 'bg-blue-500/10 border border-blue-500/20 text-center text-sm'
+                        : isAdminMessage
+                        ? 'bg-purple-500/10 border border-purple-500/30'
+                        : msg.user_id === user?.id
+                        ? 'bg-green-800/20 border border-green-800/30 ml-8'
+                        : 'bg-card mr-8'
+                    }`}
+                  >
+                    {!msg.is_system && (
+                      <div className="flex items-center gap-2 mb-1">
+                        <Avatar className="w-5 h-5">
+                          <AvatarImage src={msg.avatar_url} />
+                          <AvatarFallback className={`bg-gradient-to-br ${getAvatarGradient(msg.username || '')} text-white text-xs`}>
+                            {msg.username?.[0].toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className={`text-xs font-medium ${isAdminMessage ? 'text-purple-400' : ''}`}>
+                          {isAdminMessage && '👑 '}
+                          {msg.username}
+                          {isAdminMessage && ' (Администрация)'}
+                        </span>
+                      </div>
+                    )}
+                    <p className={msg.is_system ? 'text-blue-400 font-medium' : isAdminMessage ? 'text-purple-300' : ''}>{msg.message}</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {new Date(msg.created_at).toLocaleString('ru-RU')}
+                    </p>
+                  </div>
+                );
+              })}
             </div>
           </Card>
 
-          {currentDeal.status !== 'completed' && currentDeal.status !== 'cancelled' && (isSeller || isBuyer) && (
+          {currentDeal.status !== 'completed' && currentDeal.status !== 'cancelled' && (isSeller || isBuyer || isAdmin) && (
             <div className="flex items-center gap-2">
               <Input
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
-                placeholder="Написать сообщение..."
+                placeholder={isAdmin ? "Сообщение от администрации..." : "Написать сообщение..."}
                 onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
               />
               <Button onClick={sendMessage} size="icon">
@@ -849,6 +907,32 @@ const DealDetailDialog = ({ deal, user, onClose, onUpdate, onRefreshUserBalance 
                 <Icon name="Check" size={18} className="mr-2" />
                 Подтвердить получение товара
               </Button>
+            )}
+
+            {currentDeal.status === 'in_progress' && (isSeller || isBuyer) && currentDeal.status !== 'dispute' && (
+              <Button
+                onClick={openDispute}
+                disabled={loading}
+                variant="destructive"
+                className="w-full"
+              >
+                <Icon name="AlertTriangle" size={18} className="mr-2" />
+                Открыть спор / Подать апелляцию
+              </Button>
+            )}
+
+            {currentDeal.status === 'dispute' && (
+              <Card className="p-4 bg-orange-500/10 border-orange-500/30">
+                <div className="flex items-center gap-3">
+                  <Icon name="AlertTriangle" size={24} className="text-orange-400" />
+                  <div>
+                    <h4 className="font-semibold text-orange-400">Спор открыт</h4>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Администрация рассматривает ситуацию. Все сообщения в чате сохранены.
+                    </p>
+                  </div>
+                </div>
+              </Card>
             )}
           </div>
         </div>

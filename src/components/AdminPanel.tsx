@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
-import { User, ForumTopic } from '@/types';
+import { User, ForumTopic, EscrowDeal } from '@/types';
 import Icon from '@/components/ui/icon';
 import { Button } from '@/components/ui/button';
 import AdminUsersTab from '@/components/admin/AdminUsersTab';
 import AdminTopicsTab from '@/components/admin/AdminTopicsTab';
 import AdminBalanceDialog from '@/components/admin/AdminBalanceDialog';
 import AdminTopicEditDialog from '@/components/admin/AdminTopicEditDialog';
+import AdminDisputesTab from '@/components/admin/AdminDisputesTab';
 import { useToast } from '@/hooks/use-toast';
 
 interface AdminPanelProps {
@@ -15,12 +16,14 @@ interface AdminPanelProps {
 
 const FORUM_URL = 'https://functions.poehali.dev/045d6571-633c-4239-ae69-8d76c933532c';
 const ADMIN_URL = 'https://functions.poehali.dev/d4678b1c-2acd-40bb-b8c5-cefe8d14fad4';
+const ESCROW_URL = 'https://functions.poehali.dev/82c75fbc-83e4-4448-9ff8-1c8ef9bbec09';
 
 const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
   const { toast } = useToast();
   const [users, setUsers] = useState<User[]>([]);
   const [topics, setTopics] = useState<ForumTopic[]>([]);
-  const [activeTab, setActiveTab] = useState<'users' | 'topics'>('users');
+  const [disputes, setDisputes] = useState<EscrowDeal[]>([]);
+  const [activeTab, setActiveTab] = useState<'users' | 'topics' | 'disputes'>('users');
   const [editingTopic, setEditingTopic] = useState<ForumTopic | null>(null);
   const [editTitle, setEditTitle] = useState('');
   const [editContent, setEditContent] = useState('');
@@ -34,6 +37,8 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
       fetchUsers();
     } else if (activeTab === 'topics') {
       fetchTopics();
+    } else if (activeTab === 'disputes') {
+      fetchDisputes();
     }
   }, [activeTab]);
 
@@ -56,6 +61,16 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
       setTopics(data.topics || []);
     } catch (error) {
       console.error('Ошибка загрузки тем:', error);
+    }
+  };
+
+  const fetchDisputes = async () => {
+    try {
+      const response = await fetch(`${ESCROW_URL}?action=list&status=dispute`);
+      const data = await response.json();
+      setDisputes(data.deals || []);
+    } catch (error) {
+      console.error('Ошибка загрузки споров:', error);
     }
   };
 
@@ -311,6 +326,16 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
             >
               Темы форума
             </button>
+            <button
+              onClick={() => setActiveTab('disputes')}
+              className={`px-6 py-2 rounded-lg transition-all ${
+                activeTab === 'disputes'
+                  ? 'bg-primary text-primary-foreground'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              Споры гаранта
+            </button>
           </div>
           {activeTab === 'users' && (
             <Button
@@ -338,6 +363,14 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
             topics={topics}
             onEditTopic={handleEditTopic}
             onDeleteTopic={handleDeleteTopic}
+          />
+        )}
+
+        {activeTab === 'disputes' && (
+          <AdminDisputesTab
+            disputes={disputes}
+            currentUser={currentUser}
+            onUpdate={fetchDisputes}
           />
         )}
 
