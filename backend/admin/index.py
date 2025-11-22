@@ -313,7 +313,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 
                 cur.execute(
                     f"""INSERT INTO {SCHEMA}.transactions 
-                       (user_id, amount, description, transaction_type) 
+                       (user_id, amount, description, type) 
                        VALUES (%s, %s, %s, %s)""",
                     (target_user_id, amount, f'Пополнение администратором (ID: {user_id})', 'admin_topup')
                 )
