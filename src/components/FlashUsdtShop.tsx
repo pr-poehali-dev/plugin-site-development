@@ -12,9 +12,10 @@ import { useToast } from '@/hooks/use-toast';
 interface FlashUsdtShopProps {
   user: User | null;
   onShowAuthDialog: () => void;
+  onRefreshUserBalance?: () => void;
 }
 
-const FlashUsdtShop = ({ user, onShowAuthDialog }: FlashUsdtShopProps) => {
+const FlashUsdtShop = ({ user, onShowAuthDialog, onRefreshUserBalance }: FlashUsdtShopProps) => {
   const { toast } = useToast();
   const [selectedPackage, setSelectedPackage] = useState<typeof packages[0] | null>(null);
   const [showPurchaseDialog, setShowPurchaseDialog] = useState(false);
@@ -93,16 +94,54 @@ const FlashUsdtShop = ({ user, onShowAuthDialog }: FlashUsdtShopProps) => {
       return;
     }
 
+    if (!user) {
+      toast({
+        title: 'Ошибка',
+        description: 'Необходимо авторизоваться',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    const userBalance = user.balance || 0;
+    if (userBalance < selectedPackage.price) {
+      toast({
+        title: 'Недостаточно средств',
+        description: `На вашем балансе ${userBalance.toLocaleString('ru-RU')} USDT. Для покупки необходимо ${selectedPackage.price.toLocaleString('ru-RU')} USDT.`,
+        variant: 'destructive'
+      });
+      return;
+    }
+
     setIsProcessing(true);
 
     try {
-      // Здесь будет запрос к backend для создания заказа
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      const response = await fetch('https://functions.poehali.dev/9d93686d-9a6f-47bc-85a8-7b7c28e4edd7', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: user.id,
+          packageId: selectedPackage.id,
+          amount: selectedPackage.amount,
+          price: selectedPackage.price,
+          walletAddress: walletAddress
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Ошибка при создании заказа');
+      }
       
       toast({
-        title: 'Заказ создан',
-        description: `Заказ на ${selectedPackage.amount.toLocaleString('ru-RU')} Flash USDT успешно создан. Ожидайте подтверждения от администрации.`
+        title: 'Покупка успешна',
+        description: `Вы приобрели ${selectedPackage.amount.toLocaleString('ru-RU')} Flash USDT. Токены придут в течение 1-3 минут.`
       });
+
+      if (onRefreshUserBalance) {
+        onRefreshUserBalance();
+      }
 
       setShowPurchaseDialog(false);
       setWalletAddress('');
@@ -110,7 +149,7 @@ const FlashUsdtShop = ({ user, onShowAuthDialog }: FlashUsdtShopProps) => {
     } catch (error) {
       toast({
         title: 'Ошибка',
-        description: 'Не удалось создать заказ. Попробуйте позже.',
+        description: error instanceof Error ? error.message : 'Не удалось создать заказ. Попробуйте позже.',
         variant: 'destructive'
       });
     } finally {

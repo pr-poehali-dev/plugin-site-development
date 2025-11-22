@@ -63,7 +63,11 @@ const MainContent = ({
             onRefreshUserBalance={onRefreshUserBalance}
           />
         ) : activeCategory === 'categories' ? (
-          <FlashUsdtShop user={user} onShowAuthDialog={onShowAuthDialog} />
+          <FlashUsdtShop 
+            user={user} 
+            onShowAuthDialog={onShowAuthDialog}
+            onRefreshUserBalance={onRefreshUserBalance}
+          />
         ) : (
           <PluginsView
             activeCategory={activeCategory}
