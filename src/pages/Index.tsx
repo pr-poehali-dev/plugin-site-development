@@ -312,7 +312,6 @@ const Index = () => {
         user={user}
         onCategoryChange={handleCategoryChange}
         onShowProfileDialog={() => setShowProfileDialog(true)}
-        onShowTopicDialog={() => setShowTopicDialog(true)}
       />
 
       <div className={`flex-1 transition-all duration-300 ${sidebarOpen ? 'ml-64' : 'ml-0'}`}>

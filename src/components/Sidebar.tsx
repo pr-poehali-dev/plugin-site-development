@@ -10,7 +10,6 @@ interface SidebarProps {
   user: { id: number; username: string; email: string } | null;
   onCategoryChange: (category: string, view: 'plugins' | 'forum') => void;
   onShowProfileDialog: () => void;
-  onShowTopicDialog: () => void;
 }
 
 const Sidebar = ({
@@ -21,7 +20,6 @@ const Sidebar = ({
   user,
   onCategoryChange,
   onShowProfileDialog,
-  onShowTopicDialog,
 }: SidebarProps) => {
   return (
     <aside className={`fixed top-0 left-0 h-full bg-sidebar border-r border-sidebar-border transition-all duration-300 z-30 ${sidebarOpen ? 'w-64' : 'w-0 -translate-x-full'}`}>
@@ -55,22 +53,13 @@ const Sidebar = ({
           ))}
           
           {user && (
-            <>
-              <button
-                onClick={onShowProfileDialog}
-                className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg transition-colors hover:bg-sidebar-accent/50 mt-4"
-              >
-                <Icon name="User" size={18} />
-                <span className="text-sm font-medium">Личный кабинет</span>
-              </button>
-              <button
-                onClick={onShowTopicDialog}
-                className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg transition-colors hover:bg-sidebar-accent/50 bg-primary/10 border border-primary/20"
-              >
-                <Icon name="Plus" size={18} />
-                <span className="text-sm font-medium">Создать тему</span>
-              </button>
-            </>
+            <button
+              onClick={onShowProfileDialog}
+              className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg transition-colors hover:bg-sidebar-accent/50 mt-4"
+            >
+              <Icon name="User" size={18} />
+              <span className="text-sm font-medium">Личный кабинет</span>
+            </button>
           )}
         </nav>
 
