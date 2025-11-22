@@ -11,6 +11,8 @@ from typing import Dict, Any, List
 import psycopg2
 from psycopg2.extras import RealDictCursor
 
+SCHEMA = 't_p32599880_plugin_site_developm'
+
 def get_db_connection():
     """Получить подключение к БД"""
     database_url = os.environ.get('DATABASE_URL')
@@ -18,14 +20,14 @@ def get_db_connection():
 
 def check_admin(user_id: str, cur) -> bool:
     """Проверка прав администратора"""
-    cur.execute("SELECT role FROM users WHERE id = %s", (user_id,))
+    cur.execute(f"SELECT role FROM {SCHEMA}.users WHERE id = %s", (user_id,))
     user = cur.fetchone()
     return user and user.get('role') == 'admin'
 
 def log_admin_action(admin_id: str, action_type: str, target_type: str, target_id: int, details: str, cur):
     """Логирование действий администратора"""
     cur.execute(
-        "INSERT INTO admin_actions (admin_id, action_type, target_type, target_id, details) VALUES (%s, %s, %s, %s, %s)",
+        f"INSERT INTO {SCHEMA}.admin_actions (admin_id, action_type, target_type, target_id, details) VALUES (%s, %s, %s, %s, %s)",
         (admin_id, action_type, target_type, target_id, details)
     )
 
@@ -67,12 +69,12 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                         'isBase64Encoded': False
                     }
                 
-                cur.execute("""
+                cur.execute(f"""
                     SELECT 
                         id, username, avatar_url, bio, 
                         vk_url, telegram, discord, 
                         forum_role, created_at, last_seen_at
-                    FROM users 
+                    FROM {SCHEMA}.users 
                     WHERE id = %s AND is_blocked = FALSE
                 """, (user_profile_id,))
                 
@@ -86,16 +88,16 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                         'isBase64Encoded': False
                     }
                 
-                cur.execute("""
+                cur.execute(f"""
                     SELECT COUNT(*) as count
-                    FROM forum_topics
+                    FROM {SCHEMA}.forum_topics
                     WHERE author_id = %s AND removed_at IS NULL
                 """, (user_profile_id,))
                 topics_count = cur.fetchone()['count']
                 
-                cur.execute("""
+                cur.execute(f"""
                     SELECT COUNT(*) as count
-                    FROM forum_comments
+                    FROM {SCHEMA}.forum_comments
                     WHERE author_id = %s AND removed_at IS NULL
                 """, (user_profile_id,))
                 comments_count = cur.fetchone()['count']
@@ -128,9 +130,9 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 }
             
             if action == 'users':
-                cur.execute("""
+                cur.execute(f"""
                     SELECT id, username, email, role, forum_role, is_blocked, created_at 
-                    FROM users 
+                    FROM {SCHEMA}.users 
                     ORDER BY created_at DESC 
                     LIMIT 100
                 """)
@@ -144,10 +146,10 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 }
             
             elif action == 'logs':
-                cur.execute("""
+                cur.execute(f"""
                     SELECT aa.*, u.username as admin_name
-                    FROM admin_actions aa
-                    LEFT JOIN users u ON aa.admin_id = u.id
+                    FROM {SCHEMA}.admin_actions aa
+                    LEFT JOIN {SCHEMA}.users u ON aa.admin_id = u.id
                     ORDER BY aa.created_at DESC
                     LIMIT 100
                 """)
@@ -193,7 +195,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 reason = body_data.get('reason', '')
                 
                 cur.execute(
-                    "UPDATE users SET is_blocked = TRUE, blocked_at = CURRENT_TIMESTAMP, blocked_by = %s, block_reason = %s WHERE id = %s",
+                    f"UPDATE {SCHEMA}.users SET is_blocked = TRUE, blocked_at = CURRENT_TIMESTAMP, blocked_by = %s, block_reason = %s WHERE id = %s",
                     (user_id, reason, target_user_id)
                 )
                 
@@ -211,7 +213,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 target_user_id = body_data.get('user_id')
                 
                 cur.execute(
-                    "UPDATE users SET is_blocked = FALSE, blocked_at = NULL, blocked_by = NULL, block_reason = NULL WHERE id = %s",
+                    f"UPDATE {SCHEMA}.users SET is_blocked = FALSE, blocked_at = NULL, blocked_by = NULL, block_reason = NULL WHERE id = %s",
                     (target_user_id,)
                 )
                 
@@ -229,7 +231,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 target_user_id = body_data.get('user_id')
                 role = body_data.get('role', 'user')
                 
-                cur.execute("UPDATE users SET role = %s WHERE id = %s", (role, target_user_id))
+                cur.execute(f"UPDATE {SCHEMA}.users SET role = %s WHERE id = %s", (role, target_user_id))
                 
                 log_admin_action(user_id, 'set_role', 'user', target_user_id, f'Role: {role}', cur)
                 conn.commit()
@@ -281,7 +283,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                         'isBase64Encoded': False
                     }
                 
-                cur.execute("SELECT id, balance FROM users WHERE username = %s", (username,))
+                cur.execute(f"SELECT id, balance FROM {SCHEMA}.users WHERE username = %s", (username,))
                 target_user = cur.fetchone()
                 
                 if not target_user:
@@ -296,12 +298,12 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 new_balance = float(target_user['balance'] or 0) + amount
                 
                 cur.execute(
-                    "UPDATE users SET balance = %s WHERE id = %s",
+                    f"UPDATE {SCHEMA}.users SET balance = %s WHERE id = %s",
                     (new_balance, target_user_id)
                 )
                 
                 cur.execute(
-                    """INSERT INTO transactions 
+                    f"""INSERT INTO {SCHEMA}.transactions 
                        (user_id, amount, description, transaction_type) 
                        VALUES (%s, %s, %s, %s)""",
                     (target_user_id, amount, f'Пополнение администратором (ID: {user_id})', 'admin_topup')
@@ -333,7 +335,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     }
                 
                 cur.execute(
-                    "UPDATE forum_topics SET removed_at = CURRENT_TIMESTAMP, removed_by = %s WHERE id = %s",
+                    f"UPDATE {SCHEMA}.forum_topics SET removed_at = CURRENT_TIMESTAMP, removed_by = %s WHERE id = %s",
                     (user_id, topic_id)
                 )
                 
