@@ -4,6 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
 import ForumRoleBadge from '@/components/ForumRoleBadge';
+import { getAvatarGradient } from '@/utils/avatarColors';
 
 interface UserProfile {
   id: number;
@@ -121,7 +122,7 @@ const UserProfileDialog = ({ open, onOpenChange, userId, currentUserId, onSendMe
             <div className="flex items-start gap-4">
               <Avatar className="w-20 h-20">
                 <AvatarImage src={profile.avatar_url} />
-                <AvatarFallback className="bg-gradient-to-br from-green-800 to-green-900 text-white text-2xl">
+                <AvatarFallback className={`bg-gradient-to-br ${getAvatarGradient(profile.username)} text-white text-2xl`}>
                   {profile.username.charAt(0).toUpperCase()}
                 </AvatarFallback>
               </Avatar>

@@ -6,6 +6,7 @@ import Icon from '@/components/ui/icon';
 import { User } from '@/types';
 import { useState, useRef } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { getAvatarGradient } from '@/utils/avatarColors';
 
 interface DialogsProps {
   authDialogOpen: boolean;
@@ -200,7 +201,7 @@ const Dialogs = ({
                 <div className="relative group cursor-pointer" onClick={handleAvatarSelect}>
                   <Avatar className="w-20 h-20">
                     <AvatarImage src={avatarPreview || user.avatar_url} />
-                    <AvatarFallback className="bg-gradient-to-br from-green-800 to-green-900 text-white text-2xl">
+                    <AvatarFallback className={`bg-gradient-to-br ${getAvatarGradient(user.username)} text-white text-2xl`}>
                       {user.username[0].toUpperCase()}
                     </AvatarFallback>
                   </Avatar>

@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import ForumRoleBadge from '@/components/ForumRoleBadge';
+import { getAvatarGradient } from '@/utils/avatarColors';
 
 const AUTH_URL = 'https://functions.poehali.dev/2497448a-6aff-4df5-97ef-9181cf792f03';
 const CRYPTO_URL = 'https://functions.poehali.dev/8caa3b76-72e5-42b5-9415-91d1f9b05210';
@@ -232,7 +233,7 @@ const UserProfile = ({ user, isOwnProfile, onClose, onTopUpBalance, onUpdateProf
               <div className="relative group cursor-pointer" onClick={isOwnProfile ? handleAvatarSelect : undefined}>
                 <Avatar className="w-24 h-24">
                   <AvatarImage src={avatarPreview || user.avatar_url} />
-                  <AvatarFallback className="bg-gradient-to-br from-green-800 to-green-900 text-white text-3xl font-bold">
+                  <AvatarFallback className={`bg-gradient-to-br ${getAvatarGradient(user.username)} text-white text-3xl font-bold`}>
                     {user.username[0].toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
