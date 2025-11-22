@@ -205,10 +205,9 @@ export const EscrowView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Esc
               <Icon name="ShieldCheck" size={24} className="text-green-400" />
             </div>
             <div>
-              <h3 className="text-lg font-semibold mb-2">Как работает гарант-сервис?</h3>
+              <h3 className="text-lg font-semibold mb-2">Как это работает?</h3>
               <p className="text-sm text-muted-foreground">
-                Платформа выступает гарантом безопасности сделки между продавцом и покупателем.
-                Средства блокируются до момента подтверждения получения товара.
+                Мы держим деньги покупателя до тех пор, пока он не получит товар. Продавец получает деньги только после того, как покупатель подтвердит получение. Это защищает обе стороны от обмана.
               </p>
             </div>
           </div>
@@ -217,7 +216,7 @@ export const EscrowView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Esc
             <div className="space-y-4">
               <h4 className="font-semibold text-green-400 flex items-center gap-2">
                 <Icon name="Store" size={18} />
-                Для продавца
+                Продаю товар
               </h4>
               <div className="space-y-3">
                 <div className="flex gap-3">
@@ -225,9 +224,9 @@ export const EscrowView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Esc
                     <span className="text-xs font-bold text-green-400">1</span>
                   </div>
                   <div>
-                    <p className="font-medium text-sm">Создайте сделку</p>
+                    <p className="font-medium text-sm">Создаю объявление</p>
                     <p className="text-xs text-muted-foreground">
-                      Укажите название товара/услуги, подробное описание и цену в USDT
+                      Описываю что продаю и за сколько
                     </p>
                   </div>
                 </div>
@@ -236,9 +235,9 @@ export const EscrowView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Esc
                     <span className="text-xs font-bold text-green-400">2</span>
                   </div>
                   <div>
-                    <p className="font-medium text-sm">Дождитесь покупателя</p>
+                    <p className="font-medium text-sm">Жду покупателя</p>
                     <p className="text-xs text-muted-foreground">
-                      Ваша сделка появится в списке открытых. Покупатель выберет её и присоединится
+                      Покупатель забронирует деньги
                     </p>
                   </div>
                 </div>
@@ -247,9 +246,9 @@ export const EscrowView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Esc
                     <span className="text-xs font-bold text-green-400">3</span>
                   </div>
                   <div>
-                    <p className="font-medium text-sm">Общайтесь в чате</p>
+                    <p className="font-medium text-sm">Отправляю товар</p>
                     <p className="text-xs text-muted-foreground">
-                      Обсудите детали передачи товара через защищенный чат сделки
+                      Передаю товар покупателю
                     </p>
                   </div>
                 </div>
@@ -258,20 +257,9 @@ export const EscrowView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Esc
                     <span className="text-xs font-bold text-green-400">4</span>
                   </div>
                   <div>
-                    <p className="font-medium text-sm">Передайте товар</p>
+                    <p className="font-medium text-sm">Получаю деньги</p>
                     <p className="text-xs text-muted-foreground">
-                      После подтверждения оплаты покупателем передайте товар и нажмите "Товар передан"
-                    </p>
-                  </div>
-                </div>
-                <div className="flex gap-3">
-                  <div className="w-8 h-8 bg-green-800/30 rounded-full flex items-center justify-center flex-shrink-0">
-                    <span className="text-xs font-bold text-green-400">5</span>
-                  </div>
-                  <div>
-                    <p className="font-medium text-sm">Получите оплату</p>
-                    <p className="text-xs text-muted-foreground">
-                      После подтверждения покупателя деньги автоматически зачислятся на ваш баланс
+                      Покупатель подтверждает - деньги приходят мне
                     </p>
                   </div>
                 </div>
@@ -281,7 +269,7 @@ export const EscrowView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Esc
             <div className="space-y-4">
               <h4 className="font-semibold text-blue-400 flex items-center gap-2">
                 <Icon name="ShoppingCart" size={18} />
-                Для покупателя
+                Покупаю товар
               </h4>
               <div className="space-y-3">
                 <div className="flex gap-3">
@@ -289,9 +277,9 @@ export const EscrowView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Esc
                     <span className="text-xs font-bold text-blue-400">1</span>
                   </div>
                   <div>
-                    <p className="font-medium text-sm">Выберите сделку</p>
+                    <p className="font-medium text-sm">Выбираю товар</p>
                     <p className="text-xs text-muted-foreground">
-                      Просмотрите открытые сделки и выберите нужный товар по подходящей цене
+                      Нахожу подходящее объявление
                     </p>
                   </div>
                 </div>
@@ -300,9 +288,9 @@ export const EscrowView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Esc
                     <span className="text-xs font-bold text-blue-400">2</span>
                   </div>
                   <div>
-                    <p className="font-medium text-sm">Присоединитесь к сделке</p>
+                    <p className="font-medium text-sm">Бронирую деньги</p>
                     <p className="text-xs text-muted-foreground">
-                      Нажмите "Купить" — сделка перейдет в статус "В процессе" и станет недоступна другим
+                      Деньги заморозятся до получения товара
                     </p>
                   </div>
                 </div>
@@ -311,9 +299,9 @@ export const EscrowView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Esc
                     <span className="text-xs font-bold text-blue-400">3</span>
                   </div>
                   <div>
-                    <p className="font-medium text-sm">Внесите оплату</p>
+                    <p className="font-medium text-sm">Получаю товар</p>
                     <p className="text-xs text-muted-foreground">
-                      Переведите указанную сумму продавцу и нажмите "Я оплатил товар"
+                      Связываюсь с продавцом и получаю товар
                     </p>
                   </div>
                 </div>
@@ -322,20 +310,9 @@ export const EscrowView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Esc
                     <span className="text-xs font-bold text-blue-400">4</span>
                   </div>
                   <div>
-                    <p className="font-medium text-sm">Получите товар</p>
+                    <p className="font-medium text-sm">Подтверждаю</p>
                     <p className="text-xs text-muted-foreground">
-                      Продавец передаст товар после подтверждения вашей оплаты
-                    </p>
-                  </div>
-                </div>
-                <div className="flex gap-3">
-                  <div className="w-8 h-8 bg-blue-500/30 rounded-full flex items-center justify-center flex-shrink-0">
-                    <span className="text-xs font-bold text-blue-400">5</span>
-                  </div>
-                  <div>
-                    <p className="font-medium text-sm">Подтвердите получение</p>
-                    <p className="text-xs text-muted-foreground">
-                      Проверьте товар и нажмите "Подтвердить получение" — деньги перейдут продавцу
+                      Если всё хорошо - деньги уходят продавцу
                     </p>
                   </div>
                 </div>
@@ -343,20 +320,13 @@ export const EscrowView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Esc
             </div>
           </div>
 
-          <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-4">
-            <div className="flex items-start gap-3">
-              <Icon name="AlertTriangle" size={20} className="text-yellow-400 flex-shrink-0 mt-0.5" />
-              <div className="space-y-2 text-sm">
-                <p className="font-semibold text-yellow-400">Важная информация:</p>
-                <ul className="space-y-1 text-muted-foreground text-xs">
-                  <li>• Средства покупателя блокируются на платформе до завершения сделки</li>
-                  <li>• Продавец получает оплату только после подтверждения получения товара покупателем</li>
-                  <li>• В случае спора администрация разберет ситуацию и примет решение</li>
-                  <li>• Все сообщения в чате сохраняются как доказательства</li>
-                  <li>• Не передавайте товар до получения подтверждения оплаты</li>
-                  <li>• Не подтверждайте получение до проверки товара</li>
-                </ul>
-              </div>
+          <div className="flex items-start gap-3 p-4 bg-orange-500/10 border border-orange-500/20 rounded-lg">
+            <Icon name="AlertCircle" size={20} className="text-orange-400 flex-shrink-0 mt-0.5" />
+            <div className="space-y-1 text-sm">
+              <p className="font-semibold text-orange-400">Что делать при проблеме?</p>
+              <p className="text-muted-foreground">
+                Если что-то пошло не так - открывайте спор. Мы разберёмся в ситуации и решим кому отдать деньги.
+              </p>
             </div>
           </div>
         </div>
