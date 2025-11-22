@@ -59,6 +59,7 @@ const CasinoHub = ({ user, onShowAuthDialog, onRefreshUserBalance }: CasinoHubPr
     return (
       <div className="space-y-4">
         <Button 
+          type="button"
           onClick={() => setSelectedGame('menu')}
           variant="outline"
           className="gap-2"
@@ -79,6 +80,7 @@ const CasinoHub = ({ user, onShowAuthDialog, onRefreshUserBalance }: CasinoHubPr
     return (
       <div className="space-y-4">
         <Button 
+          type="button"
           onClick={() => setSelectedGame('menu')}
           variant="outline"
           className="gap-2"
@@ -101,6 +103,7 @@ const CasinoHub = ({ user, onShowAuthDialog, onRefreshUserBalance }: CasinoHubPr
     return (
       <div className="space-y-4">
         <Button 
+          type="button"
           onClick={() => setSelectedGame('menu')}
           variant="outline"
           className="gap-2"
@@ -121,6 +124,7 @@ const CasinoHub = ({ user, onShowAuthDialog, onRefreshUserBalance }: CasinoHubPr
     return (
       <div className="space-y-4">
         <Button 
+          type="button"
           onClick={() => setSelectedGame('menu')}
           variant="outline"
           className="gap-2"
