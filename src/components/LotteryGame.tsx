@@ -2,9 +2,12 @@ import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import Icon from '@/components/ui/icon';
-import { Input } from '@/components/ui/input';
 import { User } from '@/types';
 import { useToast } from '@/hooks/use-toast';
+import LotteryStats from './lottery/LotteryStats';
+import LotteryTicketPurchase from './lottery/LotteryTicketPurchase';
+import LotteryChat from './lottery/LotteryChat';
+import LotteryParticipants from './lottery/LotteryParticipants';
 
 const AUTH_URL = 'https://functions.poehali.dev/2497448a-6aff-4df5-97ef-9181cf792f03';
 
@@ -427,20 +430,9 @@ const LotteryGame = ({ user, onShowAuthDialog, onRefreshUserBalance }: LotteryGa
     }
   };
 
-  const formatTime = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
-  };
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleString('ru-RU', { 
-      day: '2-digit', 
-      month: '2-digit', 
-      year: 'numeric',
-      hour: '2-digit', 
-      minute: '2-digit' 
-    });
+  const handleToggleHistory = () => {
+    setShowHistory(!showHistory);
+    if (!showHistory) loadHistory();
   };
 
   if (isLoading) {
@@ -459,11 +451,6 @@ const LotteryGame = ({ user, onShowAuthDialog, onRefreshUserBalance }: LotteryGa
   const isDrawing = currentRound?.status === 'drawing';
   const isCompleted = currentRound?.status === 'completed';
 
-  const ticketsByUser = tickets.reduce((acc, ticket) => {
-    acc[ticket.username] = (acc[ticket.username] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
-
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
@@ -475,10 +462,7 @@ const LotteryGame = ({ user, onShowAuthDialog, onRefreshUserBalance }: LotteryGa
         </div>
         <Button
           type="button"
-          onClick={() => {
-            setShowHistory(!showHistory);
-            if (!showHistory) loadHistory();
-          }}
+          onClick={handleToggleHistory}
           variant="outline"
           className="gap-2"
         >
@@ -487,47 +471,15 @@ const LotteryGame = ({ user, onShowAuthDialog, onRefreshUserBalance }: LotteryGa
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="p-6 bg-gradient-to-br from-yellow-600/20 to-yellow-800/20 border-yellow-600/30">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-10 h-10 rounded-lg bg-yellow-600/30 flex items-center justify-center">
-              <Icon name="Ticket" size={20} className="text-yellow-400" />
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Билетов продано</p>
-              <p className="text-2xl font-bold">{tickets.length} / {MAX_TICKETS}</p>
-            </div>
-          </div>
-        </Card>
-
-        <Card className="p-6 bg-gradient-to-br from-green-600/20 to-green-800/20 border-green-600/30">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-10 h-10 rounded-lg bg-green-600/30 flex items-center justify-center">
-              <Icon name="DollarSign" size={20} className="text-green-400" />
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Призовой фонд</p>
-              <p className="text-2xl font-bold">{prizePool} USDT</p>
-            </div>
-          </div>
-        </Card>
-
-        <Card className="p-6 bg-gradient-to-br from-purple-600/20 to-purple-800/20 border-purple-600/30">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-10 h-10 rounded-lg bg-purple-600/30 flex items-center justify-center">
-              <Icon name="Timer" size={20} className="text-purple-400" />
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">
-                {isDrawing ? 'До розыгрыша' : isCompleted ? 'Статус' : 'Билетов осталось'}
-              </p>
-              <p className="text-2xl font-bold">
-                {isDrawing ? timeLeft : isCompleted ? 'Завершено' : availableTickets}
-              </p>
-            </div>
-          </div>
-        </Card>
-      </div>
+      <LotteryStats
+        ticketsCount={tickets.length}
+        maxTickets={MAX_TICKETS}
+        prizePool={prizePool}
+        timeLeft={timeLeft}
+        isDrawing={isDrawing}
+        isCompleted={isCompleted}
+        availableTickets={availableTickets}
+      />
 
       {isCompleted && currentRound?.winner_username && (
         <Card className="p-6 bg-gradient-to-r from-yellow-600/20 to-yellow-800/20 border-yellow-600/30">
@@ -550,197 +502,39 @@ const LotteryGame = ({ user, onShowAuthDialog, onRefreshUserBalance }: LotteryGa
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card className="p-8 bg-gradient-to-b from-indigo-950/40 via-indigo-900/30 to-indigo-950/40 border-indigo-800/30 relative overflow-hidden">
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-indigo-800/5 via-transparent to-transparent"></div>
-          
-          <div className="relative space-y-6">
-            <div className="text-center space-y-4">
-              <div className="inline-block p-4 bg-indigo-600/20 rounded-2xl">
-                <Icon name="Ticket" size={48} className="text-indigo-400" />
-              </div>
-              <h3 className="text-xl font-bold">Купить билет</h3>
-              <div className="flex items-center justify-center gap-2 text-3xl font-bold">
-                <span className="text-yellow-400">{TICKET_PRICE}</span>
-                <span className="text-muted-foreground">USDT</span>
-              </div>
-            </div>
+        <LotteryTicketPurchase
+          user={user}
+          myTickets={myTickets}
+          ticketPrice={TICKET_PRICE}
+          isProcessing={isProcessing}
+          availableTickets={availableTickets}
+          isDrawing={isDrawing}
+          isCompleted={isCompleted}
+          timeLeft={timeLeft}
+          onBuyTicket={buyTicket}
+        />
 
-            {myTickets.length > 0 && (
-              <Card className="p-4 bg-indigo-800/20 border-indigo-800/30">
-                <p className="text-center mb-3 font-semibold">Ваши билеты ({myTickets.length}):</p>
-                <div className="flex flex-wrap gap-2 justify-center">
-                  {myTickets.map((num) => (
-                    <div
-                      key={num}
-                      className="w-12 h-12 rounded-lg bg-indigo-600/30 border-2 border-indigo-600/50 flex items-center justify-center font-bold text-lg"
-                    >
-                      {num}
-                    </div>
-                  ))}
-                </div>
-              </Card>
-            )}
-
-            <Button
-              type="button"
-              onClick={buyTicket}
-              className="w-full bg-gradient-to-r from-indigo-600 to-indigo-800 hover:from-indigo-700 hover:to-indigo-900 text-lg h-14"
-              disabled={!user || isProcessing || availableTickets === 0 || isDrawing || isCompleted}
-            >
-              <Icon name="Ticket" size={20} className="mr-2" />
-              {!user ? 'Войдите для покупки' : 
-               isDrawing ? 'Идет розыгрыш' :
-               isCompleted ? 'Лотерея завершена' :
-               availableTickets === 0 ? 'Все билеты проданы' : 
-               `Купить билет (${TICKET_PRICE} USDT)`}
-            </Button>
-
-            {isDrawing && (
-              <Card className="p-4 bg-orange-800/20 border-orange-800/30">
-                <div className="flex items-center gap-3">
-                  <Icon name="Clock" size={24} className="text-orange-400 animate-pulse" />
-                  <div>
-                    <p className="font-semibold">Розыгрыш начнется через:</p>
-                    <p className="text-2xl font-bold text-orange-400">{timeLeft}</p>
-                  </div>
-                </div>
-              </Card>
-            )}
-          </div>
-        </Card>
-
-        <Card className="p-6 bg-card/50 flex flex-col">
-          <h3 className="font-semibold mb-4 flex items-center gap-2">
-            <Icon name="MessageSquare" size={20} className="text-blue-400" />
-            Чат участников
-          </h3>
-          
-          <div className="flex-1 overflow-y-auto max-h-[400px] mb-4 space-y-3">
-            {chatMessages.length === 0 ? (
-              <p className="text-center text-muted-foreground py-8">
-                Нет сообщений. Будьте первым!
-              </p>
-            ) : (
-              chatMessages.map((msg) => (
-                <div
-                  key={msg.id}
-                  className={`p-3 rounded-lg ${
-                    msg.user_id === user?.id
-                      ? 'bg-indigo-600/20 border border-indigo-600/30 ml-8'
-                      : 'bg-card/80 border border-border/50 mr-8'
-                  }`}
-                >
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="font-semibold text-sm">{msg.username}</span>
-                    <span className="text-xs text-muted-foreground">{formatTime(msg.created_at)}</span>
-                  </div>
-                  <p className="text-sm">{msg.message}</p>
-                </div>
-              ))
-            )}
-            <div ref={chatEndRef} />
-          </div>
-
-          <div className="flex gap-2">
-            <Input
-              value={chatMessage}
-              onChange={(e) => setChatMessage(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && !isSendingMessage && sendMessage()}
-              placeholder={user ? 'Введите сообщение...' : 'Войдите для отправки'}
-              disabled={!user || isSendingMessage}
-              maxLength={500}
-              autoFocus={false}
-            />
-            <Button
-              type="button"
-              onClick={sendMessage}
-              disabled={!user || isSendingMessage || !chatMessage.trim()}
-              className="bg-indigo-600 hover:bg-indigo-700"
-            >
-              <Icon name="Send" size={18} />
-            </Button>
-          </div>
-        </Card>
+        <LotteryChat
+          user={user}
+          chatMessages={chatMessages}
+          chatMessage={chatMessage}
+          isSendingMessage={isSendingMessage}
+          chatEndRef={chatEndRef}
+          onChatMessageChange={setChatMessage}
+          onSendMessage={sendMessage}
+          onKeyDown={(e) => e.key === 'Enter' && !isSendingMessage && sendMessage()}
+        />
       </div>
 
-      <Card className="p-6 bg-card/50">
-        <h3 className="font-semibold mb-4 flex items-center gap-2">
-          <Icon name="Users" size={20} className="text-indigo-400" />
-          Участники ({tickets.length}/{MAX_TICKETS})
-        </h3>
-        
-        {tickets.length === 0 ? (
-          <p className="text-center text-muted-foreground py-8">Пока нет участников. Купите первый билет!</p>
-        ) : (
-          <div className="space-y-2">
-            {Object.entries(ticketsByUser).map(([username, count]) => {
-              const userTicketNumbers = tickets
-                .filter(t => t.username === username)
-                .map(t => t.ticket_number);
-              
-              return (
-                <div
-                  key={username}
-                  className="flex items-center justify-between p-3 bg-card/50 rounded-lg border border-border/50"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500/30 to-indigo-600/20 border-2 border-indigo-500/40 flex items-center justify-center">
-                      <Icon name="User" size={18} className="text-indigo-400" />
-                    </div>
-                    <div>
-                      <p className="font-semibold">{username}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {count} билет{count > 1 ? 'а' : ''} ({userTicketNumbers.join(', ')})
-                      </p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm font-semibold text-indigo-400">{count}x</p>
-                    <p className="text-xs text-muted-foreground">{count * TICKET_PRICE} USDT</p>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </Card>
-
-      {showHistory && (
-        <Card className="p-6 bg-card/50">
-          <h3 className="font-semibold mb-4 flex items-center gap-2">
-            <Icon name="History" size={20} className="text-yellow-400" />
-            История победителей
-          </h3>
-          
-          {history.length === 0 ? (
-            <p className="text-center text-muted-foreground py-8">История пуста</p>
-          ) : (
-            <div className="space-y-3">
-              {history.map((round) => (
-                <Card key={round.id} className="p-4 bg-card/80 border border-border/50">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-full bg-yellow-600/20 flex items-center justify-center">
-                        <Icon name="Trophy" size={24} className="text-yellow-400" />
-                      </div>
-                      <div>
-                        <p className="font-semibold text-yellow-400">{round.winner_username}</p>
-                        <p className="text-xs text-muted-foreground">
-                          Билет #{round.winner_ticket_number} • {formatDate(round.completed_at)}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-lg font-bold text-green-400">{PRIZE_AMOUNT} USDT</p>
-                      <p className="text-xs text-muted-foreground">{round.total_tickets} участников</p>
-                    </div>
-                  </div>
-                </Card>
-              ))}
-            </div>
-          )}
-        </Card>
-      )}
+      <LotteryParticipants
+        tickets={tickets}
+        maxTickets={MAX_TICKETS}
+        ticketPrice={TICKET_PRICE}
+        showHistory={showHistory}
+        history={history}
+        prizeAmount={PRIZE_AMOUNT}
+        onToggleHistory={handleToggleHistory}
+      />
 
       <Card className="p-6 bg-card/50">
         <h3 className="font-semibold mb-4 flex items-center gap-2">
