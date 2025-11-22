@@ -97,6 +97,30 @@ const Index = () => {
         }
       };
 
+      const checkBalanceUpdates = async () => {
+        try {
+          const response = await fetch(AUTH_URL, {
+            method: 'POST',
+            headers: { 
+              'Content-Type': 'application/json',
+              'X-User-Id': user.id.toString()
+            },
+            body: JSON.stringify({ action: 'get_balance' })
+          });
+          const data = await response.json();
+          if (data.success && data.balance !== undefined) {
+            const currentBalance = user.balance || 0;
+            if (data.balance !== currentBalance) {
+              const updatedUser = { ...user, balance: data.balance };
+              setUser(updatedUser);
+              localStorage.setItem('user', JSON.stringify(updatedUser));
+            }
+          }
+        } catch (error) {
+          console.error('Failed to check balance:', error);
+        }
+      };
+
       const checkPendingPayments = async () => {
         try {
           const response = await fetch(`${CRYPTO_URL}?action=check_pending`, {
@@ -134,15 +158,18 @@ const Index = () => {
 
       updateActivity();
       fetchUnreadCount();
+      checkBalanceUpdates();
       checkPendingPayments();
       
       const activityInterval = setInterval(updateActivity, 60 * 1000);
       const unreadInterval = setInterval(fetchUnreadCount, 30 * 1000);
+      const balanceInterval = setInterval(checkBalanceUpdates, 5 * 1000);
       const paymentsInterval = setInterval(checkPendingPayments, 30 * 1000);
       
       return () => {
         clearInterval(activityInterval);
         clearInterval(unreadInterval);
+        clearInterval(balanceInterval);
         clearInterval(paymentsInterval);
       };
     }

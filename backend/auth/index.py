@@ -183,6 +183,31 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 'isBase64Encoded': False
             }
         
+        elif action == 'get_balance':
+            headers = event.get('headers', {})
+            user_id = headers.get('X-User-Id') or headers.get('x-user-id')
+            
+            if not user_id:
+                return {
+                    'statusCode': 401,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'error': 'Требуется авторизация'}),
+                    'isBase64Encoded': False
+                }
+            
+            cur.execute("SELECT balance FROM users WHERE id = %s", (user_id,))
+            result = cur.fetchone()
+            
+            return {
+                'statusCode': 200,
+                'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                'body': json.dumps({
+                    'success': True,
+                    'balance': float(result['balance']) if result and result['balance'] else 0
+                }),
+                'isBase64Encoded': False
+            }
+        
         elif action == 'topup_balance':
             headers = event.get('headers', {})
             user_id = headers.get('X-User-Id') or headers.get('x-user-id')
