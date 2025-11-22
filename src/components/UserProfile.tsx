@@ -28,6 +28,8 @@ const UserProfile = ({ user, isOwnProfile, onClose, onTopUpBalance, onUpdateProf
   const [topUpAmount, setTopUpAmount] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [animatedBalance, setAnimatedBalance] = useState(user.balance || 0);
+  const [isBalanceChanging, setIsBalanceChanging] = useState(false);
   const [transactionsLoading, setTransactionsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('settings');
   const [showCryptoDialog, setShowCryptoDialog] = useState(false);
@@ -42,6 +44,29 @@ const UserProfile = ({ user, isOwnProfile, onClose, onTopUpBalance, onUpdateProf
       fetchTransactions();
     }
   }, [activeTab, isOwnProfile]);
+
+  useEffect(() => {
+    if (user.balance !== animatedBalance) {
+      setIsBalanceChanging(true);
+      const duration = 800;
+      const steps = 30;
+      const stepValue = (Number(user.balance) - Number(animatedBalance)) / steps;
+      let currentStep = 0;
+
+      const timer = setInterval(() => {
+        currentStep++;
+        if (currentStep >= steps) {
+          setAnimatedBalance(Number(user.balance));
+          clearInterval(timer);
+          setTimeout(() => setIsBalanceChanging(false), 300);
+        } else {
+          setAnimatedBalance(prev => Number(prev) + stepValue);
+        }
+      }, duration / steps);
+
+      return () => clearInterval(timer);
+    }
+  }, [user.balance]);
 
   const fetchTransactions = async () => {
     setTransactionsLoading(true);
@@ -278,7 +303,9 @@ const UserProfile = ({ user, isOwnProfile, onClose, onTopUpBalance, onUpdateProf
                     </div>
                     <div>
                       <p className="text-sm text-muted-foreground">Баланс</p>
-                      <p className="text-3xl font-bold">{Number(user.balance || 0).toFixed(2)} USDT</p>
+                      <p className={`text-3xl font-bold transition-all duration-300 ${isBalanceChanging ? 'scale-110 text-green-400' : 'scale-100'}`}>
+                        {Number(animatedBalance).toFixed(2)} USDT
+                      </p>
                     </div>
                   </div>
                   <Button 

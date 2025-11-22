@@ -3,6 +3,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import Icon from '@/components/ui/icon';
 import { User, SearchResult } from '@/types';
+import { useState, useEffect } from 'react';
 
 interface HeaderProps {
   sidebarOpen: boolean;
@@ -37,6 +38,31 @@ const Header = ({
   onShowNotifications,
   onShowProfile,
 }: HeaderProps) => {
+  const [animatedBalance, setAnimatedBalance] = useState(user?.balance || 0);
+  const [isBalanceChanging, setIsBalanceChanging] = useState(false);
+
+  useEffect(() => {
+    if (user && user.balance !== animatedBalance) {
+      setIsBalanceChanging(true);
+      const duration = 800;
+      const steps = 30;
+      const stepValue = (Number(user.balance) - Number(animatedBalance)) / steps;
+      let currentStep = 0;
+
+      const timer = setInterval(() => {
+        currentStep++;
+        if (currentStep >= steps) {
+          setAnimatedBalance(Number(user.balance));
+          clearInterval(timer);
+          setTimeout(() => setIsBalanceChanging(false), 300);
+        } else {
+          setAnimatedBalance(prev => Number(prev) + stepValue);
+        }
+      }, duration / steps);
+
+      return () => clearInterval(timer);
+    }
+  }, [user?.balance]);
   return (
     <header className="sticky top-0 z-20 bg-card border-b border-border backdrop-blur-sm bg-opacity-95">
       <div className="flex items-center justify-between px-6 py-4">
@@ -114,8 +140,8 @@ const Header = ({
                 >
                   <div className="text-right">
                     <p className="text-sm font-medium text-white">{user.username}</p>
-                    <p className="text-xs text-green-700">
-                      {Number(user.balance || 0).toFixed(2)} USDT
+                    <p className={`text-xs text-green-700 transition-all duration-300 ${isBalanceChanging ? 'scale-110 font-bold' : 'scale-100'}`}>
+                      {Number(animatedBalance).toFixed(2)} USDT
                     </p>
                   </div>
                   <Icon name="User" size={20} />
