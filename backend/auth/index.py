@@ -304,6 +304,45 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 'isBase64Encoded': False
             }
         
+        elif action == 'reset_password':
+            email = body_data.get('email', '').strip()
+            
+            if not email:
+                return {
+                    'statusCode': 400,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'error': 'Email обязателен'}),
+                    'isBase64Encoded': False
+                }
+            
+            cur.execute("SELECT id, username FROM users WHERE email = %s", (email,))
+            user = cur.fetchone()
+            
+            if not user:
+                return {
+                    'statusCode': 404,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'error': 'Пользователь с таким email не найден'}),
+                    'isBase64Encoded': False
+                }
+            
+            new_password = secrets.token_urlsafe(12)
+            password_hash = hash_password(new_password)
+            
+            cur.execute("UPDATE users SET password_hash = %s WHERE id = %s", (password_hash, user['id']))
+            conn.commit()
+            
+            return {
+                'statusCode': 200,
+                'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                'body': json.dumps({
+                    'success': True,
+                    'message': f'Новый пароль: {new_password}. Сохраните его в безопасном месте.',
+                    'new_password': new_password
+                }),
+                'isBase64Encoded': False
+            }
+        
         elif action == 'upload_avatar':
             headers = event.get('headers', {})
             user_id = headers.get('X-User-Id') or headers.get('x-user-id')

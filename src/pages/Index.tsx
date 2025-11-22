@@ -255,6 +255,31 @@ const Index = () => {
     setShowMessagesPanel(true);
   };
 
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <Dialogs
+          authDialogOpen={true}
+          authMode={authMode}
+          showTopicDialog={false}
+          showProfileDialog={false}
+          user={null}
+          newTopicTitle=""
+          newTopicContent=""
+          onAuthDialogChange={() => {}}
+          onAuthModeChange={setAuthMode}
+          onAuthSubmit={handleAuth}
+          onTopicDialogChange={() => {}}
+          onTopicTitleChange={() => {}}
+          onTopicContentChange={() => {}}
+          onCreateTopic={() => {}}
+          onProfileDialogChange={() => {}}
+          onUpdateProfile={() => {}}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background text-foreground flex" onClick={() => setShowSearchResults(false)}>
       {showAdminPanel && user?.role === 'admin' ? (

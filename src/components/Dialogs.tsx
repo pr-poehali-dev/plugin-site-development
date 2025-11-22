@@ -52,6 +52,8 @@ const Dialogs = ({
   const [avatarUploading, setAvatarUploading] = useState(false);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [showResetPassword, setShowResetPassword] = useState(false);
+  const [resetEmail, setResetEmail] = useState('');
 
   const handleAvatarSelect = () => {
     fileInputRef.current?.click();
@@ -132,6 +134,53 @@ const Dialogs = ({
       setAvatarPreview(null);
     }
   };
+
+  const handleResetPassword = async () => {
+    if (!resetEmail.trim()) {
+      toast({
+        title: 'Ошибка',
+        description: 'Введите email',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    try {
+      const response = await fetch(AUTH_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'reset_password',
+          email: resetEmail
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        toast({
+          title: 'Новый пароль создан',
+          description: data.message || `Новый пароль: ${data.new_password}`,
+          duration: 15000
+        });
+        setShowResetPassword(false);
+        setResetEmail('');
+      } else {
+        toast({
+          title: 'Ошибка',
+          description: data.error || 'Ошибка сброса пароля',
+          variant: 'destructive'
+        });
+      }
+    } catch (error) {
+      toast({
+        title: 'Ошибка',
+        description: 'Ошибка подключения к серверу',
+        variant: 'destructive'
+      });
+    }
+  };
+
   return (
     <>
       <Dialog open={authDialogOpen} onOpenChange={onAuthDialogChange}>
@@ -140,36 +189,81 @@ const Dialogs = ({
             <DialogTitle>{authMode === 'login' ? 'Вход' : 'Регистрация'}</DialogTitle>
           </DialogHeader>
 
-          <form onSubmit={onAuthSubmit} className="space-y-4">
-            <div>
-              <label className="text-sm font-medium mb-1 block">Имя пользователя</label>
-              <Input name="username" required />
-            </div>
-
-            {authMode === 'register' && (
+          {showResetPassword ? (
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">Введите email, указанный при регистрации. Мы отправим вам новый пароль.</p>
               <div>
                 <label className="text-sm font-medium mb-1 block">Email</label>
-                <Input name="email" type="email" required />
+                <Input 
+                  type="email" 
+                  value={resetEmail}
+                  onChange={(e) => setResetEmail(e.target.value)}
+                  placeholder="your@email.com"
+                  required 
+                />
               </div>
-            )}
-
-            <div>
-              <label className="text-sm font-medium mb-1 block">Пароль</label>
-              <Input name="password" type="password" required />
+              <div className="flex gap-2">
+                <Button 
+                  onClick={handleResetPassword}
+                  className="flex-1 bg-primary hover:bg-primary/90"
+                >
+                  Отправить новый пароль
+                </Button>
+                <Button 
+                  variant="outline"
+                  onClick={() => {
+                    setShowResetPassword(false);
+                    setResetEmail('');
+                  }}
+                >
+                  Отмена
+                </Button>
+              </div>
             </div>
+          ) : (
+            <form onSubmit={onAuthSubmit} className="space-y-4">
+              <div>
+                <label className="text-sm font-medium mb-1 block">Имя пользователя</label>
+                <Input name="username" required />
+              </div>
 
-            <Button type="submit" className="w-full bg-primary hover:bg-primary/90">
-              {authMode === 'login' ? 'Войти' : 'Зарегистрироваться'}
-            </Button>
+              {authMode === 'register' && (
+                <div>
+                  <label className="text-sm font-medium mb-1 block">Email</label>
+                  <Input name="email" type="email" required />
+                </div>
+              )}
 
-            <button
-              type="button"
-              onClick={() => onAuthModeChange(authMode === 'login' ? 'register' : 'login')}
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors w-full text-center"
-            >
-              {authMode === 'login' ? 'Нет аккаунта? Зарегистрироваться' : 'Уже есть аккаунт? Войти'}
-            </button>
-          </form>
+              <div>
+                <label className="text-sm font-medium mb-1 block">Пароль</label>
+                <Input name="password" type="password" required />
+              </div>
+
+              <Button type="submit" className="w-full bg-primary hover:bg-primary/90">
+                {authMode === 'login' ? 'Войти' : 'Зарегистрироваться'}
+              </Button>
+
+              <div className="space-y-2">
+                <button
+                  type="button"
+                  onClick={() => onAuthModeChange(authMode === 'login' ? 'register' : 'login')}
+                  className="text-sm text-muted-foreground hover:text-foreground transition-colors w-full text-center"
+                >
+                  {authMode === 'login' ? 'Нет аккаунта? Зарегистрироваться' : 'Уже есть аккаунт? Войти'}
+                </button>
+                
+                {authMode === 'login' && (
+                  <button
+                    type="button"
+                    onClick={() => setShowResetPassword(true)}
+                    className="text-sm text-muted-foreground hover:text-foreground transition-colors w-full text-center"
+                  >
+                    Забыли пароль?
+                  </button>
+                )}
+              </div>
+            </form>
+          )}
         </DialogContent>
       </Dialog>
 

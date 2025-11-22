@@ -5,8 +5,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
 import { WithdrawalView } from '@/components/WithdrawalView';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { useToast } from '@/hooks/use-toast';
+import { useState } from 'react';
+
+const AUTH_URL = 'https://functions.poehali.dev/2497448a-6aff-4df5-97ef-9181cf792f03';
 
 interface UserProfileTabsProps {
   user: User;
@@ -31,6 +36,52 @@ export const UserProfileTabs = ({
   showWithdrawalDialog,
   onCloseWithdrawalDialog
 }: UserProfileTabsProps) => {
+  const { toast } = useToast();
+  const [showPasswordReset, setShowPasswordReset] = useState(false);
+  const [resetLoading, setResetLoading] = useState(false);
+
+  const handleResetPassword = async () => {
+    setResetLoading(true);
+    try {
+      const response = await fetch(AUTH_URL, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'X-User-Id': user.id.toString()
+        },
+        body: JSON.stringify({
+          action: 'reset_password',
+          email: user.email
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        toast({
+          title: 'Новый пароль создан',
+          description: data.message || `Новый пароль: ${data.new_password}. Сохраните его!`,
+          duration: 15000
+        });
+        setShowPasswordReset(false);
+      } else {
+        toast({
+          title: 'Ошибка',
+          description: data.error || 'Ошибка сброса пароля',
+          variant: 'destructive'
+        });
+      }
+    } catch (error) {
+      toast({
+        title: 'Ошибка',
+        description: 'Ошибка подключения к серверу',
+        variant: 'destructive'
+      });
+    } finally {
+      setResetLoading(false);
+    }
+  };
+
   return (
     <>
       <Tabs value={activeTab} onValueChange={onTabChange} className="w-full">
@@ -157,6 +208,34 @@ export const UserProfileTabs = ({
                 </div>
               </div>
             </div>
+
+            <Card className="p-4 bg-orange-500/5 border-orange-500/20">
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex-1">
+                  <h4 className="font-semibold mb-1 flex items-center gap-2">
+                    <Icon name="Key" size={18} className="text-orange-400" />
+                    Сброс пароля
+                  </h4>
+                  <p className="text-sm text-muted-foreground">
+                    Новый пароль будет отправлен на email: {user.email}
+                  </p>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleResetPassword}
+                  disabled={resetLoading}
+                  className="flex-shrink-0"
+                >
+                  {resetLoading ? (
+                    <Icon name="Loader2" size={16} className="animate-spin mr-2" />
+                  ) : (
+                    <Icon name="RefreshCw" size={16} className="mr-2" />
+                  )}
+                  Сбросить пароль
+                </Button>
+              </div>
+            </Card>
           </>
         )}
       </TabsContent>
