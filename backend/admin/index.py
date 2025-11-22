@@ -257,6 +257,70 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'isBase64Encoded': False
                 }
             
+            elif action == 'add_balance':
+                username = body_data.get('username', '').strip()
+                amount = body_data.get('amount')
+                
+                if not username:
+                    return {
+                        'statusCode': 400,
+                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({'error': 'Никнейм обязателен'}),
+                        'isBase64Encoded': False
+                    }
+                
+                try:
+                    amount = float(amount)
+                    if amount <= 0:
+                        raise ValueError()
+                except (ValueError, TypeError):
+                    return {
+                        'statusCode': 400,
+                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({'error': 'Некорректная сумма'}),
+                        'isBase64Encoded': False
+                    }
+                
+                cur.execute("SELECT id, balance FROM users WHERE username = %s", (username,))
+                target_user = cur.fetchone()
+                
+                if not target_user:
+                    return {
+                        'statusCode': 404,
+                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({'error': f'Пользователь {username} не найден'}),
+                        'isBase64Encoded': False
+                    }
+                
+                target_user_id = target_user['id']
+                new_balance = float(target_user['balance'] or 0) + amount
+                
+                cur.execute(
+                    "UPDATE users SET balance = %s WHERE id = %s",
+                    (new_balance, target_user_id)
+                )
+                
+                cur.execute(
+                    """INSERT INTO transactions 
+                       (user_id, amount, description, transaction_type) 
+                       VALUES (%s, %s, %s, %s)""",
+                    (target_user_id, amount, f'Пополнение администратором (ID: {user_id})', 'admin_topup')
+                )
+                
+                log_admin_action(user_id, 'add_balance', 'user', target_user_id, f'Added {amount} USDT', cur)
+                conn.commit()
+                
+                return {
+                    'statusCode': 200,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({
+                        'success': True,
+                        'new_balance': new_balance,
+                        'username': username
+                    }),
+                    'isBase64Encoded': False
+                }
+            
             else:
                 return {
                     'statusCode': 400,

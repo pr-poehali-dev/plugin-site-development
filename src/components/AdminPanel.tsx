@@ -26,6 +26,10 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
   const [editingTopic, setEditingTopic] = useState<ForumTopic | null>(null);
   const [editTitle, setEditTitle] = useState('');
   const [editContent, setEditContent] = useState('');
+  const [showBalanceDialog, setShowBalanceDialog] = useState(false);
+  const [balanceUsername, setBalanceUsername] = useState('');
+  const [balanceAmount, setBalanceAmount] = useState('');
+  const [balanceLoading, setBalanceLoading] = useState(false);
 
   useEffect(() => {
     if (activeTab === 'users') {
@@ -152,6 +156,50 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
     }
   };
 
+  const handleAddBalance = async () => {
+    const amount = parseFloat(balanceAmount);
+    if (!balanceUsername.trim()) {
+      alert('Введите никнейм пользователя');
+      return;
+    }
+    if (isNaN(amount) || amount <= 0) {
+      alert('Введите корректную сумму');
+      return;
+    }
+
+    setBalanceLoading(true);
+    try {
+      const response = await fetch(ADMIN_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-User-Id': currentUser.id.toString()
+        },
+        body: JSON.stringify({
+          action: 'add_balance',
+          username: balanceUsername.trim(),
+          amount: amount
+        })
+      });
+      
+      const data = await response.json();
+      if (data.success) {
+        alert(`Баланс пользователя ${balanceUsername} пополнен на ${amount} USDT`);
+        setShowBalanceDialog(false);
+        setBalanceUsername('');
+        setBalanceAmount('');
+        fetchUsers();
+      } else {
+        alert(data.error || 'Ошибка пополнения баланса');
+      }
+    } catch (error) {
+      console.error('Ошибка пополнения баланса:', error);
+      alert('Ошибка пополнения баланса');
+    } finally {
+      setBalanceLoading(false);
+    }
+  };
+
   return (
     <div className="fixed inset-0 bg-background/95 z-50 overflow-auto animate-fade-in">
       <div className="container max-w-7xl mx-auto p-6 animate-slide-up">
@@ -165,27 +213,38 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
           </Button>
         </div>
 
-        <div className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-xl p-1 mb-6 inline-flex">
-          <button
-            onClick={() => setActiveTab('users')}
-            className={`px-6 py-2 rounded-lg transition-all ${
-              activeTab === 'users'
-                ? 'bg-primary text-primary-foreground'
-                : 'text-muted-foreground hover:text-foreground'
-            }`}
-          >
-            Пользователи
-          </button>
-          <button
-            onClick={() => setActiveTab('topics')}
-            className={`px-6 py-2 rounded-lg transition-all ${
-              activeTab === 'topics'
-                ? 'bg-primary text-primary-foreground'
-                : 'text-muted-foreground hover:text-foreground'
-            }`}
-          >
-            Темы форума
-          </button>
+        <div className="flex items-center justify-between mb-6">
+          <div className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-xl p-1 inline-flex">
+            <button
+              onClick={() => setActiveTab('users')}
+              className={`px-6 py-2 rounded-lg transition-all ${
+                activeTab === 'users'
+                  ? 'bg-primary text-primary-foreground'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              Пользователи
+            </button>
+            <button
+              onClick={() => setActiveTab('topics')}
+              className={`px-6 py-2 rounded-lg transition-all ${
+                activeTab === 'topics'
+                  ? 'bg-primary text-primary-foreground'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              Темы форума
+            </button>
+          </div>
+          {activeTab === 'users' && (
+            <Button
+              onClick={() => setShowBalanceDialog(true)}
+              className="bg-gradient-to-r from-green-800 to-green-900 hover:from-green-700 hover:to-green-800"
+            >
+              <Icon name="Plus" size={18} className="mr-2" />
+              Пополнить баланс
+            </Button>
+          )}
         </div>
 
 
@@ -352,6 +411,81 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
                 </Button>
                 <Button onClick={handleSaveEdit}>
                   Сохранить
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        <Dialog open={showBalanceDialog} onOpenChange={setShowBalanceDialog}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Пополнение баланса пользователя</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm font-medium mb-2 block">Никнейм пользователя</label>
+                <Input
+                  value={balanceUsername}
+                  onChange={(e) => setBalanceUsername(e.target.value)}
+                  placeholder="Введите никнейм"
+                  disabled={balanceLoading}
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium mb-2 block">Сумма (USDT)</label>
+                <Input
+                  type="number"
+                  value={balanceAmount}
+                  onChange={(e) => setBalanceAmount(e.target.value)}
+                  placeholder="Введите сумму"
+                  min="0.01"
+                  step="0.01"
+                  disabled={balanceLoading}
+                />
+              </div>
+              <div className="flex gap-2">
+                {[10, 50, 100, 500].map((amount) => (
+                  <Button
+                    key={amount}
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setBalanceAmount(amount.toString())}
+                    disabled={balanceLoading}
+                    className="flex-1"
+                  >
+                    {amount}
+                  </Button>
+                ))}
+              </div>
+              <div className="flex gap-3 justify-end pt-2">
+                <Button 
+                  variant="ghost" 
+                  onClick={() => {
+                    setShowBalanceDialog(false);
+                    setBalanceUsername('');
+                    setBalanceAmount('');
+                  }}
+                  disabled={balanceLoading}
+                >
+                  Отмена
+                </Button>
+                <Button 
+                  onClick={handleAddBalance}
+                  disabled={balanceLoading || !balanceUsername || !balanceAmount}
+                  className="bg-gradient-to-r from-green-800 to-green-900 hover:from-green-700 hover:to-green-800"
+                >
+                  {balanceLoading ? (
+                    <>
+                      <Icon name="Loader2" size={16} className="mr-2 animate-spin" />
+                      Обработка...
+                    </>
+                  ) : (
+                    <>
+                      <Icon name="Check" size={16} className="mr-2" />
+                      Пополнить
+                    </>
+                  )}
                 </Button>
               </div>
             </div>
