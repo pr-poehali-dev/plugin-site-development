@@ -82,6 +82,8 @@ const Index = () => {
   const [newTopicTitle, setNewTopicTitle] = useState('');
   const [newTopicContent, setNewTopicContent] = useState('');
   const [newComment, setNewComment] = useState('');
+  const [searchResults, setSearchResults] = useState<Array<{type: 'plugin' | 'topic' | 'category', id: number, title: string, description?: string}>>([]);
+  const [showSearchResults, setShowSearchResults] = useState(false);
 
   useEffect(() => {
     if (activeView === 'plugins') {
@@ -93,7 +95,16 @@ const Index = () => {
     if (savedUser) {
       setUser(JSON.parse(savedUser));
     }
-  }, [activeCategory, searchQuery, activeView]);
+  }, [activeCategory, activeView]);
+
+  useEffect(() => {
+    if (searchQuery.trim()) {
+      handleSearch();
+    } else {
+      setSearchResults([]);
+      setShowSearchResults(false);
+    }
+  }, [searchQuery]);
 
   const fetchPlugins = async () => {
     try {
@@ -259,8 +270,87 @@ const Index = () => {
     }
   };
 
+  const handleSearch = async () => {
+    const query = searchQuery.trim().toLowerCase();
+    if (!query) {
+      setSearchResults([]);
+      setShowSearchResults(false);
+      return;
+    }
+
+    const results: Array<{type: 'plugin' | 'topic' | 'category', id: number, title: string, description?: string}> = [];
+
+    plugins.forEach(plugin => {
+      if (plugin.title.toLowerCase().includes(query) || 
+          plugin.description.toLowerCase().includes(query) ||
+          plugin.tags.some(tag => tag.toLowerCase().includes(query))) {
+        results.push({
+          type: 'plugin',
+          id: plugin.id,
+          title: plugin.title,
+          description: plugin.description
+        });
+      }
+    });
+
+    categories.forEach(cat => {
+      if (cat.name.toLowerCase().includes(query)) {
+        results.push({
+          type: 'category',
+          id: cat.id,
+          title: cat.name,
+          description: `Категория: ${cat.name}`
+        });
+      }
+    });
+
+    forumTopics.forEach(topic => {
+      if (topic.title.toLowerCase().includes(query) || 
+          topic.content?.toLowerCase().includes(query)) {
+        results.push({
+          type: 'topic',
+          id: topic.id,
+          title: topic.title,
+          description: topic.content?.substring(0, 100)
+        });
+      }
+    });
+
+    setSearchResults(results.slice(0, 10));
+    setShowSearchResults(true);
+  };
+
+  const handleSearchResultClick = async (result: {type: 'plugin' | 'topic' | 'category', id: number, title: string}) => {
+    setShowSearchResults(false);
+    setSearchQuery('');
+    
+    if (result.type === 'plugin') {
+      setActiveView('plugins');
+      setActiveCategory('plugins');
+    } else if (result.type === 'category') {
+      const category = categories.find(c => c.id === result.id);
+      if (category) {
+        setActiveView('plugins');
+        setActiveCategory(category.slug);
+      }
+    } else if (result.type === 'topic') {
+      setActiveView('forum');
+      const topic = forumTopics.find(t => t.id === result.id);
+      if (topic) {
+        setSelectedTopic(topic);
+        try {
+          const response = await fetch(`${FORUM_URL}?topic_id=${topic.id}`);
+          const data = await response.json();
+          setTopicComments(data.comments || []);
+        } catch (error) {
+          console.error('Ошибка загрузки комментариев:', error);
+        }
+      }
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-background text-foreground flex">
+    <div className="min-h-screen bg-background text-foreground flex" onClick={() => setShowSearchResults(false)}>
       <aside className={`fixed top-0 left-0 h-full bg-sidebar border-r border-sidebar-border transition-all duration-300 z-30 ${sidebarOpen ? 'w-64' : 'w-0 -translate-x-full'}`}>
         <div className="p-4">
           <div className="flex items-center gap-3 mb-8">
@@ -343,14 +433,53 @@ const Index = () => {
                 <Icon name="Menu" size={20} />
               </Button>
 
-              <div className="relative max-w-md w-full">
-                <Icon name="Search" size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              <div className="relative max-w-md w-full" onClick={(e) => e.stopPropagation()}>
+                <Icon name="Search" size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground z-10" />
                 <Input
-                  placeholder="Поиск..."
+                  placeholder="Поиск по сайту..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
+                  onFocus={() => searchQuery && setShowSearchResults(true)}
                   className="pl-10 bg-secondary border-0"
                 />
+                {showSearchResults && searchResults.length > 0 && (
+                  <div className="absolute top-full left-0 right-0 mt-2 bg-card border border-border rounded-lg shadow-lg max-h-96 overflow-y-auto z-50">
+                    {searchResults.map((result, index) => (
+                      <button
+                        key={`${result.type}-${result.id}-${index}`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleSearchResultClick(result);
+                        }}
+                        className="w-full text-left px-4 py-3 hover:bg-sidebar-accent transition-colors border-b border-border last:border-0"
+                      >
+                        <div className="flex items-start gap-3">
+                          <div className="mt-1">
+                            {result.type === 'plugin' && <Icon name="Package" size={16} className="text-primary" />}
+                            {result.type === 'topic' && <Icon name="MessageSquare" size={16} className="text-accent" />}
+                            {result.type === 'category' && <Icon name="Grid3x3" size={16} className="text-muted-foreground" />}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <Badge variant="outline" className="text-xs capitalize">
+                                {result.type === 'plugin' ? 'Плагин' : result.type === 'topic' ? 'Тема' : 'Категория'}
+                              </Badge>
+                              <span className="font-medium text-sm truncate">{result.title}</span>
+                            </div>
+                            {result.description && (
+                              <p className="text-xs text-muted-foreground line-clamp-1">{result.description}</p>
+                            )}
+                          </div>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {showSearchResults && searchResults.length === 0 && searchQuery.trim() && (
+                  <div className="absolute top-full left-0 right-0 mt-2 bg-card border border-border rounded-lg shadow-lg p-4 z-50">
+                    <p className="text-sm text-muted-foreground text-center">Ничего не найдено</p>
+                  </div>
+                )}
               </div>
             </div>
 
