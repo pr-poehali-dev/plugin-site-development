@@ -5,6 +5,7 @@ import MainContent from '@/components/MainContent';
 import Dialogs from '@/components/Dialogs';
 import AdminPanel from '@/components/AdminPanel';
 import UserProfileDialog from '@/components/UserProfileDialog';
+import UserProfile from '@/components/UserProfile';
 import MessagesPanel from '@/components/MessagesPanel';
 import NotificationsPanel from '@/components/NotificationsPanel';
 import { Plugin, Category, User, ForumTopic, ForumComment, SearchResult } from '@/types';
@@ -265,6 +266,32 @@ const Index = () => {
     }
   };
 
+  const handleTopUpBalance = async (amount: number) => {
+    if (!user) return;
+    try {
+      const response = await fetch(AUTH_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-User-Id': user.id.toString()
+        },
+        body: JSON.stringify({
+          action: 'topup_balance',
+          amount: amount
+        })
+      });
+      const data = await response.json();
+      if (data.success) {
+        const updatedUser = { ...user, balance: data.new_balance };
+        setUser(updatedUser);
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+      }
+    } catch (error) {
+      console.error('Ошибка пополнения баланса:', error);
+      throw error;
+    }
+  };
+
   const handleSearch = async () => {
     const query = searchQuery.trim().toLowerCase();
     if (!query) {
@@ -410,6 +437,12 @@ const Index = () => {
           onLogout={handleLogout}
           notificationsUnread={notificationsUnread}
           onShowNotifications={() => setShowNotificationsPanel(true)}
+          onShowProfile={() => {
+            if (user) {
+              setSelectedUserId(user.id);
+              setShowUserProfile(true);
+            }
+          }}
         />
 
         <MainContent
@@ -450,13 +483,22 @@ const Index = () => {
         onUpdateProfile={handleUpdateProfile}
       />
 
-      <UserProfileDialog
-        open={showUserProfile}
-        onOpenChange={setShowUserProfile}
-        userId={selectedUserId}
-        currentUserId={user?.id}
-        onSendMessage={handleSendMessage}
-      />
+      {showUserProfile && selectedUserId && user && selectedUserId === user.id ? (
+        <UserProfile
+          user={user}
+          isOwnProfile={true}
+          onClose={() => setShowUserProfile(false)}
+          onTopUpBalance={handleTopUpBalance}
+        />
+      ) : (
+        <UserProfileDialog
+          open={showUserProfile}
+          onOpenChange={setShowUserProfile}
+          userId={selectedUserId}
+          currentUserId={user?.id}
+          onSendMessage={handleSendMessage}
+        />
+      )}
 
       {user && (
         <>

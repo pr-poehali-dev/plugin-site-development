@@ -31,6 +31,7 @@ export interface User {
   role?: string;
   forum_role?: string;
   is_blocked?: boolean;
+  balance?: number;
 }
 
 export interface ForumTopic {

@@ -124,7 +124,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             password_hash = hash_password(password)
             
             cur.execute(
-                "SELECT id, username, email, avatar_url, role, forum_role, is_blocked, created_at FROM users WHERE username = %s AND password_hash = %s",
+                "SELECT id, username, email, avatar_url, role, forum_role, is_blocked, balance, created_at FROM users WHERE username = %s AND password_hash = %s",
                 (username, password_hash)
             )
             user = cur.fetchone()
@@ -180,6 +180,45 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 'statusCode': 200,
                 'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
                 'body': json.dumps({'success': True}),
+                'isBase64Encoded': False
+            }
+        
+        elif action == 'topup_balance':
+            headers = event.get('headers', {})
+            user_id = headers.get('X-User-Id') or headers.get('x-user-id')
+            
+            if not user_id:
+                return {
+                    'statusCode': 401,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'error': 'Требуется авторизация'}),
+                    'isBase64Encoded': False
+                }
+            
+            amount = body_data.get('amount')
+            
+            if not amount or float(amount) <= 0:
+                return {
+                    'statusCode': 400,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'error': 'Некорректная сумма'}),
+                    'isBase64Encoded': False
+                }
+            
+            cur.execute(
+                "UPDATE users SET balance = COALESCE(balance, 0) + %s WHERE id = %s RETURNING balance",
+                (float(amount), int(user_id))
+            )
+            result = cur.fetchone()
+            conn.commit()
+            
+            return {
+                'statusCode': 200,
+                'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                'body': json.dumps({
+                    'success': True,
+                    'new_balance': float(result['balance']) if result else 0
+                }),
                 'isBase64Encoded': False
             }
         

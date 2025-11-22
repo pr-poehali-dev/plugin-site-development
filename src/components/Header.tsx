@@ -18,6 +18,7 @@ interface HeaderProps {
   onAuthDialogOpen: (mode: 'login' | 'register') => void;
   onLogout: () => void;
   onShowNotifications?: () => void;
+  onShowProfile?: () => void;
 }
 
 const Header = ({
@@ -34,6 +35,7 @@ const Header = ({
   onAuthDialogOpen,
   onLogout,
   onShowNotifications,
+  onShowProfile,
 }: HeaderProps) => {
   return (
     <header className="sticky top-0 z-20 bg-card border-b border-border backdrop-blur-sm bg-opacity-95">
@@ -105,10 +107,19 @@ const Header = ({
                 )}
               </Button>
               <div className="flex items-center gap-3">
-                <div className="text-right">
-                  <p className="text-sm font-medium">{user.username}</p>
-                  <p className="text-xs text-muted-foreground">{user.email}</p>
-                </div>
+                <Button 
+                  variant="ghost" 
+                  className="text-left flex items-center gap-3"
+                  onClick={onShowProfile}
+                >
+                  <div className="text-right">
+                    <p className="text-sm font-medium">{user.username}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {(user.balance || 0).toFixed(2)} ₽
+                    </p>
+                  </div>
+                  <Icon name="User" size={20} />
+                </Button>
                 <Button variant="outline" size="sm" onClick={onLogout}>
                   Выход
                 </Button>
