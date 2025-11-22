@@ -1,13 +1,10 @@
 import { useState } from 'react';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import Icon from '@/components/ui/icon';
 import { User } from '@/types';
 import { useToast } from '@/hooks/use-toast';
+import { FlashUsdtHeader } from './FlashUsdt/FlashUsdtHeader';
+import { FlashUsdtInfo } from './FlashUsdt/FlashUsdtInfo';
+import { FlashUsdtPackages, type Package } from './FlashUsdt/FlashUsdtPackages';
+import { FlashUsdtPurchaseDialog } from './FlashUsdt/FlashUsdtPurchaseDialog';
 
 interface FlashUsdtShopProps {
   user: User | null;
@@ -17,33 +14,12 @@ interface FlashUsdtShopProps {
 
 const FlashUsdtShop = ({ user, onShowAuthDialog, onRefreshUserBalance }: FlashUsdtShopProps) => {
   const { toast } = useToast();
-  const [selectedPackage, setSelectedPackage] = useState<typeof packages[0] | null>(null);
+  const [selectedPackage, setSelectedPackage] = useState<Package | null>(null);
   const [showPurchaseDialog, setShowPurchaseDialog] = useState(false);
   const [walletAddress, setWalletAddress] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const handleTestPurchase = () => {
-    if (!user) {
-      onShowAuthDialog();
-      return;
-    }
-
-    const testPackage = {
-      id: 0,
-      amount: 10,
-      price: 100,
-      discount: '99%',
-      color: 'from-blue-600 to-blue-800',
-      borderColor: 'border-blue-500/30',
-      icon: 'TestTube',
-      popular: false
-    };
-
-    setSelectedPackage(testPackage);
-    setShowPurchaseDialog(true);
-  };
-
-  const packages = [
+  const packages: Package[] = [
     {
       id: 1,
       amount: 100000,
@@ -86,7 +62,28 @@ const FlashUsdtShop = ({ user, onShowAuthDialog, onRefreshUserBalance }: FlashUs
     }
   ];
 
-  const handlePurchase = (pkg: typeof packages[0]) => {
+  const handleTestPurchase = () => {
+    if (!user) {
+      onShowAuthDialog();
+      return;
+    }
+
+    const testPackage: Package = {
+      id: 0,
+      amount: 10,
+      price: 100,
+      discount: '99%',
+      color: 'from-blue-600 to-blue-800',
+      borderColor: 'border-blue-500/30',
+      icon: 'TestTube',
+      popular: false
+    };
+
+    setSelectedPackage(testPackage);
+    setShowPurchaseDialog(true);
+  };
+
+  const handlePurchase = (pkg: Package) => {
     if (!user) {
       onShowAuthDialog();
       return;
@@ -186,414 +183,25 @@ const FlashUsdtShop = ({ user, onShowAuthDialog, onRefreshUserBalance }: FlashUs
 
   return (
     <div className="max-w-7xl mx-auto space-y-6 animate-fade-in">
-      <div className="relative overflow-hidden bg-gradient-to-br from-yellow-800/20 via-yellow-900/10 to-background border border-yellow-800/30 rounded-2xl p-8 md:p-12">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-yellow-500/5 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-0 left-0 w-64 h-64 bg-yellow-600/5 rounded-full blur-3xl"></div>
-        
-        <div className="relative z-10">
-          <Badge className="mb-4 bg-yellow-500/20 text-yellow-400 border-yellow-500/30">
-            <Icon name="Zap" size={16} className="mr-1" />
-            Специальное предложение
-          </Badge>
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
-            <div>
-              <h1 className="text-4xl md:text-5xl font-bold mb-2 bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent">
-                Flash USDT Token
-              </h1>
-              <p className="text-xl text-muted-foreground">
-                Временный токен TRC20 со скидкой 80% от номинала
-              </p>
-            </div>
-            <Button
-              onClick={handleTestPurchase}
-              className="bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900 text-white shadow-lg shadow-blue-500/30 whitespace-nowrap"
-              size="lg"
-            >
-              <Icon name="CircleDollarSign" size={20} className="mr-2" />
-              Купить тестовую сумму (100 USDT)
-            </Button>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Card className="p-6 bg-card/50 backdrop-blur border-yellow-500/20">
-              <div className="flex items-center gap-3 mb-2">
-                <Icon name="Percent" size={24} className="text-yellow-400" />
-                <h3 className="text-lg font-semibold">Цена</h3>
-              </div>
-              <p className="text-3xl font-bold text-yellow-400">20%</p>
-              <p className="text-sm text-muted-foreground mt-1">от номинальной стоимости</p>
-            </Card>
-            
-            <Card className="p-6 bg-card/50 backdrop-blur border-yellow-500/20">
-              <div className="flex items-center gap-3 mb-2">
-                <Icon name="ShoppingCart" size={24} className="text-yellow-400" />
-                <h3 className="text-lg font-semibold">Минимум</h3>
-              </div>
-              <p className="text-3xl font-bold text-yellow-400">100,000</p>
-              <p className="text-sm text-muted-foreground mt-1">Flash USDT к покупке</p>
-            </Card>
-            
-            <Card className="p-6 bg-card/50 backdrop-blur border-yellow-500/20">
-              <div className="flex items-center gap-3 mb-2">
-                <Icon name="Clock" size={24} className="text-yellow-400" />
-                <h3 className="text-lg font-semibold">Срок жизни</h3>
-              </div>
-              <p className="text-3xl font-bold text-yellow-400">120 дней</p>
-              <p className="text-sm text-muted-foreground mt-1">после покупки</p>
-            </Card>
-          </div>
-        </div>
-      </div>
+      <FlashUsdtHeader onTestPurchase={handleTestPurchase} />
+      
+      <FlashUsdtInfo />
 
-      <Card className="p-8 border-yellow-500/20 bg-yellow-500/5">
-        <div className="flex items-center gap-3 mb-6">
-          <Icon name="Info" size={28} className="text-yellow-400" />
-          <h2 className="text-2xl font-bold">Что такое Flash USDT?</h2>
-        </div>
-        
-        <div className="space-y-4 text-muted-foreground leading-relaxed">
-          <p>
-            <strong className="text-foreground">Flash USDT</strong> — это временный токен стандарта TRC20, полностью совместимый с экосистемой TRON. 
-            Токен имеет ограниченный срок действия и автоматически исчезает через 120 дней после активации.
-          </p>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-            <div>
-              <h3 className="font-semibold mb-3 flex items-center gap-2 text-foreground">
-                <Icon name="CheckCircle2" size={20} className="text-green-400" />
-                Преимущества
-              </h3>
-              <ul className="space-y-2 text-sm">
-                <li className="flex items-start gap-2">
-                  <Icon name="Zap" size={16} className="text-yellow-400 mt-0.5 flex-shrink-0" />
-                  <span><strong>Мгновенная активация:</strong> Заходит на кошелек без добавления контракта</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <Icon name="Wallet" size={16} className="text-yellow-400 mt-0.5 flex-shrink-0" />
-                  <span><strong>Универсальность:</strong> Работает с биржами, DEX и TRC20 кошельками</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <Icon name="DollarSign" size={16} className="text-yellow-400 mt-0.5 flex-shrink-0" />
-                  <span><strong>Выгодная цена:</strong> Всего 20% от номинальной стоимости USDT</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <Icon name="Rocket" size={16} className="text-yellow-400 mt-0.5 flex-shrink-0" />
-                  <span><strong>Быстрые транзакции:</strong> Скорость сети TRON (~3 секунды)</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <Icon name="Coins" size={16} className="text-yellow-400 mt-0.5 flex-shrink-0" />
-                  <span><strong>Низкие комиссии:</strong> Минимальные gas fees в сети TRON</span>
-                </li>
-              </ul>
-            </div>
-            
-            <div>
-              <h3 className="font-semibold mb-3 flex items-center gap-2 text-foreground">
-                <Icon name="AlertCircle" size={20} className="text-orange-400" />
-                Важно знать
-              </h3>
-              <ul className="space-y-2 text-sm">
-                <li className="flex items-start gap-2">
-                  <Icon name="Clock" size={16} className="text-orange-400 mt-0.5 flex-shrink-0" />
-                  <span><strong>Срок действия:</strong> Токен автоматически исчезает через 120 дней</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <Icon name="Shield" size={16} className="text-orange-400 mt-0.5 flex-shrink-0" />
-                  <span><strong>Использование:</strong> Подходит для краткосрочных операций и тестирования</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <Icon name="TrendingUp" size={16} className="text-orange-400 mt-0.5 flex-shrink-0" />
-                  <span><strong>Торговля:</strong> Принимается на DEX и централизованных биржах</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <Icon name="FileText" size={16} className="text-orange-400 mt-0.5 flex-shrink-0" />
-                  <span><strong>Стандарт:</strong> Полная совместимость с TRC20 протоколом</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <Icon name="Ban" size={16} className="text-orange-400 mt-0.5 flex-shrink-0" />
-                  <span><strong>Автоуничтожение:</strong> Невозможно продлить срок действия токена</span>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </Card>
+      <FlashUsdtPackages 
+        packages={packages}
+        onPurchase={handlePurchase}
+        selectedPackageId={selectedPackage?.id}
+      />
 
-      <div>
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h2 className="text-2xl font-bold mb-2">Доступные пакеты</h2>
-            <p className="text-muted-foreground">Выберите количество Flash USDT для покупки</p>
-          </div>
-          <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30 text-lg px-4 py-2">
-            Скидка 80%
-          </Badge>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {packages.map((pkg) => (
-            <Card 
-              key={pkg.id}
-              className={`relative overflow-hidden transition-all duration-300 hover:scale-105 ${
-                pkg.popular ? 'ring-2 ring-yellow-500/50' : ''
-              } ${selectedPackage === pkg.id ? 'ring-2 ring-green-500/50' : ''} ${pkg.borderColor}`}
-            >
-              {pkg.popular && (
-                <div className="absolute top-0 right-0">
-                  <Badge className="bg-yellow-500 text-black rounded-tl-none rounded-br-none">
-                    <Icon name="Star" size={14} className="mr-1" />
-                    Популярный
-                  </Badge>
-                </div>
-              )}
-
-              <div className={`bg-gradient-to-br ${pkg.color} p-6 text-white`}>
-                <Icon name={pkg.icon as any} size={48} className="mb-4 opacity-80" />
-                <h3 className="text-3xl font-bold mb-2">
-                  {pkg.amount.toLocaleString('ru-RU')}
-                </h3>
-                <p className="text-sm opacity-80">Flash USDT</p>
-              </div>
-
-              <div className="p-6 space-y-4">
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Номинал:</span>
-                    <span className="font-semibold line-through text-muted-foreground">
-                      ${pkg.amount.toLocaleString('ru-RU')}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Скидка:</span>
-                    <Badge variant="destructive">{pkg.discount}</Badge>
-                  </div>
-                  <div className="flex items-center justify-between pt-2 border-t">
-                    <span className="font-semibold">Ваша цена:</span>
-                    <span className="text-2xl font-bold text-green-400">
-                      ${pkg.price.toLocaleString('ru-RU')}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="space-y-2 text-xs text-muted-foreground">
-                  <div className="flex items-center gap-2">
-                    <Icon name="Check" size={14} className="text-green-400" />
-                    <span>Мгновенная активация</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Icon name="Check" size={14} className="text-green-400" />
-                    <span>120 дней использования</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Icon name="Check" size={14} className="text-green-400" />
-                    <span>Поддержка бирж и DEX</span>
-                  </div>
-                </div>
-
-                <Button
-                  onClick={() => handlePurchase(pkg)}
-                  className={`w-full bg-gradient-to-r ${pkg.color} hover:opacity-90`}
-                >
-                  <Icon name="ShoppingCart" size={16} className="mr-2" />
-                  Купить
-                </Button>
-              </div>
-            </Card>
-          ))}
-        </div>
-      </div>
-
-      <Dialog open={showPurchaseDialog} onOpenChange={handleCloseDialog}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Icon name="ShoppingCart" size={24} className="text-yellow-400" />
-              Покупка Flash USDT
-            </DialogTitle>
-            <DialogDescription>
-              Заполните данные для получения токенов
-            </DialogDescription>
-          </DialogHeader>
-
-          {selectedPackage && (
-            <div className="space-y-6">
-              <Card className={`p-4 ${selectedPackage.id === 0 ? 'bg-blue-500/5 border-blue-500/20' : 'bg-yellow-500/5 border-yellow-500/20'}`}>
-                <div className="space-y-2">
-                  {selectedPackage.id === 0 && (
-                    <div className="mb-3 p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Icon name="TestTube" size={20} className="text-blue-400" />
-                        <span className="font-bold text-blue-400">Тестовая покупка</span>
-                      </div>
-                      <p className="text-sm text-muted-foreground">
-                        Получите пробную сумму 10 Flash USDT для проверки качества токена
-                      </p>
-                    </div>
-                  )}
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Количество:</span>
-                    <span className="font-bold text-lg">{selectedPackage.amount.toLocaleString('ru-RU')} Flash USDT</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Стоимость:</span>
-                    <span className="font-bold text-xl text-green-400">${selectedPackage.price.toLocaleString('ru-RU')}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Срок действия:</span>
-                    <Badge className="bg-yellow-500/20 text-yellow-400">120 дней</Badge>
-                  </div>
-                </div>
-              </Card>
-
-              <div className="space-y-2">
-                <Label htmlFor="wallet" className="flex items-center gap-2">
-                  <Icon name="Wallet" size={16} />
-                  Адрес кошелька TRC20
-                </Label>
-                <Input
-                  id="wallet"
-                  placeholder="TXm...abc (34 символа)"
-                  value={walletAddress}
-                  onChange={(e) => setWalletAddress(e.target.value)}
-                  className="font-mono"
-                  maxLength={34}
-                />
-                <p className="text-xs text-muted-foreground flex items-start gap-1">
-                  <Icon name="Info" size={12} className="mt-0.5 flex-shrink-0" />
-                  <span>Укажите адрес TRC20 кошелька для получения Flash USDT токенов</span>
-                </p>
-              </div>
-
-              <Card className="p-4 bg-orange-500/5 border-orange-500/20">
-                <div className="flex items-start gap-2">
-                  <Icon name="AlertCircle" size={16} className="text-orange-400 mt-0.5 flex-shrink-0" />
-                  <div className="space-y-1 text-xs text-muted-foreground">
-                    <p className="font-semibold text-foreground">Важно:</p>
-                    <ul className="space-y-1">
-                      <li>• Проверьте правильность адреса перед оплатой</li>
-                      <li>• Токены придут в течение 1-3 минут в зависимости от загруженности сети TRON</li>
-                      <li>• Срок действия начнется с момента получения</li>
-                    </ul>
-                  </div>
-                </div>
-              </Card>
-
-              <div className="flex gap-3">
-                <Button
-                  onClick={handleCloseDialog}
-                  variant="outline"
-                  className="flex-1"
-                  disabled={isProcessing}
-                >
-                  Отмена
-                </Button>
-                <Button
-                  onClick={handleConfirmPurchase}
-                  className="flex-1 bg-gradient-to-r from-green-600 to-green-800 hover:opacity-90"
-                  disabled={isProcessing}
-                >
-                  {isProcessing ? (
-                    <>
-                      <Icon name="Loader2" size={16} className="mr-2 animate-spin" />
-                      Обработка...
-                    </>
-                  ) : (
-                    <>
-                      <Icon name="CreditCard" size={16} className="mr-2" />
-                      Оплатить ${selectedPackage.price.toLocaleString('ru-RU')}
-                    </>
-                  )}
-                </Button>
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
-
-      <Card className="p-8 border-red-500/20 bg-red-500/5">
-        <div className="flex items-center gap-3 mb-6">
-          <Icon name="AlertTriangle" size={28} className="text-red-400" />
-          <h2 className="text-2xl font-bold">Предупреждение</h2>
-        </div>
-        
-        <div className="space-y-4 text-muted-foreground">
-          <p>
-            <strong className="text-foreground">Flash USDT — это временный токен.</strong> Перед покупкой убедитесь, что вы понимаете все условия:
-          </p>
-          
-          <ul className="space-y-2 text-sm">
-            <li className="flex items-start gap-2">
-              <Icon name="AlertCircle" size={16} className="text-red-400 mt-0.5 flex-shrink-0" />
-              <span>Токен автоматически исчезает через 120 дней после активации</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <Icon name="AlertCircle" size={16} className="text-red-400 mt-0.5 flex-shrink-0" />
-              <span>Невозможно конвертировать Flash USDT обратно в обычный USDT после покупки</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <Icon name="AlertCircle" size={16} className="text-red-400 mt-0.5 flex-shrink-0" />
-              <span>Используйте токен только для краткосрочных операций и тестирования</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <Icon name="AlertCircle" size={16} className="text-red-400 mt-0.5 flex-shrink-0" />
-              <span>Администрация не несет ответственности за убытки, связанные с истечением срока действия токена</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <Icon name="AlertCircle" size={16} className="text-red-400 mt-0.5 flex-shrink-0" />
-              <span>Минимальная сумма покупки: 100,000 Flash USDT (20,000 USDT)</span>
-            </li>
-          </ul>
-        </div>
-      </Card>
-
-      <Card className="p-8 border-green-500/20 bg-green-500/5">
-        <div className="flex items-center gap-3 mb-6">
-          <Icon name="HelpCircle" size={28} className="text-green-400" />
-          <h2 className="text-2xl font-bold">Частые вопросы</h2>
-        </div>
-        
-        <div className="space-y-4">
-          <div>
-            <h3 className="font-semibold mb-2 flex items-center gap-2">
-              <Icon name="CircleDot" size={16} className="text-green-400" />
-              Как активировать Flash USDT?
-            </h3>
-            <p className="text-sm text-muted-foreground ml-6">
-              После покупки токены автоматически появятся на вашем TRC20 кошельке. Добавление контракта не требуется.
-            </p>
-          </div>
-
-          <div>
-            <h3 className="font-semibold mb-2 flex items-center gap-2">
-              <Icon name="CircleDot" size={16} className="text-green-400" />
-              На каких биржах принимается Flash USDT?
-            </h3>
-            <p className="text-sm text-muted-foreground ml-6">
-              Токен совместим с любыми TRC20-кошельками, DEX-платформами и централизованными биржами, поддерживающими TRON.
-            </p>
-          </div>
-
-          <div>
-            <h3 className="font-semibold mb-2 flex items-center gap-2">
-              <Icon name="CircleDot" size={16} className="text-green-400" />
-              Что происходит через 120 дней?
-            </h3>
-            <p className="text-sm text-muted-foreground ml-6">
-              Токены автоматически уничтожаются и исчезают с вашего кошелька. Продление срока действия невозможно.
-            </p>
-          </div>
-
-          <div>
-            <h3 className="font-semibold mb-2 flex items-center gap-2">
-              <Icon name="CircleDot" size={16} className="text-green-400" />
-              Для чего используется Flash USDT?
-            </h3>
-            <p className="text-sm text-muted-foreground ml-6">
-              Идеально подходит для краткосрочной торговли, арбитража, тестирования DeFi-протоколов и временных операций.
-            </p>
-          </div>
-        </div>
-      </Card>
+      <FlashUsdtPurchaseDialog
+        open={showPurchaseDialog}
+        selectedPackage={selectedPackage}
+        walletAddress={walletAddress}
+        isProcessing={isProcessing}
+        onOpenChange={handleCloseDialog}
+        onWalletAddressChange={setWalletAddress}
+        onConfirmPurchase={handleConfirmPurchase}
+      />
     </div>
   );
 };
