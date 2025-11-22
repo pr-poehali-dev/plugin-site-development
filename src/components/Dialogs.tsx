@@ -4,6 +4,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Textarea } from '@/components/ui/textarea';
 import Icon from '@/components/ui/icon';
 import { User } from '@/types';
+import { useState, useRef } from 'react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 interface DialogsProps {
   authDialogOpen: boolean;
@@ -24,6 +26,8 @@ interface DialogsProps {
   onUpdateProfile: (profileData: Partial<User>) => void;
 }
 
+const AUTH_URL = 'https://functions.poehali.dev/2497448a-6aff-4df5-97ef-9181cf792f03';
+
 const Dialogs = ({
   authDialogOpen,
   authMode,
@@ -42,6 +46,70 @@ const Dialogs = ({
   onProfileDialogChange,
   onUpdateProfile,
 }: DialogsProps) => {
+  const [avatarUploading, setAvatarUploading] = useState(false);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleAvatarSelect = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+
+    if (!file.type.startsWith('image/')) {
+      alert('Выберите изображение');
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Размер файла не должен превышать 5 МБ');
+      return;
+    }
+
+    setAvatarUploading(true);
+
+    try {
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        const base64 = reader.result as string;
+        setAvatarPreview(base64);
+
+        const response = await fetch(AUTH_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-User-Id': user.id.toString()
+          },
+          body: JSON.stringify({
+            action: 'upload_avatar',
+            image: base64
+          })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          onUpdateProfile({ avatar_url: data.avatar_url });
+          const updatedUser = { ...user, avatar_url: data.avatar_url };
+          localStorage.setItem('user', JSON.stringify(updatedUser));
+          alert('Аватар обновлен!');
+        } else {
+          alert(data.error || 'Ошибка загрузки');
+          setAvatarPreview(null);
+        }
+
+        setAvatarUploading(false);
+      };
+      reader.readAsDataURL(file);
+    } catch (error) {
+      console.error('Ошибка загрузки аватара:', error);
+      alert('Ошибка загрузки');
+      setAvatarUploading(false);
+      setAvatarPreview(null);
+    }
+  };
   return (
     <>
       <Dialog open={authDialogOpen} onOpenChange={onAuthDialogChange}>
@@ -120,13 +188,43 @@ const Dialogs = ({
           </DialogHeader>
           {user && (
             <div className="space-y-6">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                className="hidden"
+              />
+              
               <div className="flex items-center gap-4">
-                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-2xl font-bold">
-                  {user.username[0].toUpperCase()}
+                <div className="relative group cursor-pointer" onClick={handleAvatarSelect}>
+                  <Avatar className="w-20 h-20">
+                    <AvatarImage src={avatarPreview || user.avatar_url} />
+                    <AvatarFallback className="bg-gradient-to-br from-purple-500 to-pink-500 text-white text-2xl">
+                      {user.username[0].toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="absolute inset-0 rounded-full bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    {avatarUploading ? (
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
+                    ) : (
+                      <Icon name="Camera" size={24} className="text-white" />
+                    )}
+                  </div>
                 </div>
-                <div>
+                <div className="flex-1">
                   <h3 className="text-xl font-bold">{user.username}</h3>
-                  <p className="text-sm text-muted-foreground">{user.email}</p>
+                  <p className="text-sm text-muted-foreground mb-2">{user.email}</p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-2"
+                    onClick={handleAvatarSelect}
+                    disabled={avatarUploading}
+                  >
+                    <Icon name="Upload" size={16} />
+                    {avatarUploading ? 'Загрузка...' : 'Загрузить фото'}
+                  </Button>
                 </div>
               </div>
               
@@ -178,17 +276,7 @@ const Dialogs = ({
                     />
                   </div>
                   
-                  <div>
-                    <label className="text-sm font-medium mb-1 block flex items-center gap-2">
-                      <Icon name="Image" size={16} />
-                      URL аватарки
-                    </label>
-                    <Input 
-                      defaultValue={user.avatar_url || ''}
-                      onBlur={(e) => onUpdateProfile({ avatar_url: e.target.value })}
-                      placeholder="https://..."
-                    />
-                  </div>
+
                 </div>
               </div>
             </div>

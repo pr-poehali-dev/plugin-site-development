@@ -4,6 +4,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import Icon from '@/components/ui/icon';
 import ForumRoleBadge from '@/components/ForumRoleBadge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Plugin, Category, ForumTopic, ForumComment, User } from '@/types';
 
 interface MainContentProps {
@@ -156,12 +157,15 @@ const MainContent = ({
             </Button>
             <div className="bg-card border border-border rounded-xl p-6">
               <div className="flex items-start gap-4 mb-6">
-                <div 
-                  className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-lg font-bold cursor-pointer hover:scale-110 transition-transform"
+                <Avatar 
+                  className="w-12 h-12 cursor-pointer hover:scale-110 transition-transform"
                   onClick={() => selectedTopic.author_id && onUserClick(selectedTopic.author_id)}
                 >
-                  {selectedTopic.author_name[0].toUpperCase()}
-                </div>
+                  <AvatarImage src={selectedTopic.author_avatar} />
+                  <AvatarFallback className="bg-gradient-to-br from-purple-500 to-pink-500 text-white text-lg font-bold">
+                    {selectedTopic.author_name[0].toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
                 <div className="flex-1">
                   <h1 className="text-2xl font-bold mb-2">{selectedTopic.title}</h1>
                   <div className="flex items-center gap-3 text-sm text-muted-foreground flex-wrap">
@@ -204,12 +208,15 @@ const MainContent = ({
             {topicComments.map((comment) => (
               <div key={comment.id} className="bg-card border border-border rounded-xl p-4">
                 <div className="flex items-start gap-3">
-                  <div 
-                    className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center text-sm font-bold cursor-pointer hover:scale-110 transition-transform"
+                  <Avatar 
+                    className="w-10 h-10 cursor-pointer hover:scale-110 transition-transform"
                     onClick={() => onUserClick(comment.author_id)}
                   >
-                    {comment.author_name[0].toUpperCase()}
-                  </div>
+                    <AvatarImage src={comment.author_avatar} />
+                    <AvatarFallback className="bg-gradient-to-br from-cyan-500 to-blue-500 text-white text-sm font-bold">
+                      {comment.author_name[0].toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2 flex-wrap">
                       <button onClick={() => onUserClick(comment.author_id)} className="font-semibold hover:text-primary transition-colors">{comment.author_name}</button>
@@ -260,15 +267,18 @@ const MainContent = ({
               >
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-start gap-3 flex-1" onClick={() => onTopicSelect(topic)}>
-                    <div 
-                      className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-sm font-bold hover:scale-110 transition-transform"
+                    <Avatar 
+                      className="w-10 h-10 hover:scale-110 transition-transform"
                       onClick={(e) => {
                         e.stopPropagation();
                         topic.author_id && onUserClick(topic.author_id);
                       }}
                     >
-                      {topic.author_name[0].toUpperCase()}
-                    </div>
+                      <AvatarImage src={topic.author_avatar} />
+                      <AvatarFallback className="bg-gradient-to-br from-purple-500 to-pink-500 text-white text-sm font-bold">
+                        {topic.author_name[0].toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
                         {topic.is_pinned && (

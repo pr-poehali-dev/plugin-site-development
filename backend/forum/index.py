@@ -92,7 +92,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 query = """
                     SELECT 
                         ft.id, ft.title, ft.views, ft.is_pinned, ft.created_at,
-                        u.id as author_id, u.username as author_name, u.forum_role as author_forum_role,
+                        u.id as author_id, u.username as author_name, u.avatar_url as author_avatar, u.forum_role as author_forum_role,
                         COUNT(fc.id) as comments_count
                     FROM forum_topics ft
                     LEFT JOIN users u ON ft.author_id = u.id
@@ -105,7 +105,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     query += " AND ft.plugin_id = %s"
                     query_params.append(plugin_id)
                 
-                query += " GROUP BY ft.id, u.id, u.username, u.forum_role ORDER BY ft.is_pinned DESC, ft.created_at DESC LIMIT 50"
+                query += " GROUP BY ft.id, u.id, u.username, u.avatar_url, u.forum_role ORDER BY ft.is_pinned DESC, ft.created_at DESC LIMIT 50"
                 
                 cur.execute(query, query_params)
                 topics = cur.fetchall()

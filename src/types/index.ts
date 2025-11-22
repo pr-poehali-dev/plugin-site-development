@@ -42,6 +42,7 @@ export interface ForumTopic {
   created_at: string;
   author_id?: number;
   author_name: string;
+  author_avatar?: string;
   author_forum_role?: string;
   comments_count: number;
 }
