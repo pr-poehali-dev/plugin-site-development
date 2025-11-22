@@ -515,12 +515,17 @@ const DealDetailDialog = ({ deal, user, onClose, onUpdate }: DealDetailDialogPro
 
       const data = await response.json();
       if (data.success) {
-        alert('Вы присоединились к сделке!');
+        alert('Вы присоединились к сделке! Средства заблокированы до завершения.');
         onUpdate();
         onClose();
+      } else if (data.error === 'Insufficient balance') {
+        alert('Недостаточно средств на балансе. Пополните баланс для участия в сделке.');
+      } else {
+        alert(data.error || 'Ошибка присоединения к сделке');
       }
     } catch (error) {
       console.error('Ошибка:', error);
+      alert('Ошибка подключения к серверу');
     } finally {
       setLoading(false);
     }

@@ -114,42 +114,64 @@ export const UserProfileTabs = ({
           </Card>
         ) : (
           <div className="space-y-3">
-            {transactions.map((transaction) => (
-              <Card key={transaction.id} className="p-4 hover:bg-accent/50 transition-colors">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                      transaction.amount > 0 
-                        ? 'bg-green-500/20' 
-                        : 'bg-red-500/20'
+            {transactions.map((transaction) => {
+              const getTransactionIcon = () => {
+                if (transaction.type === 'escrow_sale') return { icon: 'ShoppingBag', color: 'green' };
+                if (transaction.type === 'escrow_purchase') return { icon: 'ShoppingCart', color: 'blue' };
+                if (transaction.type === 'escrow_complete') return { icon: 'CheckCircle2', color: 'gray' };
+                if (transaction.type === 'topup') return { icon: 'Wallet', color: 'green' };
+                if (transaction.amount > 0) return { icon: 'ArrowDownToLine', color: 'green' };
+                return { icon: 'ArrowUpFromLine', color: 'red' };
+              };
+
+              const { icon, color } = getTransactionIcon();
+              const isPositive = transaction.amount > 0;
+              const isNeutral = transaction.amount === 0;
+
+              return (
+                <Card key={transaction.id} className="p-4 hover:bg-accent/50 transition-colors">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                        color === 'green' ? 'bg-green-500/20' : 
+                        color === 'blue' ? 'bg-blue-500/20' : 
+                        color === 'gray' ? 'bg-gray-500/20' : 
+                        'bg-red-500/20'
+                      }`}>
+                        <Icon 
+                          name={icon as any} 
+                          size={20} 
+                          className={
+                            color === 'green' ? 'text-green-400' : 
+                            color === 'blue' ? 'text-blue-400' : 
+                            color === 'gray' ? 'text-gray-400' : 
+                            'text-red-400'
+                          }
+                        />
+                      </div>
+                      <div>
+                        <p className="font-medium">{transaction.description}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {new Date(transaction.created_at).toLocaleString('ru-RU', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </p>
+                      </div>
+                    </div>
+                    <div className={`text-lg font-bold ${
+                      isNeutral ? 'text-muted-foreground' :
+                      isPositive ? 'text-green-400' : 'text-red-400'
                     }`}>
-                      <Icon 
-                        name={transaction.amount > 0 ? 'ArrowDownToLine' : 'ArrowUpFromLine'} 
-                        size={20} 
-                        className={transaction.amount > 0 ? 'text-green-400' : 'text-red-400'}
-                      />
-                    </div>
-                    <div>
-                      <p className="font-medium">{transaction.description}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {new Date(transaction.created_at).toLocaleString('ru-RU', {
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        })}
-                      </p>
+                      {!isNeutral && (isPositive ? '+' : '')}{transaction.amount.toFixed(2)} USDT
                     </div>
                   </div>
-                  <div className={`text-lg font-bold ${
-                    transaction.amount > 0 ? 'text-green-400' : 'text-red-400'
-                  }`}>
-                    {transaction.amount > 0 ? '+' : ''}{transaction.amount.toFixed(2)} USDT
-                  </div>
-                </div>
-              </Card>
-            ))}
+                </Card>
+              );
+            })}
           </div>
         )}
       </TabsContent>

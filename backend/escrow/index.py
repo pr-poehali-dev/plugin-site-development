@@ -193,14 +193,10 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             elif action == 'join_deal':
                 deal_id = body.get('deal_id')
                 
-                query = """
-                    UPDATE escrow_deals
-                    SET buyer_id = %s, status = 'in_progress', updated_at = CURRENT_TIMESTAMP
-                    WHERE id = %s AND buyer_id IS NULL AND status = 'open'
-                """
-                cursor.execute(query, (user_id, deal_id))
+                cursor.execute('SELECT title, price FROM escrow_deals WHERE id = %s AND buyer_id IS NULL AND status = \'open\'', (deal_id,))
+                deal = cursor.fetchone()
                 
-                if cursor.rowcount == 0:
+                if not deal:
                     conn.rollback()
                     cursor.close()
                     return {
@@ -209,6 +205,33 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                         'body': json.dumps({'error': 'Deal not available'}),
                         'isBase64Encoded': False
                     }
+                
+                cursor.execute('SELECT balance FROM users WHERE id = %s', (user_id,))
+                user_data = cursor.fetchone()
+                
+                if not user_data or user_data['balance'] < deal['price']:
+                    conn.rollback()
+                    cursor.close()
+                    return {
+                        'statusCode': 400,
+                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({'error': 'Insufficient balance'}),
+                        'isBase64Encoded': False
+                    }
+                
+                query = """
+                    UPDATE escrow_deals
+                    SET buyer_id = %s, status = 'in_progress', updated_at = CURRENT_TIMESTAMP
+                    WHERE id = %s
+                """
+                cursor.execute(query, (user_id, deal_id))
+                
+                cursor.execute('UPDATE users SET balance = balance - %s WHERE id = %s', (deal['price'], user_id))
+                
+                cursor.execute("""
+                    INSERT INTO transactions (user_id, amount, type, description)
+                    VALUES (%s, %s, 'escrow_purchase', 'Блокировка средств для сделки: %s')
+                """, (user_id, -deal['price'], deal['title']))
                 
                 msg_query = """
                     INSERT INTO escrow_messages (deal_id, user_id, message, is_system)
@@ -309,7 +332,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             elif action == 'buyer_confirm':
                 deal_id = body.get('deal_id')
                 
-                cursor.execute('SELECT seller_id, price FROM escrow_deals WHERE id = %s AND buyer_id = %s', (deal_id, user_id))
+                cursor.execute('SELECT seller_id, buyer_id, price, title FROM escrow_deals WHERE id = %s AND buyer_id = %s', (deal_id, user_id))
                 deal = cursor.fetchone()
                 
                 if not deal:
@@ -332,8 +355,13 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 
                 cursor.execute("""
                     INSERT INTO transactions (user_id, amount, type, description)
-                    VALUES (%s, %s, 'escrow', 'Получено за сделку #%s')
-                """, (deal['seller_id'], deal['price'], deal_id))
+                    VALUES (%s, %s, 'escrow_sale', 'Продажа через гарант: %s')
+                """, (deal['seller_id'], deal['price'], deal['title']))
+                
+                cursor.execute("""
+                    INSERT INTO transactions (user_id, amount, type, description)
+                    VALUES (%s, %s, 'escrow_complete', 'Покупка завершена: %s')
+                """, (deal['buyer_id'], 0, deal['title']))
                 
                 msg_query = """
                     INSERT INTO escrow_messages (deal_id, user_id, message, is_system)
