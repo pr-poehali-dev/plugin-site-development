@@ -2,11 +2,11 @@ const UsdtLogo = () => {
   return (
     <div className="relative w-10 h-10 flex items-center justify-center">
       <div className="absolute inset-0 animate-pulse">
-        <div className="w-full h-full rounded-full bg-gradient-to-br from-emerald-400 to-green-600 opacity-30 blur-sm"></div>
+        <div className="w-full h-full rounded-full bg-gradient-to-br from-green-700 to-green-900 opacity-30 blur-sm"></div>
       </div>
       
-      <div className="relative w-10 h-10 rounded-full bg-gradient-to-br from-emerald-400 to-green-600 flex items-center justify-center overflow-hidden group">
-        <div className="absolute inset-0 bg-gradient-to-br from-emerald-300 to-green-500 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+      <div className="relative w-10 h-10 rounded-full bg-gradient-to-br from-green-700 to-green-900 flex items-center justify-center overflow-hidden group">
+        <div className="absolute inset-0 bg-gradient-to-br from-green-600 to-green-800 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
         
         <div className="relative z-10 flex flex-col items-center justify-center">
           <div className="usdt-fragments">

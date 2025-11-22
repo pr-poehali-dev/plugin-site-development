@@ -200,7 +200,7 @@ const Dialogs = ({
                 <div className="relative group cursor-pointer" onClick={handleAvatarSelect}>
                   <Avatar className="w-20 h-20">
                     <AvatarImage src={avatarPreview || user.avatar_url} />
-                    <AvatarFallback className="bg-gradient-to-br from-emerald-500 to-green-600 text-white text-2xl">
+                    <AvatarFallback className="bg-gradient-to-br from-green-800 to-green-900 text-white text-2xl">
                       {user.username[0].toUpperCase()}
                     </AvatarFallback>
                   </Avatar>

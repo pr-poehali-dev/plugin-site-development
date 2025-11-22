@@ -81,7 +81,7 @@ const MainContent = ({
           {activeCategory === 'all' ? (
             <div className="flex items-center justify-center min-h-[400px] animate-scale-in">
               <div className="text-center">
-                <div className="w-20 h-20 bg-gradient-to-br from-emerald-500 to-green-600 rounded-2xl flex items-center justify-center mx-auto mb-4 animate-scale-in">
+                <div className="w-20 h-20 bg-gradient-to-br from-green-800 to-green-900 rounded-2xl flex items-center justify-center mx-auto mb-4 animate-scale-in">
                   <Icon name="Layers" size={40} className="text-white" />
                 </div>
                 <h2 className="text-2xl font-bold mb-2">Добро пожаловать!</h2>

@@ -33,7 +33,7 @@ const Sidebar = ({
       <div className={`p-4 w-64 transition-opacity duration-300 ${sidebarOpen ? 'opacity-100' : 'opacity-0'}`}>
         <div className="flex items-center gap-3 mb-8">
           <UsdtLogo />
-          <span className="text-xl font-bold bg-gradient-to-r from-emerald-400 to-green-600 bg-clip-text text-transparent">USDT HUB</span>
+          <span className="text-xl font-bold bg-gradient-to-r from-green-700 to-green-900 bg-clip-text text-transparent">USDT HUB</span>
         </div>
 
         <nav className="space-y-1">
