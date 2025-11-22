@@ -3,7 +3,7 @@ Business: Обработка сброса пароля через email с то�
 Args: event - dict с httpMethod, body, queryStringParameters
       context - объект с атрибутами: request_id, function_name
 Returns: HTTP response dict
-Version: 2.2
+Version: 2.3
 '''
 
 import json
@@ -178,7 +178,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             )
             conn.commit()
             
-            reset_url = f"https://your-domain.com/reset-password?token={token}"
+            reset_url = f"https://gitcrypto.poehali.dev/reset-password?token={token}"
             
             html_content = f"""
             <html>
