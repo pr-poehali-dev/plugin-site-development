@@ -59,6 +59,33 @@ const MainContent = ({
     return diffMinutes < 5;
   };
 
+  const getTimeAgo = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMinutes = Math.floor(diffMs / (1000 * 60));
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+    if (diffMinutes < 1) return 'только что';
+    if (diffMinutes < 60) return `${diffMinutes} мин. назад`;
+    if (diffHours < 24) return `${diffHours} ч. назад`;
+    if (diffDays < 7) return `${diffDays} дн. назад`;
+    
+    return date.toLocaleDateString('ru', { day: 'numeric', month: 'short' });
+  };
+
+  const getFullDateTime = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleString('ru', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
   const sortForumTopics = (topics: ForumTopic[]) => {
     const sorted = [...topics];
     if (forumSortBy === 'newest') {
@@ -463,7 +490,16 @@ const MainContent = ({
                           <ForumRoleBadge role={topic.author_forum_role} />
                         </span>
                         <span>•</span>
-                        <span>{new Date(topic.created_at).toLocaleDateString('ru')}</span>
+                        <span title={getFullDateTime(topic.created_at)}>Создана: {getTimeAgo(topic.created_at)}</span>
+                        {topic.updated_at && topic.updated_at !== topic.created_at && (
+                          <>
+                            <span>•</span>
+                            <span title={getFullDateTime(topic.updated_at)} className="flex items-center gap-1">
+                              <Icon name="Clock" size={12} />
+                              Обновлена: {getTimeAgo(topic.updated_at)}
+                            </span>
+                          </>
+                        )}
                       </div>
                     </div>
                   </div>
