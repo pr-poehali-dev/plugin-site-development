@@ -677,6 +677,75 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 'isBase64Encoded': False
             }
         
+        elif action == 'get_lottery_notifications':
+            headers = event.get('headers', {})
+            user_id = headers.get('X-User-Id') or headers.get('x-user-id')
+            
+            if not user_id:
+                return {
+                    'statusCode': 401,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'success': False, 'message': 'Требуется авторизация'}),
+                    'isBase64Encoded': False
+                }
+            
+            cur.execute(
+                "SELECT id, round_id, message, is_read, created_at FROM lottery_notifications WHERE user_id = %s ORDER BY created_at DESC LIMIT 10",
+                (int(user_id),)
+            )
+            notifications = cur.fetchall()
+            
+            return {
+                'statusCode': 200,
+                'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                'body': json.dumps({
+                    'success': True,
+                    'notifications': [dict(n) for n in notifications]
+                }, default=str),
+                'isBase64Encoded': False
+            }
+        
+        elif action == 'mark_notifications_read':
+            headers = event.get('headers', {})
+            user_id = headers.get('X-User-Id') or headers.get('x-user-id')
+            
+            if not user_id:
+                return {
+                    'statusCode': 401,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'success': False, 'message': 'Требуется авторизация'}),
+                    'isBase64Encoded': False
+                }
+            
+            cur.execute(
+                "UPDATE lottery_notifications SET is_read = TRUE WHERE user_id = %s AND is_read = FALSE",
+                (int(user_id),)
+            )
+            conn.commit()
+            
+            return {
+                'statusCode': 200,
+                'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                'body': json.dumps({'success': True}),
+                'isBase64Encoded': False
+            }
+        
+        elif action == 'get_lottery_history':
+            cur.execute(
+                "SELECT id, status, total_tickets, prize_pool, winner_ticket_number, winner_user_id, winner_username, created_at, completed_at FROM lottery_rounds WHERE status = 'completed' ORDER BY completed_at DESC LIMIT 20"
+            )
+            history = cur.fetchall()
+            
+            return {
+                'statusCode': 200,
+                'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                'body': json.dumps({
+                    'success': True,
+                    'history': [dict(h) for h in history]
+                }, default=str),
+                'isBase64Encoded': False
+            }
+        
         elif action == 'check_lottery_draw':
             import random
             
@@ -718,6 +787,18 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     "INSERT INTO transactions (user_id, amount, type, description) VALUES (%s, %s, %s, %s)",
                     (winning_ticket['user_id'], 400, 'lottery_win', f'Выигрыш в лотерее (билет #{ticket_num})')
                 )
+                
+                winner_message = f'🎉 Поздравляем! Вы выиграли 400 USDT в лотерее! Выигрышный билет #{ticket_num}'
+                for ticket in tickets:
+                    if ticket['user_id'] == winning_ticket['user_id']:
+                        message = winner_message
+                    else:
+                        message = f'Розыгрыш завершен. Победитель: {winning_ticket["username"]} (билет #{ticket_num}). Удачи в следующий раз!'
+                    
+                    cur.execute(
+                        "INSERT INTO lottery_notifications (user_id, round_id, message) VALUES (%s, %s, %s)",
+                        (ticket['user_id'], round_id, message)
+                    )
                 
                 cur.execute(
                     "INSERT INTO lottery_rounds (status, total_tickets, prize_pool) VALUES ('active', 0, 0)"

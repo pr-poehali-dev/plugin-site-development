@@ -41,6 +41,26 @@ interface ChatMessage {
   created_at: string;
 }
 
+interface LotteryNotification {
+  id: number;
+  round_id: number;
+  message: string;
+  is_read: boolean;
+  created_at: string;
+}
+
+interface LotteryHistory {
+  id: number;
+  status: string;
+  total_tickets: number;
+  prize_pool: number;
+  winner_ticket_number: number;
+  winner_user_id: number;
+  winner_username: string;
+  created_at: string;
+  completed_at: string;
+}
+
 const TICKET_PRICE = 50;
 const MAX_TICKETS = 10;
 const DRAW_DELAY_MINUTES = 1;
@@ -58,18 +78,26 @@ const LotteryGame = ({ user, onShowAuthDialog, onRefreshUserBalance }: LotteryGa
   const [chatMessage, setChatMessage] = useState('');
   const [isSendingMessage, setIsSendingMessage] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
+  const [notifications, setNotifications] = useState<LotteryNotification[]>([]);
+  const [showHistory, setShowHistory] = useState(false);
+  const [history, setHistory] = useState<LotteryHistory[]>([]);
 
   useEffect(() => {
     loadLottery();
     loadChat();
     checkDraw();
+    if (user) {
+      loadNotifications();
+    }
     const lotteryInterval = setInterval(loadLottery, 5000);
     const chatInterval = setInterval(loadChat, 3000);
     const drawInterval = setInterval(checkDraw, 10000);
+    const notifInterval = user ? setInterval(loadNotifications, 10000) : null;
     return () => {
       clearInterval(lotteryInterval);
       clearInterval(chatInterval);
       clearInterval(drawInterval);
+      if (notifInterval) clearInterval(notifInterval);
     };
   }, [user]);
 
@@ -180,12 +208,92 @@ const LotteryGame = ({ user, onShowAuthDialog, onRefreshUserBalance }: LotteryGa
       const data = await response.json();
       if (data.success && data.processed_rounds > 0) {
         loadLottery();
+        if (user) {
+          loadNotifications();
+        }
         if (onRefreshUserBalance) {
           onRefreshUserBalance();
         }
       }
     } catch (error) {
       console.error('Error checking lottery draw:', error);
+    }
+  };
+
+  const loadNotifications = async () => {
+    if (!user) return;
+    
+    try {
+      const response = await fetch(AUTH_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-User-Id': user.id.toString()
+        },
+        body: JSON.stringify({
+          action: 'get_lottery_notifications'
+        })
+      });
+
+      if (!response.ok) {
+        console.error('Failed to load notifications:', response.status);
+        return;
+      }
+
+      const data = await response.json();
+      if (data.success) {
+        const unreadNotifs = data.notifications.filter((n: LotteryNotification) => !n.is_read);
+        setNotifications(unreadNotifs);
+        
+        unreadNotifs.forEach((notif: LotteryNotification) => {
+          toast({
+            title: 'Результат лотереи',
+            description: notif.message,
+            duration: 10000
+          });
+        });
+
+        if (unreadNotifs.length > 0) {
+          await fetch(AUTH_URL, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-User-Id': user.id.toString()
+            },
+            body: JSON.stringify({
+              action: 'mark_notifications_read'
+            })
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Error loading notifications:', error);
+    }
+  };
+
+  const loadHistory = async () => {
+    try {
+      const response = await fetch(AUTH_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          action: 'get_lottery_history'
+        })
+      });
+
+      if (!response.ok) {
+        console.error('Failed to load history:', response.status);
+        return;
+      }
+
+      const data = await response.json();
+      if (data.success) {
+        setHistory(data.history || []);
+      }
+    } catch (error) {
+      console.error('Error loading history:', error);
     }
   };
 
@@ -318,6 +426,17 @@ const LotteryGame = ({ user, onShowAuthDialog, onRefreshUserBalance }: LotteryGa
     return date.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
   };
 
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleString('ru-RU', { 
+      day: '2-digit', 
+      month: '2-digit', 
+      year: 'numeric',
+      hour: '2-digit', 
+      minute: '2-digit' 
+    });
+  };
+
   if (isLoading) {
     return (
       <div className="space-y-6 animate-fade-in">
@@ -341,11 +460,24 @@ const LotteryGame = ({ user, onShowAuthDialog, onRefreshUserBalance }: LotteryGa
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <div>
-        <h1 className="text-3xl font-bold mb-2">🎫 Лотерея</h1>
-        <p className="text-muted-foreground">
-          10 билетов по 50 USDT. Победитель получает 400 USDT
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold mb-2">🎫 Лотерея</h1>
+          <p className="text-muted-foreground">
+            10 билетов по 50 USDT. Победитель получает 400 USDT
+          </p>
+        </div>
+        <Button
+          onClick={() => {
+            setShowHistory(!showHistory);
+            if (!showHistory) loadHistory();
+          }}
+          variant="outline"
+          className="gap-2"
+        >
+          <Icon name="History" size={18} />
+          {showHistory ? 'Скрыть историю' : 'История победителей'}
+        </Button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -563,6 +695,43 @@ const LotteryGame = ({ user, onShowAuthDialog, onRefreshUserBalance }: LotteryGa
         )}
       </Card>
 
+      {showHistory && (
+        <Card className="p-6 bg-card/50">
+          <h3 className="font-semibold mb-4 flex items-center gap-2">
+            <Icon name="History" size={20} className="text-yellow-400" />
+            История победителей
+          </h3>
+          
+          {history.length === 0 ? (
+            <p className="text-center text-muted-foreground py-8">История пуста</p>
+          ) : (
+            <div className="space-y-3">
+              {history.map((round) => (
+                <Card key={round.id} className="p-4 bg-card/80 border border-border/50">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-full bg-yellow-600/20 flex items-center justify-center">
+                        <Icon name="Trophy" size={24} className="text-yellow-400" />
+                      </div>
+                      <div>
+                        <p className="font-semibold text-yellow-400">{round.winner_username}</p>
+                        <p className="text-xs text-muted-foreground">
+                          Билет #{round.winner_ticket_number} • {formatDate(round.completed_at)}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-lg font-bold text-green-400">{PRIZE_AMOUNT} USDT</p>
+                      <p className="text-xs text-muted-foreground">{round.total_tickets} участников</p>
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          )}
+        </Card>
+      )}
+
       <Card className="p-6 bg-card/50">
         <h3 className="font-semibold mb-4 flex items-center gap-2">
           <Icon name="Info" size={20} className="text-indigo-400" />
@@ -576,6 +745,7 @@ const LotteryGame = ({ user, onShowAuthDialog, onRefreshUserBalance }: LotteryGa
           <p>• <strong>Розыгрыш:</strong> через {DRAW_DELAY_MINUTES} минуту после продажи всех билетов</p>
           <p>• <strong>Победитель:</strong> выбирается случайно из всех купленных билетов</p>
           <p>• <strong>Выплата:</strong> моментально на баланс победителя</p>
+          <p>• <strong>Уведомления:</strong> все участники получат результаты розыгрыша</p>
           <p>• <strong>Чат:</strong> общайтесь с другими участниками во время ожидания розыгрыша</p>
         </div>
       </Card>
