@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ForumRoleBadge from '@/components/ForumRoleBadge';
 
 const AUTH_URL = 'https://functions.poehali.dev/2497448a-6aff-4df5-97ef-9181cf792f03';
+const CRYPTO_URL = 'https://functions.poehali.dev/8caa3b76-72e5-42b5-9415-91d1f9b05210';
 
 interface UserProfileProps {
   user: User;
@@ -26,6 +27,9 @@ const UserProfile = ({ user, isOwnProfile, onClose, onTopUpBalance }: UserProfil
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [transactionsLoading, setTransactionsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
+  const [showCryptoDialog, setShowCryptoDialog] = useState(false);
+  const [cryptoPayment, setCryptoPayment] = useState<any>(null);
+  const [paymentNetwork, setPaymentNetwork] = useState('TRC20');
 
   useEffect(() => {
     if (isOwnProfile && activeTab === 'transactions') {
@@ -61,20 +65,79 @@ const UserProfile = ({ user, isOwnProfile, onClose, onTopUpBalance }: UserProfil
 
     setIsLoading(true);
     try {
-      if (onTopUpBalance) {
-        await onTopUpBalance(amount);
-      }
-      setShowTopUpDialog(false);
-      setTopUpAmount('');
-      if (activeTab === 'transactions') {
-        fetchTransactions();
+      const response = await fetch(CRYPTO_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-User-Id': user.id.toString()
+        },
+        body: JSON.stringify({
+          action: 'create_payment',
+          amount: amount,
+          network: paymentNetwork
+        })
+      });
+      
+      const data = await response.json();
+      if (data.success) {
+        setCryptoPayment(data);
+        setShowTopUpDialog(false);
+        setShowCryptoDialog(true);
+        setTopUpAmount('');
+      } else {
+        alert('Ошибка создания платежа');
       }
     } catch (error) {
-      console.error('Ошибка пополнения баланса:', error);
-      alert('Ошибка пополнения баланса');
+      console.error('Ошибка создания платежа:', error);
+      alert('Ошибка создания платежа');
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleConfirmPayment = async () => {
+    if (!cryptoPayment) return;
+    
+    setIsLoading(true);
+    try {
+      const response = await fetch(CRYPTO_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-User-Id': user.id.toString()
+        },
+        body: JSON.stringify({
+          action: 'confirm_payment',
+          payment_id: cryptoPayment.payment_id
+        })
+      });
+      
+      const data = await response.json();
+      if (data.success) {
+        if (onTopUpBalance) {
+          const updatedUser = { ...user, balance: data.new_balance };
+          Object.assign(user, updatedUser);
+        }
+        setShowCryptoDialog(false);
+        setCryptoPayment(null);
+        if (activeTab === 'transactions') {
+          fetchTransactions();
+        }
+        alert('Платёж подтверждён!');
+      } else {
+        alert('Ошибка подтверждения платежа');
+      }
+    } catch (error) {
+      console.error('Ошибка подтверждения:', error);
+      alert('Ошибка подтверждения платежа');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    alert('Скопировано!');
   };
 
   const quickAmounts = [10, 50, 100, 500];
@@ -332,9 +395,95 @@ const UserProfile = ({ user, isOwnProfile, onClose, onTopUpBalance }: UserProfil
             </Button>
 
             <p className="text-xs text-muted-foreground text-center">
-              После нажатия вы будете перенаправлены на страницу оплаты
+              Откроется окно с адресом для перевода USDT
             </p>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showCryptoDialog} onOpenChange={setShowCryptoDialog}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Перевод USDT</DialogTitle>
+            <DialogDescription>
+              Отправьте {cryptoPayment?.amount} USDT на адрес ниже
+            </DialogDescription>
+          </DialogHeader>
+
+          {cryptoPayment && (
+            <div className="space-y-4">
+              <Card className="p-4 bg-gradient-to-br from-purple-500/10 to-pink-500/10 border-purple-500/20">
+                <div className="space-y-3">
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Сумма</Label>
+                    <p className="text-2xl font-bold">{cryptoPayment.amount} USDT</p>
+                  </div>
+                  
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Сеть</Label>
+                    <p className="text-lg font-semibold text-purple-400">{cryptoPayment.network}</p>
+                  </div>
+
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Адрес кошелька</Label>
+                    <div className="flex items-center gap-2 mt-1">
+                      <code className="flex-1 p-2 bg-background rounded text-sm break-all">
+                        {cryptoPayment.wallet_address}
+                      </code>
+                      <Button
+                        size="icon"
+                        variant="outline"
+                        onClick={() => copyToClipboard(cryptoPayment.wallet_address)}
+                      >
+                        <Icon name="Copy" size={16} />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </Card>
+
+              <div className="space-y-2 p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
+                <div className="flex items-start gap-2">
+                  <Icon name="AlertTriangle" size={18} className="text-yellow-400 mt-0.5" />
+                  <div className="text-sm space-y-1">
+                    <p className="font-medium text-yellow-400">Важно:</p>
+                    <ul className="text-muted-foreground space-y-1 text-xs">
+                      <li>• Отправляйте только USDT в сети {cryptoPayment.network}</li>
+                      <li>• Перевод в другой сети приведёт к потере средств</li>
+                      <li>• После отправки нажмите "Я отправил"</li>
+                      <li>• Зачисление произойдёт после подтверждения</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <Button
+                onClick={handleConfirmPayment}
+                disabled={isLoading}
+                className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600"
+              >
+                {isLoading ? (
+                  <>
+                    <Icon name="Loader2" size={18} className="mr-2 animate-spin" />
+                    Проверка...
+                  </>
+                ) : (
+                  <>
+                    <Icon name="Check" size={18} className="mr-2" />
+                    Я отправил USDT
+                  </>
+                )}
+              </Button>
+
+              <Button
+                variant="outline"
+                onClick={() => setShowCryptoDialog(false)}
+                className="w-full"
+              >
+                Отменить
+              </Button>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </>

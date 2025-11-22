@@ -1,0 +1,37 @@
+{
+  "tests": [
+    {
+      "name": "Create crypto payment",
+      "method": "POST",
+      "headers": {
+        "X-User-Id": "1"
+      },
+      "body": {
+        "action": "create_payment",
+        "amount": 100,
+        "network": "TRC20"
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "success": true,
+        "payment_id": "number",
+        "wallet_address": "string",
+        "amount": 100,
+        "network": "TRC20"
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Get payment status",
+      "method": "GET",
+      "headers": {
+        "X-User-Id": "1"
+      },
+      "queryParams": {
+        "payment_id": "1"
+      },
+      "expectedStatus": 200,
+      "bodyMatcher": "partial"
+    }
+  ]
+}
