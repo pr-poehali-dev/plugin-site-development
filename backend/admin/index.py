@@ -48,64 +48,15 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     headers = event.get('headers', {})
     user_id = headers.get('X-User-Id') or headers.get('x-user-id')
     
-    if not user_id:
-        return {
-            'statusCode': 401,
-            'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-            'body': json.dumps({'error': 'Требуется авторизация'}),
-            'isBase64Encoded': False
-        }
-    
     conn = get_db_connection()
     cur = conn.cursor()
     
     try:
-        if not check_admin(user_id, cur):
-            return {
-                'statusCode': 403,
-                'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                'body': json.dumps({'error': 'Недостаточно прав'}),
-                'isBase64Encoded': False
-            }
-        
         if method == 'GET':
             params = event.get('queryStringParameters', {}) or {}
             action = params.get('action')
             
-            if action == 'users':
-                cur.execute("""
-                    SELECT id, username, email, role, forum_role, is_blocked, created_at 
-                    FROM users 
-                    ORDER BY created_at DESC 
-                    LIMIT 100
-                """)
-                users = cur.fetchall()
-                
-                return {
-                    'statusCode': 200,
-                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                    'body': json.dumps({'users': [dict(u) for u in users]}, default=str),
-                    'isBase64Encoded': False
-                }
-            
-            elif action == 'logs':
-                cur.execute("""
-                    SELECT aa.*, u.username as admin_name
-                    FROM admin_actions aa
-                    LEFT JOIN users u ON aa.admin_id = u.id
-                    ORDER BY aa.created_at DESC
-                    LIMIT 100
-                """)
-                logs = cur.fetchall()
-                
-                return {
-                    'statusCode': 200,
-                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                    'body': json.dumps({'logs': [dict(l) for l in logs]}, default=str),
-                    'isBase64Encoded': False
-                }
-            
-            elif action == 'user_profile':
+            if action == 'user_profile':
                 user_profile_id = params.get('user_id')
                 
                 if not user_profile_id:
@@ -160,6 +111,55 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'isBase64Encoded': False
                 }
             
+            if not user_id:
+                return {
+                    'statusCode': 401,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'error': 'Требуется авторизация'}),
+                    'isBase64Encoded': False
+                }
+            
+            if not check_admin(user_id, cur):
+                return {
+                    'statusCode': 403,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'error': 'Недостаточно прав'}),
+                    'isBase64Encoded': False
+                }
+            
+            if action == 'users':
+                cur.execute("""
+                    SELECT id, username, email, role, forum_role, is_blocked, created_at 
+                    FROM users 
+                    ORDER BY created_at DESC 
+                    LIMIT 100
+                """)
+                users = cur.fetchall()
+                
+                return {
+                    'statusCode': 200,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'users': [dict(u) for u in users]}, default=str),
+                    'isBase64Encoded': False
+                }
+            
+            elif action == 'logs':
+                cur.execute("""
+                    SELECT aa.*, u.username as admin_name
+                    FROM admin_actions aa
+                    LEFT JOIN users u ON aa.admin_id = u.id
+                    ORDER BY aa.created_at DESC
+                    LIMIT 100
+                """)
+                logs = cur.fetchall()
+                
+                return {
+                    'statusCode': 200,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'logs': [dict(l) for l in logs]}, default=str),
+                    'isBase64Encoded': False
+                }
+            
             else:
                 return {
                     'statusCode': 400,
@@ -169,6 +169,22 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 }
         
         elif method == 'POST':
+            if not user_id:
+                return {
+                    'statusCode': 401,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'error': 'Требуется авторизация'}),
+                    'isBase64Encoded': False
+                }
+            
+            if not check_admin(user_id, cur):
+                return {
+                    'statusCode': 403,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'error': 'Недостаточно прав'}),
+                    'isBase64Encoded': False
+                }
+            
             body_data = json.loads(event.get('body', '{}'))
             action = body_data.get('action')
             
@@ -250,6 +266,22 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 }
         
         elif method == 'PUT':
+            if not user_id:
+                return {
+                    'statusCode': 401,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'error': 'Требуется авторизация'}),
+                    'isBase64Encoded': False
+                }
+            
+            if not check_admin(user_id, cur):
+                return {
+                    'statusCode': 403,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'error': 'Недостаточно прав'}),
+                    'isBase64Encoded': False
+                }
+            
             body_data = json.loads(event.get('body', '{}'))
             topic_id = body_data.get('topic_id')
             title = body_data.get('title')
@@ -279,6 +311,22 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             }
         
         elif method == 'DELETE':
+            if not user_id:
+                return {
+                    'statusCode': 401,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'error': 'Требуется авторизация'}),
+                    'isBase64Encoded': False
+                }
+            
+            if not check_admin(user_id, cur):
+                return {
+                    'statusCode': 403,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'error': 'Недостаточно прав'}),
+                    'isBase64Encoded': False
+                }
+            
             params = event.get('queryStringParameters', {}) or {}
             target_type = params.get('type')
             target_id = params.get('id')
