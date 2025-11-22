@@ -598,13 +598,13 @@ const UserProfile = ({ user, isOwnProfile, onClose, onTopUpBalance, onUpdateProf
                     </div>
                   </div>
 
-                  <div className="bg-white p-3 rounded-lg shadow-md mt-4" style={{marginRight: '60px'}}>
+                  <div className="p-3 rounded-lg mt-4" style={{marginRight: '60px'}}>
                     <QRCodeSVG 
                       value={cryptoPayment.wallet_address}
                       size={110}
                       level="M"
-                      fgColor="#000000"
-                      bgColor="#ffffff"
+                      fgColor="#ffffff"
+                      bgColor="transparent"
                     />
                   </div>
                 </div>
