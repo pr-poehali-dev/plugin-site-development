@@ -207,6 +207,21 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     (int(user_id), 'payment', 'Баланс пополнен', f"Зачислено {float(payment['amount']):.2f} USDT")
                 )
                 
+                cur.execute("SELECT username FROM users WHERE id = %s", (int(user_id),))
+                user_info = cur.fetchone()
+                username = user_info['username'] if user_info else f"ID {user_id}"
+                
+                cur.execute(
+                    "SELECT id FROM users WHERE role = 'admin'"
+                )
+                admins = cur.fetchall()
+                
+                for admin in admins:
+                    cur.execute(
+                        "INSERT INTO notifications (user_id, type, title, message) VALUES (%s, %s, %s, %s)",
+                        (admin['id'], 'admin_alert', 'Пополнение баланса', f"Пользователь {username} пополнил баланс на {float(payment['amount']):.2f} USDT")
+                    )
+                
                 conn.commit()
                 
                 return {

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { User, ForumTopic, EscrowDeal } from '@/types';
 import Icon from '@/components/ui/icon';
 import { Button } from '@/components/ui/button';
@@ -19,6 +19,7 @@ const FORUM_URL = 'https://functions.poehali.dev/045d6571-633c-4239-ae69-8d76c93
 const ADMIN_URL = 'https://functions.poehali.dev/d4678b1c-2acd-40bb-b8c5-cefe8d14fad4';
 const ESCROW_URL = 'https://functions.poehali.dev/82c75fbc-83e4-4448-9ff8-1c8ef9bbec09';
 const WITHDRAWAL_URL = 'https://functions.poehali.dev/09f16983-ec42-41fe-a7bd-695752ee11c5';
+const NOTIFICATIONS_URL = 'https://functions.poehali.dev/6c968792-7d48-41a9-af0a-c92adb047acb';
 
 const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
   const { toast } = useToast();
@@ -34,6 +35,9 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
   const [balanceUsername, setBalanceUsername] = useState('');
   const [balanceAmount, setBalanceAmount] = useState('');
   const [balanceLoading, setBalanceLoading] = useState(false);
+  const [adminNotifications, setAdminNotifications] = useState<any[]>([]);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const notificationsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (activeTab === 'users') {
@@ -45,7 +49,30 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
     } else if (activeTab === 'withdrawals') {
       fetchWithdrawals();
     }
+    fetchAdminNotifications();
+    
+    const interval = setInterval(() => {
+      fetchAdminNotifications();
+    }, 15000);
+    
+    return () => clearInterval(interval);
   }, [activeTab]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (notificationsRef.current && !notificationsRef.current.contains(event.target as Node)) {
+        setShowNotifications(false);
+      }
+    };
+
+    if (showNotifications) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showNotifications]);
 
   const fetchUsers = async () => {
     try {
@@ -88,6 +115,40 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
       setWithdrawals(data.withdrawals || []);
     } catch (error) {
       console.error('Ошибка загрузки заявок на вывод:', error);
+    }
+  };
+
+  const fetchAdminNotifications = async () => {
+    try {
+      const response = await fetch(`${NOTIFICATIONS_URL}?action=notifications`, {
+        headers: { 'X-User-Id': currentUser.id.toString() }
+      });
+      const data = await response.json();
+      const adminAlerts = (data.notifications || []).filter(
+        (notif: any) => notif.type === 'admin_alert' && !notif.is_read
+      );
+      setAdminNotifications(adminAlerts);
+    } catch (error) {
+      console.error('Ошибка загрузки уведомлений:', error);
+    }
+  };
+
+  const markNotificationsRead = async () => {
+    try {
+      await fetch(NOTIFICATIONS_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-User-Id': currentUser.id.toString()
+        },
+        body: JSON.stringify({
+          action: 'mark_read',
+          notification_ids: adminNotifications.map(n => n.id)
+        })
+      });
+      setAdminNotifications([]);
+    } catch (error) {
+      console.error('Ошибка отметки уведомлений:', error);
     }
   };
 
@@ -316,9 +377,46 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
             <Icon name="Shield" size={28} className="text-primary" />
             <h1 className="text-3xl font-bold">Админ-панель</h1>
           </div>
-          <Button onClick={onClose} variant="ghost">
-            <Icon name="X" size={20} />
-          </Button>
+          <div className="flex items-center gap-3">
+            <div className="relative" ref={notificationsRef}>
+              <Button 
+                onClick={() => setShowNotifications(!showNotifications)} 
+                variant="ghost"
+                className="relative"
+              >
+                <Icon name="Bell" size={20} />
+                {adminNotifications.length > 0 && (
+                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-orange-500 text-white text-xs rounded-full flex items-center justify-center">
+                    {adminNotifications.length}
+                  </span>
+                )}
+              </Button>
+              {showNotifications && adminNotifications.length > 0 && (
+                <div className="absolute right-0 mt-2 w-80 bg-card border border-border rounded-lg shadow-lg p-4 z-50 max-h-96 overflow-y-auto animate-fade-in">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="font-semibold">Уведомления</h3>
+                    <Button size="sm" variant="ghost" onClick={markNotificationsRead}>
+                      <Icon name="Check" size={16} />
+                    </Button>
+                  </div>
+                  <div className="space-y-2">
+                    {adminNotifications.map((notif) => (
+                      <div key={notif.id} className="p-3 bg-orange-500/10 border border-orange-500/20 rounded-lg">
+                        <p className="font-semibold text-sm">{notif.title}</p>
+                        <p className="text-xs text-muted-foreground mt-1">{notif.message}</p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {new Date(notif.created_at).toLocaleString('ru-RU')}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+            <Button onClick={onClose} variant="ghost">
+              <Icon name="X" size={20} />
+            </Button>
+          </div>
         </div>
 
         <div className="flex items-center justify-between mb-6">
