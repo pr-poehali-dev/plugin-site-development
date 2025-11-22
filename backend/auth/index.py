@@ -183,6 +183,81 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 'isBase64Encoded': False
             }
         
+        elif action == 'upload_avatar':
+            headers = event.get('headers', {})
+            user_id = headers.get('X-User-Id') or headers.get('x-user-id')
+            
+            if not user_id:
+                return {
+                    'statusCode': 401,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'error': 'Требуется авторизация'}),
+                    'isBase64Encoded': False
+                }
+            
+            image_base64 = body_data.get('image')
+            
+            if not image_base64:
+                return {
+                    'statusCode': 400,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'error': 'Изображение не предоставлено'}),
+                    'isBase64Encoded': False
+                }
+            
+            import base64
+            import uuid
+            import boto3
+            
+            try:
+                image_data = base64.b64decode(image_base64.split(',')[1] if ',' in image_base64 else image_base64)
+                
+                s3_client = boto3.client('s3',
+                    endpoint_url='https://storage.yandexcloud.net',
+                    aws_access_key_id=os.environ.get('AWS_ACCESS_KEY_ID'),
+                    aws_secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY'),
+                    region_name='ru-central1'
+                )
+                
+                file_extension = 'jpg'
+                if image_base64.startswith('data:image/png'):
+                    file_extension = 'png'
+                elif image_base64.startswith('data:image/webp'):
+                    file_extension = 'webp'
+                
+                file_name = f'avatars/{user_id}_{uuid.uuid4()}.{file_extension}'
+                bucket_name = os.environ.get('S3_BUCKET_NAME', 'poehali-dev')
+                
+                s3_client.put_object(
+                    Bucket=bucket_name,
+                    Key=file_name,
+                    Body=image_data,
+                    ContentType=f'image/{file_extension}'
+                )
+                
+                avatar_url = f'https://storage.yandexcloud.net/{bucket_name}/{file_name}'
+                
+                cur.execute("UPDATE users SET avatar_url = %s WHERE id = %s", (avatar_url, user_id))
+                conn.commit()
+                
+                return {
+                    'statusCode': 200,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({
+                        'success': True,
+                        'avatar_url': avatar_url
+                    }),
+                    'isBase64Encoded': False
+                }
+            
+            except Exception as e:
+                return {
+                    'statusCode': 500,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'error': f'Ошибка загрузки: {str(e)}'}),
+                    'isBase64Encoded': False
+                }
+        
         else:
             return {
                 'statusCode': 400,
