@@ -8,6 +8,7 @@ Returns: HTTP response dict с темами/комментариями или р
 import json
 import os
 from typing import Dict, Any, List
+from datetime import datetime, timezone
 import psycopg2
 from psycopg2.extras import RealDictCursor
 
@@ -15,6 +16,14 @@ def get_db_connection():
     """Получить подключение к БД"""
     database_url = os.environ.get('DATABASE_URL')
     return psycopg2.connect(database_url, cursor_factory=RealDictCursor)
+
+def serialize_datetime(obj):
+    """Сериализация datetime объектов в ISO формат с UTC"""
+    if isinstance(obj, datetime):
+        if obj.tzinfo is None:
+            obj = obj.replace(tzinfo=timezone.utc)
+        return obj.isoformat()
+    return str(obj)
 
 def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     method: str = event.get('httpMethod', 'GET')
@@ -84,7 +93,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'body': json.dumps({
                         'topic': dict(topic),
                         'comments': [dict(c) for c in comments]
-                    }, default=str),
+                    }, default=serialize_datetime),
                     'isBase64Encoded': False
                 }
             else:
@@ -116,7 +125,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
                     'body': json.dumps({
                         'topics': [dict(t) for t in topics]
-                    }, default=str),
+                    }, default=serialize_datetime),
                     'isBase64Encoded': False
                 }
         
@@ -163,7 +172,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'body': json.dumps({
                         'success': True,
                         'topic': dict(new_topic)
-                    }, default=str),
+                    }, default=serialize_datetime),
                     'isBase64Encoded': False
                 }
             
@@ -242,7 +251,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'body': json.dumps({
                         'success': True,
                         'comment': dict(new_comment)
-                    }, default=str),
+                    }, default=serialize_datetime),
                     'isBase64Encoded': False
                 }
             
