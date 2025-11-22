@@ -26,7 +26,7 @@ interface UserProfileDialogProps {
   userId: number | null;
 }
 
-const USER_PROFILE_URL = 'https://functions.poehali.dev/a008e6c5-bf95-43d8-a6b2-7df0242184da';
+const ADMIN_URL = 'https://functions.poehali.dev/d4678b1c-2acd-40bb-b8c5-cefe8d14fad4';
 
 const UserProfileDialog = ({ open, onOpenChange, userId }: UserProfileDialogProps) => {
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -43,10 +43,14 @@ const UserProfileDialog = ({ open, onOpenChange, userId }: UserProfileDialogProp
     
     setLoading(true);
     try {
-      const response = await fetch(`${USER_PROFILE_URL}?user_id=${userId}`);
+      const response = await fetch(`${ADMIN_URL}?action=user_profile&user_id=${userId}`);
       const data = await response.json();
-      if (data.success) {
-        setProfile(data.user);
+      if (data.user) {
+        setProfile({
+          ...data.user,
+          topics_count: data.topics_count || 0,
+          comments_count: data.comments_count || 0
+        });
       }
     } catch (error) {
       console.error('Ошибка загрузки профиля:', error);
