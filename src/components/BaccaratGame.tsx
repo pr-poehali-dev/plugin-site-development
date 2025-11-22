@@ -379,6 +379,7 @@ const BaccaratGame = ({ user, onShowAuthDialog, onRefreshUserBalance }: Baccarat
                 <label className="block text-sm font-medium mb-2">Выберите тип ставки</label>
                 <div className="grid grid-cols-3 gap-3">
                   <Button
+                    type="button"
                     onClick={() => setBetType('player')}
                     variant={betType === 'player' ? 'default' : 'outline'}
                     className={betType === 'player' ? 'bg-blue-600 hover:bg-blue-700' : ''}
@@ -386,6 +387,7 @@ const BaccaratGame = ({ user, onShowAuthDialog, onRefreshUserBalance }: Baccarat
                     Игрок (2x)
                   </Button>
                   <Button
+                    type="button"
                     onClick={() => setBetType('banker')}
                     variant={betType === 'banker' ? 'default' : 'outline'}
                     className={betType === 'banker' ? 'bg-red-600 hover:bg-red-700' : ''}
@@ -393,6 +395,7 @@ const BaccaratGame = ({ user, onShowAuthDialog, onRefreshUserBalance }: Baccarat
                     Банкир (1.95x)
                   </Button>
                   <Button
+                    type="button"
                     onClick={() => setBetType('tie')}
                     variant={betType === 'tie' ? 'default' : 'outline'}
                     className={betType === 'tie' ? 'bg-purple-600 hover:bg-purple-700' : ''}
@@ -402,6 +405,7 @@ const BaccaratGame = ({ user, onShowAuthDialog, onRefreshUserBalance }: Baccarat
                 </div>
               </div>
               <Button
+                type="button"
                 onClick={startNewGame}
                 className="w-full bg-gradient-to-r from-purple-600 to-purple-800 hover:from-purple-700 hover:to-purple-900"
                 disabled={!user || isProcessing || !betType}
@@ -414,6 +418,7 @@ const BaccaratGame = ({ user, onShowAuthDialog, onRefreshUserBalance }: Baccarat
 
           {gameState === 'finished' && (
             <Button
+              type="button"
               onClick={resetGame}
               className="w-full bg-gradient-to-r from-purple-600 to-purple-800 hover:from-purple-700 hover:to-purple-900"
               disabled={isProcessing}

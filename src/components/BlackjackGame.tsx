@@ -351,6 +351,7 @@ export const BlackjackGame = ({ user, onShowAuthDialog, onRefreshUserBalance }: 
                 />
               </div>
               <Button
+                type="button"
                 onClick={startNewGame}
                 className="w-full bg-gradient-to-r from-green-800 to-green-900 hover:from-green-700 hover:to-green-800"
                 disabled={!user || isProcessing}
@@ -364,6 +365,7 @@ export const BlackjackGame = ({ user, onShowAuthDialog, onRefreshUserBalance }: 
           {gameState === 'playing' && (
             <div className="flex gap-3">
               <Button
+                type="button"
                 onClick={hit}
                 className="flex-1 bg-blue-600 hover:bg-blue-700"
                 disabled={isProcessing}
@@ -372,6 +374,7 @@ export const BlackjackGame = ({ user, onShowAuthDialog, onRefreshUserBalance }: 
                 Взять карту
               </Button>
               <Button
+                type="button"
                 onClick={(e) => { e.preventDefault(); stand(); }}
                 className="flex-1 bg-orange-600 hover:bg-orange-700"
                 disabled={isProcessing}
@@ -384,6 +387,7 @@ export const BlackjackGame = ({ user, onShowAuthDialog, onRefreshUserBalance }: 
 
           {gameState === 'finished' && (
             <Button
+              type="button"
               onClick={resetGame}
               className="w-full bg-gradient-to-r from-green-800 to-green-900 hover:from-green-700 hover:to-green-800"
               disabled={isProcessing}

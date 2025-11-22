@@ -278,6 +278,7 @@ const DiceGame = ({ user, onShowAuthDialog, onRefreshUserBalance }: DiceGameProp
                   {[1, 2, 3, 4, 5, 6].map((num) => (
                     <Button
                       key={num}
+                      type="button"
                       onClick={() => setBetType(num as BetType)}
                       variant={betType === num ? 'default' : 'outline'}
                       className={`h-16 text-xl font-bold ${
@@ -294,6 +295,7 @@ const DiceGame = ({ user, onShowAuthDialog, onRefreshUserBalance }: DiceGameProp
                 <label className="block text-sm font-medium mb-3">Ставка на диапазон (2x)</label>
                 <div className="grid grid-cols-2 gap-3">
                   <Button
+                    type="button"
                     onClick={() => setBetType('even')}
                     variant={betType === 'even' ? 'default' : 'outline'}
                     className={betType === 'even' ? 'bg-blue-600 hover:bg-blue-700' : ''}
@@ -301,6 +303,7 @@ const DiceGame = ({ user, onShowAuthDialog, onRefreshUserBalance }: DiceGameProp
                     Четное (2x)
                   </Button>
                   <Button
+                    type="button"
                     onClick={() => setBetType('odd')}
                     variant={betType === 'odd' ? 'default' : 'outline'}
                     className={betType === 'odd' ? 'bg-purple-600 hover:bg-purple-700' : ''}
@@ -308,6 +311,7 @@ const DiceGame = ({ user, onShowAuthDialog, onRefreshUserBalance }: DiceGameProp
                     Нечетное (2x)
                   </Button>
                   <Button
+                    type="button"
                     onClick={() => setBetType('low')}
                     variant={betType === 'low' ? 'default' : 'outline'}
                     className={betType === 'low' ? 'bg-green-600 hover:bg-green-700' : ''}
@@ -315,6 +319,7 @@ const DiceGame = ({ user, onShowAuthDialog, onRefreshUserBalance }: DiceGameProp
                     1-3 (2x)
                   </Button>
                   <Button
+                    type="button"
                     onClick={() => setBetType('high')}
                     variant={betType === 'high' ? 'default' : 'outline'}
                     className={betType === 'high' ? 'bg-red-600 hover:bg-red-700' : ''}
@@ -333,6 +338,7 @@ const DiceGame = ({ user, onShowAuthDialog, onRefreshUserBalance }: DiceGameProp
               )}
 
               <Button
+                type="button"
                 onClick={rollDice}
                 className="w-full bg-gradient-to-r from-orange-600 to-orange-800 hover:from-orange-700 hover:to-orange-900"
                 disabled={!user || !betType || isProcessing}
@@ -345,6 +351,7 @@ const DiceGame = ({ user, onShowAuthDialog, onRefreshUserBalance }: DiceGameProp
 
           {gameState === 'finished' && (
             <Button
+              type="button"
               onClick={resetGame}
               className="w-full bg-gradient-to-r from-orange-600 to-orange-800 hover:from-orange-700 hover:to-orange-900"
               disabled={isProcessing}
