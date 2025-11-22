@@ -81,7 +81,7 @@ const LotteryGame = ({ user, onShowAuthDialog, onRefreshUserBalance }: LotteryGa
   const [notifications, setNotifications] = useState<LotteryNotification[]>([]);
   const [showHistory, setShowHistory] = useState(false);
   const [history, setHistory] = useState<LotteryHistory[]>([]);
-  const [isChatInitialized, setIsChatInitialized] = useState(false);
+  const [prevChatLength, setPrevChatLength] = useState(0);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -125,11 +125,10 @@ const LotteryGame = ({ user, onShowAuthDialog, onRefreshUserBalance }: LotteryGa
   }, [currentRound]);
 
   useEffect(() => {
-    if (isChatInitialized && chatMessages.length > 0) {
+    if (chatMessages.length > prevChatLength && prevChatLength > 0) {
       chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    } else if (chatMessages.length > 0) {
-      setIsChatInitialized(true);
     }
+    setPrevChatLength(chatMessages.length);
   }, [chatMessages]);
 
   const loadLottery = async () => {
