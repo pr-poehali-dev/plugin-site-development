@@ -228,10 +228,11 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 
                 cursor.execute('UPDATE users SET balance = balance - %s WHERE id = %s', (deal['price'], user_id))
                 
+                description = f"Блокировка средств для сделки: {deal['title']}"
                 cursor.execute("""
                     INSERT INTO transactions (user_id, amount, type, description)
-                    VALUES (%s, %s, 'escrow_purchase', 'Блокировка средств для сделки: %s')
-                """, (user_id, -deal['price'], deal['title']))
+                    VALUES (%s, %s, 'escrow_purchase', %s)
+                """, (user_id, -deal['price'], description))
                 
                 msg_query = """
                     INSERT INTO escrow_messages (deal_id, user_id, message, is_system)
@@ -353,15 +354,17 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 
                 cursor.execute('UPDATE users SET balance = balance + %s WHERE id = %s', (deal['price'], deal['seller_id']))
                 
+                seller_desc = f"Продажа через гарант: {deal['title']}"
                 cursor.execute("""
                     INSERT INTO transactions (user_id, amount, type, description)
-                    VALUES (%s, %s, 'escrow_sale', 'Продажа через гарант: %s')
-                """, (deal['seller_id'], deal['price'], deal['title']))
+                    VALUES (%s, %s, 'escrow_sale', %s)
+                """, (deal['seller_id'], deal['price'], seller_desc))
                 
+                buyer_desc = f"Покупка завершена: {deal['title']}"
                 cursor.execute("""
                     INSERT INTO transactions (user_id, amount, type, description)
-                    VALUES (%s, %s, 'escrow_complete', 'Покупка завершена: %s')
-                """, (deal['buyer_id'], 0, deal['title']))
+                    VALUES (%s, %s, 'escrow_complete', %s)
+                """, (deal['buyer_id'], 0, buyer_desc))
                 
                 msg_query = """
                     INSERT INTO escrow_messages (deal_id, user_id, message, is_system)
