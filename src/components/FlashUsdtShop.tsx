@@ -209,7 +209,7 @@ const FlashUsdtShop = ({ user, onShowAuthDialog, onRefreshUserBalance }: FlashUs
               className="bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900 text-white shadow-lg shadow-blue-500/30 whitespace-nowrap"
               size="lg"
             >
-              <Icon name="TestTube" size={20} className="mr-2" />
+              <Icon name="CircleDollarSign" size={20} className="mr-2" />
               Купить тестовую сумму (100 USDT)
             </Button>
           </div>
