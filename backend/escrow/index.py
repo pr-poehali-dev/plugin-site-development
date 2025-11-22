@@ -538,6 +538,44 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'isBase64Encoded': False
                 }
             
+            elif action == 'delete_deal':
+                deal_id = body.get('deal_id')
+                
+                if not deal_id:
+                    cursor.close()
+                    return {
+                        'statusCode': 400,
+                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({'error': 'Missing deal_id'}),
+                        'isBase64Encoded': False
+                    }
+                
+                cursor.execute('SELECT is_admin FROM users WHERE id = %s', (user_id,))
+                user_data = cursor.fetchone()
+                
+                if not user_data or not user_data['is_admin']:
+                    cursor.close()
+                    return {
+                        'statusCode': 403,
+                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({'error': 'Access denied'}),
+                        'isBase64Encoded': False
+                    }
+                
+                cursor.execute('DELETE FROM escrow_messages WHERE deal_id = %s', (deal_id,))
+                cursor.execute('DELETE FROM escrow_dispute_notifications WHERE deal_id = %s', (deal_id,))
+                cursor.execute('DELETE FROM escrow_deals WHERE id = %s', (deal_id,))
+                
+                conn.commit()
+                cursor.close()
+                
+                return {
+                    'statusCode': 200,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'success': True}),
+                    'isBase64Encoded': False
+                }
+            
             cursor.close()
     
     finally:

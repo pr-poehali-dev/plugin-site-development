@@ -9,6 +9,7 @@ import AdminTopicEditDialog from '@/components/admin/AdminTopicEditDialog';
 import AdminDisputesTab from '@/components/admin/AdminDisputesTab';
 import AdminWithdrawalsTab from '@/components/admin/AdminWithdrawalsTab';
 import AdminDepositsTab from '@/components/admin/AdminDepositsTab';
+import AdminEscrowTab from '@/components/admin/AdminEscrowTab';
 import { useToast } from '@/hooks/use-toast';
 
 interface AdminPanelProps {
@@ -28,9 +29,10 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
   const [users, setUsers] = useState<User[]>([]);
   const [topics, setTopics] = useState<ForumTopic[]>([]);
   const [disputes, setDisputes] = useState<EscrowDeal[]>([]);
+  const [escrowDeals, setEscrowDeals] = useState<EscrowDeal[]>([]);
   const [withdrawals, setWithdrawals] = useState<any[]>([]);
   const [deposits, setDeposits] = useState<any[]>([]);
-  const [activeTab, setActiveTab] = useState<'users' | 'topics' | 'disputes' | 'deposits' | 'withdrawals'>('users');
+  const [activeTab, setActiveTab] = useState<'users' | 'topics' | 'disputes' | 'deposits' | 'withdrawals' | 'escrow'>('users');
   const [editingTopic, setEditingTopic] = useState<ForumTopic | null>(null);
   const [editTitle, setEditTitle] = useState('');
   const [editContent, setEditContent] = useState('');
@@ -53,6 +55,8 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
       fetchWithdrawals();
     } else if (activeTab === 'deposits') {
       fetchDeposits();
+    } else if (activeTab === 'escrow') {
+      fetchAllEscrowDeals();
     }
     fetchAdminNotifications();
     
@@ -108,6 +112,21 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
       setDisputes(data.deals || []);
     } catch (error) {
       console.error('Ошибка загрузки споров:', error);
+    }
+  };
+
+  const fetchAllEscrowDeals = async () => {
+    try {
+      const [openResponse, completedResponse] = await Promise.all([
+        fetch(`${ESCROW_URL}?action=list&status=open`),
+        fetch(`${ESCROW_URL}?action=list&status=completed`)
+      ]);
+      const openData = await openResponse.json();
+      const completedData = await completedResponse.json();
+      const allDeals = [...(openData.deals || []), ...(completedData.deals || [])];
+      setEscrowDeals(allDeals);
+    } catch (error) {
+      console.error('Ошибка загрузки сделок:', error);
     }
   };
 
@@ -488,6 +507,16 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
             >
               Вывод
             </button>
+            <button
+              onClick={() => setActiveTab('escrow')}
+              className={`px-6 py-2 rounded-lg transition-all ${
+                activeTab === 'escrow'
+                  ? 'bg-primary text-primary-foreground'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              Гарант сервис
+            </button>
           </div>
           {activeTab === 'users' && (
             <Button
@@ -539,6 +568,14 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
             withdrawals={withdrawals}
             currentUser={currentUser}
             onUpdate={fetchWithdrawals}
+          />
+        )}
+
+        {activeTab === 'escrow' && (
+          <AdminEscrowTab
+            deals={escrowDeals}
+            currentUser={currentUser}
+            onUpdate={fetchAllEscrowDeals}
           />
         )}
 
