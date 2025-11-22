@@ -1,68 +1,14 @@
 import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Textarea } from '@/components/ui/textarea';
-import Icon from '@/components/ui/icon';
+import Sidebar from '@/components/Sidebar';
+import Header from '@/components/Header';
+import MainContent from '@/components/MainContent';
+import Dialogs from '@/components/Dialogs';
+import { Plugin, Category, User, ForumTopic, ForumComment, SearchResult } from '@/types';
 
 const BACKEND_URL = 'https://functions.poehali.dev/1e67c3bd-abb5-4647-aa02-57410816c1f0';
 const AUTH_URL = 'https://functions.poehali.dev/2497448a-6aff-4df5-97ef-9181cf792f03';
 const FORUM_URL = 'https://functions.poehali.dev/045d6571-633c-4239-ae69-8d76c933532c';
 const PROFILE_URL = 'https://functions.poehali.dev/74bcb5c3-ddb7-4f36-b172-909af29200f2';
-
-interface Plugin {
-  id: number;
-  title: string;
-  description: string;
-  downloads: number;
-  rating: string;
-  status: string;
-  tags: string[];
-  gradient_from: string;
-  gradient_to: string;
-  category_name: string;
-  created_at: string;
-}
-
-interface Category {
-  id: number;
-  name: string;
-  slug: string;
-  color: string;
-}
-
-interface User {
-  id: number;
-  username: string;
-  email: string;
-  avatar_url?: string;
-  vk_url?: string;
-  telegram?: string;
-  discord?: string;
-  bio?: string;
-}
-
-interface ForumTopic {
-  id: number;
-  title: string;
-  content?: string;
-  views: number;
-  is_pinned: boolean;
-  created_at: string;
-  author_name: string;
-  comments_count: number;
-}
-
-interface ForumComment {
-  id: number;
-  content: string;
-  created_at: string;
-  author_id: number;
-  author_name: string;
-  author_avatar: string | null;
-}
 
 const Index = () => {
   const [plugins, setPlugins] = useState<Plugin[]>([]);
@@ -82,7 +28,7 @@ const Index = () => {
   const [newTopicTitle, setNewTopicTitle] = useState('');
   const [newTopicContent, setNewTopicContent] = useState('');
   const [newComment, setNewComment] = useState('');
-  const [searchResults, setSearchResults] = useState<Array<{type: 'plugin' | 'topic' | 'category', id: number, title: string, description?: string}>>([]);
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [showSearchResults, setShowSearchResults] = useState(false);
 
   useEffect(() => {
@@ -157,18 +103,6 @@ const Index = () => {
     setUser(null);
     localStorage.removeItem('user');
     localStorage.removeItem('token');
-  };
-
-  const filteredPlugins = plugins.filter(p => 
-    activeCategory === 'all' || p.category_name === categories.find(c => c.slug === activeCategory)?.name
-  );
-
-  const sortPlugins = (sortBy: string) => {
-    const sorted = [...filteredPlugins];
-    if (sortBy === 'newest') sorted.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-    if (sortBy === 'popular') sorted.sort((a, b) => b.downloads - a.downloads);
-    if (sortBy === 'rating') sorted.sort((a, b) => parseFloat(b.rating) - parseFloat(a.rating));
-    return sorted;
   };
 
   const fetchForumTopics = async (pluginId?: number) => {
@@ -278,7 +212,7 @@ const Index = () => {
       return;
     }
 
-    const results: Array<{type: 'plugin' | 'topic' | 'category', id: number, title: string, description?: string}> = [];
+    const results: SearchResult[] = [];
 
     plugins.forEach(plugin => {
       if (plugin.title.toLowerCase().includes(query) || 
@@ -320,7 +254,7 @@ const Index = () => {
     setShowSearchResults(true);
   };
 
-  const handleSearchResultClick = async (result: {type: 'plugin' | 'topic' | 'category', id: number, title: string}) => {
+  const handleSearchResultClick = async (result: SearchResult) => {
     setShowSearchResults(false);
     setSearchQuery('');
     
@@ -349,567 +283,89 @@ const Index = () => {
     }
   };
 
+  const handleCategoryChange = (category: string, view: 'plugins' | 'forum') => {
+    setActiveView(view);
+    if (view === 'plugins') {
+      setActiveCategory(category === 'categories' ? 'all' : category);
+    }
+    setSelectedTopic(null);
+  };
+
+  const handleTopicSelect = async (topic: ForumTopic) => {
+    setSelectedTopic(topic);
+    try {
+      const response = await fetch(`${FORUM_URL}?topic_id=${topic.id}`);
+      const data = await response.json();
+      setTopicComments(data.comments || []);
+    } catch (error) {
+      console.error('Ошибка загрузки комментариев:', error);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background text-foreground flex" onClick={() => setShowSearchResults(false)}>
-      <aside className={`fixed top-0 left-0 h-full bg-sidebar border-r border-sidebar-border transition-all duration-300 z-30 ${sidebarOpen ? 'w-64' : 'w-0 -translate-x-full'}`}>
-        <div className="p-4">
-          <div className="flex items-center gap-3 mb-8">
-            <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
-              <Icon name="Layers" size={20} className="text-white" />
-            </div>
-            <span className="text-xl font-bold">ТП</span>
-          </div>
-
-          <nav className="space-y-1">
-            {[
-              { icon: 'Home', label: 'Главная', id: 'all', view: 'plugins' },
-              { icon: 'Package', label: 'Плагины', id: 'plugins', view: 'plugins' },
-              { icon: 'Grid3x3', label: 'Категории', id: 'categories', view: 'plugins' },
-              { icon: 'Sparkles', label: 'Новинки', id: 'new', view: 'plugins' },
-              { icon: 'TrendingUp', label: 'Популярное', id: 'popular', view: 'plugins' },
-              { icon: 'MessageSquare', label: 'Форум', id: 'forum', view: 'forum' },
-            ].map(item => (
-              <button
-                key={item.id}
-                onClick={() => {
-                  setActiveView(item.view as 'plugins' | 'forum');
-                  if (item.view === 'plugins') {
-                    setActiveCategory(item.id === 'categories' ? 'all' : item.id);
-                  }
-                  setSelectedTopic(null);
-                }}
-                className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg transition-colors ${
-                  (activeView === item.view && (item.view === 'forum' || activeCategory === item.id)) ? 'bg-sidebar-accent text-sidebar-accent-foreground' : 'hover:bg-sidebar-accent/50'
-                }`}
-              >
-                <Icon name={item.icon as any} size={18} />
-                <span className="text-sm font-medium">{item.label}</span>
-              </button>
-            ))}
-            
-            {user && (
-              <>
-                <button
-                  onClick={() => setShowProfileDialog(true)}
-                  className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg transition-colors hover:bg-sidebar-accent/50 mt-4"
-                >
-                  <Icon name="User" size={18} />
-                  <span className="text-sm font-medium">Личный кабинет</span>
-                </button>
-                <button
-                  onClick={() => setShowTopicDialog(true)}
-                  className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg transition-colors hover:bg-sidebar-accent/50 bg-primary/10 border border-primary/20"
-                >
-                  <Icon name="Plus" size={18} />
-                  <span className="text-sm font-medium">Создать тему</span>
-                </button>
-              </>
-            )}
-          </nav>
-
-          <div className="mt-8 pt-8 border-t border-sidebar-border">
-            <p className="text-xs text-muted-foreground px-4 mb-3">КАТЕГОРИИ</p>
-            {categories.slice(0, 5).map(cat => (
-              <button
-                key={cat.slug}
-                onClick={() => setActiveCategory(cat.slug)}
-                className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg transition-colors text-sm ${
-                  activeCategory === cat.slug ? 'bg-sidebar-accent' : 'hover:bg-sidebar-accent/50'
-                }`}
-              >
-                <div className={`w-2 h-2 rounded-full bg-gradient-to-r ${cat.color}`} />
-                {cat.name}
-              </button>
-            ))}
-          </div>
-        </div>
-      </aside>
+      <Sidebar
+        sidebarOpen={sidebarOpen}
+        activeCategory={activeCategory}
+        activeView={activeView}
+        categories={categories}
+        user={user}
+        onCategoryChange={handleCategoryChange}
+        onShowProfileDialog={() => setShowProfileDialog(true)}
+        onShowTopicDialog={() => setShowTopicDialog(true)}
+      />
 
       <div className={`flex-1 transition-all duration-300 ${sidebarOpen ? 'ml-64' : 'ml-0'}`}>
-        <header className="sticky top-0 z-20 bg-card border-b border-border backdrop-blur-sm bg-opacity-95">
-          <div className="flex items-center justify-between px-6 py-4">
-            <div className="flex items-center gap-4 flex-1">
-              <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(!sidebarOpen)}>
-                <Icon name="Menu" size={20} />
-              </Button>
+        <Header
+          sidebarOpen={sidebarOpen}
+          searchQuery={searchQuery}
+          searchResults={searchResults}
+          showSearchResults={showSearchResults}
+          user={user}
+          onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
+          onSearchChange={setSearchQuery}
+          onSearchFocus={() => searchQuery && setShowSearchResults(true)}
+          onSearchResultClick={handleSearchResultClick}
+          onAuthDialogOpen={() => setAuthDialogOpen(true)}
+          onLogout={handleLogout}
+        />
 
-              <div className="relative max-w-md w-full" onClick={(e) => e.stopPropagation()}>
-                <Icon name="Search" size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground z-10" />
-                <Input
-                  placeholder="Поиск по сайту..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  onFocus={() => searchQuery && setShowSearchResults(true)}
-                  className="pl-10 bg-secondary border-0"
-                />
-                {showSearchResults && searchResults.length > 0 && (
-                  <div className="absolute top-full left-0 right-0 mt-2 bg-card border border-border rounded-lg shadow-lg max-h-96 overflow-y-auto z-50">
-                    {searchResults.map((result, index) => (
-                      <button
-                        key={`${result.type}-${result.id}-${index}`}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleSearchResultClick(result);
-                        }}
-                        className="w-full text-left px-4 py-3 hover:bg-sidebar-accent transition-colors border-b border-border last:border-0"
-                      >
-                        <div className="flex items-start gap-3">
-                          <div className="mt-1">
-                            {result.type === 'plugin' && <Icon name="Package" size={16} className="text-primary" />}
-                            {result.type === 'topic' && <Icon name="MessageSquare" size={16} className="text-accent" />}
-                            {result.type === 'category' && <Icon name="Grid3x3" size={16} className="text-muted-foreground" />}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-1">
-                              <Badge variant="outline" className="text-xs capitalize">
-                                {result.type === 'plugin' ? 'Плагин' : result.type === 'topic' ? 'Тема' : 'Категория'}
-                              </Badge>
-                              <span className="font-medium text-sm truncate">{result.title}</span>
-                            </div>
-                            {result.description && (
-                              <p className="text-xs text-muted-foreground line-clamp-1">{result.description}</p>
-                            )}
-                          </div>
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                )}
-                {showSearchResults && searchResults.length === 0 && searchQuery.trim() && (
-                  <div className="absolute top-full left-0 right-0 mt-2 bg-card border border-border rounded-lg shadow-lg p-4 z-50">
-                    <p className="text-sm text-muted-foreground text-center">Ничего не найдено</p>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3">
-              {user ? (
-                <>
-                  <Button variant="ghost" size="icon">
-                    <Icon name="Bell" size={20} />
-                  </Button>
-                  <div className="flex items-center gap-3">
-                    <div className="text-right">
-                      <p className="text-sm font-medium">{user.username}</p>
-                      <p className="text-xs text-muted-foreground">{user.email}</p>
-                    </div>
-                    <Button variant="outline" size="sm" onClick={handleLogout}>
-                      Выход
-                    </Button>
-                  </div>
-                </>
-              ) : (
-                <Button 
-                  onClick={() => setAuthDialogOpen(true)}
-                  className="bg-primary hover:bg-primary/90 font-semibold px-6"
-                >
-                  РЕГИСТРАЦИЯ
-                </Button>
-              )}
-            </div>
-          </div>
-        </header>
-
-        <main className="p-6">
-          {activeView === 'plugins' ? (
-            <>
-              <div className="mb-6">
-                <h1 className="text-3xl font-bold mb-2">
-                  {activeCategory === 'all' ? 'Все разделы' : 
-                   activeCategory === 'new' ? 'Новинки' : 
-                   activeCategory === 'popular' ? 'Популярное' :
-                   categories.find(c => c.slug === activeCategory)?.name || 'Плагины'}
-                </h1>
-                <p className="text-muted-foreground">
-                  {filteredPlugins.length} {filteredPlugins.length === 1 ? 'плагин' : 'плагинов'}
-                </p>
-              </div>
-
-              {activeCategory === 'all' ? (
-                <div className="flex items-center justify-center min-h-[400px]">
-                  <div className="text-center">
-                    <div className="w-20 h-20 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                      <Icon name="Layers" size={40} className="text-white" />
-                    </div>
-                    <h2 className="text-2xl font-bold mb-2">Добро пожаловать!</h2>
-                    <p className="text-muted-foreground">Выберите раздел в меню слева</p>
-                  </div>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {sortPlugins('newest').map((plugin) => (
-                <div
-                  key={plugin.id}
-                  className="bg-card border border-border rounded-xl p-4 hover:border-primary/50 transition-all cursor-pointer group"
-                >
-                  <div className="flex items-start gap-4">
-                    <div 
-                      className="w-12 h-12 rounded-lg flex-shrink-0"
-                      style={{
-                        background: `linear-gradient(135deg, ${plugin.gradient_from}, ${plugin.gradient_to})`
-                      }}
-                    />
-
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-4 mb-2">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1">
-                            {plugin.status === 'premium' && (
-                              <Badge variant="default" className="bg-primary">
-                                СБОРКА
-                              </Badge>
-                            )}
-                            {plugin.status === 'new' && (
-                              <Badge variant="secondary" className="bg-accent">
-                                НОВЫЙ
-                              </Badge>
-                            )}
-                          </div>
-                          <h3 className="font-semibold text-lg group-hover:text-primary transition-colors truncate">
-                            {plugin.title}
-                          </h3>
-                          <p className="text-sm text-muted-foreground line-clamp-1">
-                            {plugin.description}
-                          </p>
-                        </div>
-
-                        <div className="flex items-center gap-6 text-sm text-muted-foreground flex-shrink-0">
-                          <div className="flex items-center gap-1">
-                            <Icon name="Download" size={14} />
-                            <span>{plugin.downloads}</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Icon name="Star" size={14} className="text-yellow-500 fill-yellow-500" />
-                            <span>{plugin.rating}</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Icon name="Clock" size={14} />
-                            <span>{new Date(plugin.created_at).toLocaleDateString('ru')}</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        {plugin.tags.map(tag => (
-                          <Badge key={tag} variant="outline" className="text-xs">
-                            {tag}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-                </div>
-              )}
-            </>
-          ) : selectedTopic ? (
-            <>
-              <div className="mb-6">
-                <Button variant="ghost" onClick={() => setSelectedTopic(null)} className="mb-4">
-                  <Icon name="ArrowLeft" size={18} className="mr-2" />
-                  Назад к темам
-                </Button>
-                <div className="bg-card border border-border rounded-xl p-6">
-                  <div className="flex items-start gap-4 mb-6">
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-lg font-bold">
-                      {selectedTopic.author_name[0].toUpperCase()}
-                    </div>
-                    <div className="flex-1">
-                      <h1 className="text-2xl font-bold mb-2">{selectedTopic.title}</h1>
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                        <span>Автор: {selectedTopic.author_name}</span>
-                        <span>•</span>
-                        <span>{new Date(selectedTopic.created_at).toLocaleDateString('ru')}</span>
-                        <span>•</span>
-                        <span>{selectedTopic.views} просмотров</span>
-                      </div>
-                    </div>
-                  </div>
-                  {selectedTopic.content && (
-                    <div className="prose prose-invert max-w-none mb-6 pb-6 border-b border-border">
-                      <p className="text-foreground">{selectedTopic.content}</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <h2 className="text-xl font-bold">Комментарии ({topicComments.length})</h2>
-                
-                {user && (
-                  <div className="bg-card border border-border rounded-xl p-4">
-                    <Textarea
-                      placeholder="Написать комментарий..."
-                      value={newComment}
-                      onChange={(e) => setNewComment(e.target.value)}
-                      className="mb-3 min-h-[100px]"
-                    />
-                    <Button onClick={handleCreateComment} className="bg-primary">
-                      Отправить
-                    </Button>
-                  </div>
-                )}
-
-                {topicComments.map((comment) => (
-                  <div key={comment.id} className="bg-card border border-border rounded-xl p-4">
-                    <div className="flex items-start gap-3">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center text-sm font-bold">
-                        {comment.author_name[0].toUpperCase()}
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <span className="font-semibold">{comment.author_name}</span>
-                          <span className="text-xs text-muted-foreground">
-                            {new Date(comment.created_at).toLocaleDateString('ru')} в {new Date(comment.created_at).toLocaleTimeString('ru', { hour: '2-digit', minute: '2-digit' })}
-                          </span>
-                        </div>
-                        <p className="text-foreground">{comment.content}</p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </>
-          ) : (
-            <>
-              <div className="mb-6">
-                <h1 className="text-3xl font-bold mb-2">Форум</h1>
-                <p className="text-muted-foreground">
-                  {forumTopics.length} {forumTopics.length === 1 ? 'тема' : 'тем'}
-                </p>
-              </div>
-
-              <div className="flex items-center justify-between mb-6">
-                <Tabs defaultValue="newest">
-                  <TabsList>
-                    <TabsTrigger value="newest">Последние посты</TabsTrigger>
-                    <TabsTrigger value="new">Новые темы</TabsTrigger>
-                    <TabsTrigger value="hot">Горячие темы</TabsTrigger>
-                    <TabsTrigger value="views">Наиболее просматриваемые</TabsTrigger>
-                  </TabsList>
-                </Tabs>
-                
-                {user && (
-                  <Button onClick={() => setShowTopicDialog(true)} className="bg-primary">
-                    <Icon name="Plus" size={18} className="mr-2" />
-                    Создать тему
-                  </Button>
-                )}
-              </div>
-
-              <div className="space-y-3">
-                {forumTopics.map((topic) => (
-                  <div
-                    key={topic.id}
-                    onClick={async () => {
-                      setSelectedTopic(topic);
-                      try {
-                        const response = await fetch(`${FORUM_URL}?topic_id=${topic.id}`);
-                        const data = await response.json();
-                        setTopicComments(data.comments || []);
-                      } catch (error) {
-                        console.error('Ошибка загрузки комментариев:', error);
-                      }
-                    }}
-                    className="bg-card border border-border rounded-xl p-4 hover:border-primary/50 transition-all cursor-pointer group"
-                  >
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex items-start gap-3 flex-1">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-sm font-bold">
-                          {topic.author_name[0].toUpperCase()}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
-                            {topic.is_pinned && (
-                              <Badge variant="default" className="bg-primary">
-                                <Icon name="Pin" size={12} className="mr-1" />
-                                Закреплено
-                              </Badge>
-                            )}
-                          </div>
-                          <h3 className="font-semibold text-lg group-hover:text-primary transition-colors truncate mb-1">
-                            {topic.title}
-                          </h3>
-                          <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                            <span>Автор: {topic.author_name}</span>
-                            <span>•</span>
-                            <span>{new Date(topic.created_at).toLocaleDateString('ru')}</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-6 text-sm text-muted-foreground flex-shrink-0">
-                        <div className="flex items-center gap-1">
-                          <Icon name="MessageCircle" size={14} />
-                          <span>{topic.comments_count}</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Icon name="Eye" size={14} />
-                          <span>{topic.views}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </>
-          )}
-        </main>
+        <MainContent
+          activeView={activeView}
+          activeCategory={activeCategory}
+          plugins={plugins}
+          categories={categories}
+          forumTopics={forumTopics}
+          selectedTopic={selectedTopic}
+          topicComments={topicComments}
+          user={user}
+          newComment={newComment}
+          onShowTopicDialog={() => setShowTopicDialog(true)}
+          onTopicSelect={handleTopicSelect}
+          onBackToTopics={() => setSelectedTopic(null)}
+          onCommentChange={setNewComment}
+          onCreateComment={handleCreateComment}
+        />
       </div>
 
-      <Dialog open={authDialogOpen} onOpenChange={setAuthDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{authMode === 'login' ? 'Вход' : 'Регистрация'}</DialogTitle>
-          </DialogHeader>
-
-          <form onSubmit={handleAuth} className="space-y-4">
-            <div>
-              <label className="text-sm font-medium mb-1 block">Имя пользователя</label>
-              <Input name="username" required />
-            </div>
-
-            {authMode === 'register' && (
-              <div>
-                <label className="text-sm font-medium mb-1 block">Email</label>
-                <Input name="email" type="email" required />
-              </div>
-            )}
-
-            <div>
-              <label className="text-sm font-medium mb-1 block">Пароль</label>
-              <Input name="password" type="password" required />
-            </div>
-
-            <Button type="submit" className="w-full bg-primary hover:bg-primary/90">
-              {authMode === 'login' ? 'Войти' : 'Зарегистрироваться'}
-            </Button>
-
-            <button
-              type="button"
-              onClick={() => setAuthMode(authMode === 'login' ? 'register' : 'login')}
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors w-full text-center"
-            >
-              {authMode === 'login' ? 'Нет аккаунта? Зарегистрироваться' : 'Уже есть аккаунт? Войти'}
-            </button>
-          </form>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={showTopicDialog} onOpenChange={setShowTopicDialog}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Создать новую тему</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <label className="text-sm font-medium mb-1 block">Название темы</label>
-              <Input 
-                value={newTopicTitle} 
-                onChange={(e) => setNewTopicTitle(e.target.value)}
-                placeholder="Введите название темы"
-              />
-            </div>
-            <div>
-              <label className="text-sm font-medium mb-1 block">Описание</label>
-              <Textarea 
-                value={newTopicContent}
-                onChange={(e) => setNewTopicContent(e.target.value)}
-                className="min-h-[150px]"
-                placeholder="Опишите вашу тему..."
-              />
-            </div>
-            <Button onClick={handleCreateTopic} className="w-full bg-primary">
-              Создать тему
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={showProfileDialog} onOpenChange={setShowProfileDialog}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Личный кабинет</DialogTitle>
-          </DialogHeader>
-          {user && (
-            <div className="space-y-6">
-              <div className="flex items-center gap-4">
-                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-2xl font-bold">
-                  {user.username[0].toUpperCase()}
-                </div>
-                <div>
-                  <h3 className="text-xl font-bold">{user.username}</h3>
-                  <p className="text-sm text-muted-foreground">{user.email}</p>
-                </div>
-              </div>
-              
-              <div className="space-y-4">
-                <div>
-                  <label className="text-sm font-medium mb-1 block">О себе</label>
-                  <Textarea 
-                    defaultValue={user.bio || ''}
-                    onBlur={(e) => handleUpdateProfile({ bio: e.target.value })}
-                    className="min-h-[100px]"
-                    placeholder="Расскажите о себе..."
-                  />
-                </div>
-                
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-sm font-medium mb-1 block flex items-center gap-2">
-                      <Icon name="MessageCircle" size={16} />
-                      VK
-                    </label>
-                    <Input 
-                      defaultValue={user.vk_url || ''}
-                      onBlur={(e) => handleUpdateProfile({ vk_url: e.target.value })}
-                      placeholder="https://vk.com/..."
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="text-sm font-medium mb-1 block flex items-center gap-2">
-                      <Icon name="Send" size={16} />
-                      Telegram
-                    </label>
-                    <Input 
-                      defaultValue={user.telegram || ''}
-                      onBlur={(e) => handleUpdateProfile({ telegram: e.target.value })}
-                      placeholder="@username"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="text-sm font-medium mb-1 block flex items-center gap-2">
-                      <Icon name="MessageSquare" size={16} />
-                      Discord
-                    </label>
-                    <Input 
-                      defaultValue={user.discord || ''}
-                      onBlur={(e) => handleUpdateProfile({ discord: e.target.value })}
-                      placeholder="username#1234"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="text-sm font-medium mb-1 block flex items-center gap-2">
-                      <Icon name="Image" size={16} />
-                      URL аватарки
-                    </label>
-                    <Input 
-                      defaultValue={user.avatar_url || ''}
-                      onBlur={(e) => handleUpdateProfile({ avatar_url: e.target.value })}
-                      placeholder="https://..."
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
+      <Dialogs
+        authDialogOpen={authDialogOpen}
+        authMode={authMode}
+        showTopicDialog={showTopicDialog}
+        showProfileDialog={showProfileDialog}
+        user={user}
+        newTopicTitle={newTopicTitle}
+        newTopicContent={newTopicContent}
+        onAuthDialogChange={setAuthDialogOpen}
+        onAuthModeChange={setAuthMode}
+        onAuthSubmit={handleAuth}
+        onTopicDialogChange={setShowTopicDialog}
+        onTopicTitleChange={setNewTopicTitle}
+        onTopicContentChange={setNewTopicContent}
+        onCreateTopic={handleCreateTopic}
+        onProfileDialogChange={setShowProfileDialog}
+        onUpdateProfile={handleUpdateProfile}
+      />
     </div>
   );
 };
