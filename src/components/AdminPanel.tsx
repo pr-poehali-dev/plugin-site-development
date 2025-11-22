@@ -23,6 +23,7 @@ const ESCROW_URL = 'https://functions.poehali.dev/82c75fbc-83e4-4448-9ff8-1c8ef9
 const WITHDRAWAL_URL = 'https://functions.poehali.dev/09f16983-ec42-41fe-a7bd-695752ee11c5';
 const NOTIFICATIONS_URL = 'https://functions.poehali.dev/6c968792-7d48-41a9-af0a-c92adb047acb';
 const CRYPTO_URL = 'https://functions.poehali.dev/8caa3b76-72e5-42b5-9415-91d1f9b05210';
+const FLASH_USDT_URL = 'https://functions.poehali.dev/9d93686d-9a6f-47bc-85a8-7b7c28e4edd7';
 
 const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
   const { toast } = useToast();
@@ -32,7 +33,8 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
   const [escrowDeals, setEscrowDeals] = useState<EscrowDeal[]>([]);
   const [withdrawals, setWithdrawals] = useState<any[]>([]);
   const [deposits, setDeposits] = useState<any[]>([]);
-  const [activeTab, setActiveTab] = useState<'users' | 'topics' | 'disputes' | 'deposits' | 'withdrawals' | 'escrow'>('users');
+  const [activeTab, setActiveTab] = useState<'users' | 'topics' | 'disputes' | 'deposits' | 'withdrawals' | 'escrow' | 'flash-usdt'>('users');
+  const [flashUsdtOrders, setFlashUsdtOrders] = useState<any[]>([]);
   const [editingTopic, setEditingTopic] = useState<ForumTopic | null>(null);
   const [editTitle, setEditTitle] = useState('');
   const [editContent, setEditContent] = useState('');
@@ -57,6 +59,8 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
       fetchDeposits();
     } else if (activeTab === 'escrow') {
       fetchAllEscrowDeals();
+    } else if (activeTab === 'flash-usdt') {
+      fetchFlashUsdtOrders();
     }
     fetchAdminNotifications();
     
@@ -150,7 +154,19 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
       const data = await response.json();
       setDeposits(data.deposits || []);
     } catch (error) {
-      console.error('Ошибка загрузки пополнений:', error);
+      console.error('Ошибка загрузки пополнлений:', error);
+    }
+  };
+
+  const fetchFlashUsdtOrders = async () => {
+    try {
+      const response = await fetch(`${FLASH_USDT_URL}?action=admin_orders`, {
+        headers: { 'X-User-Id': currentUser.id.toString() }
+      });
+      const data = await response.json();
+      setFlashUsdtOrders(data.orders || []);
+    } catch (error) {
+      console.error('Ошибка загрузки заказов Flash USDT:', error);
     }
   };
 
@@ -517,6 +533,16 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
             >
               Гарант сервис
             </button>
+            <button
+              onClick={() => setActiveTab('flash-usdt')}
+              className={`px-6 py-2 rounded-lg transition-all ${
+                activeTab === 'flash-usdt'
+                  ? 'bg-primary text-primary-foreground'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              Flash USDT
+            </button>
           </div>
           {activeTab === 'users' && (
             <Button
@@ -577,6 +603,57 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
             currentUser={currentUser}
             onUpdate={fetchAllEscrowDeals}
           />
+        )}
+
+        {activeTab === 'flash-usdt' && (
+          <div className="space-y-4">
+            <div className="bg-card border border-border rounded-lg overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="bg-muted/50">
+                      <th className="px-4 py-3 text-left text-sm font-semibold">ID</th>
+                      <th className="px-4 py-3 text-left text-sm font-semibold">Пользователь</th>
+                      <th className="px-4 py-3 text-left text-sm font-semibold">Количество</th>
+                      <th className="px-4 py-3 text-left text-sm font-semibold">Цена</th>
+                      <th className="px-4 py-3 text-left text-sm font-semibold">Кошелек</th>
+                      <th className="px-4 py-3 text-left text-sm font-semibold">Статус</th>
+                      <th className="px-4 py-3 text-left text-sm font-semibold">Дата</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {flashUsdtOrders.map((order) => (
+                      <tr key={order.id} className="border-t border-border hover:bg-muted/30">
+                        <td className="px-4 py-3 text-sm">#{order.id}</td>
+                        <td className="px-4 py-3 text-sm font-medium">{order.username || `User #${order.user_id}`}</td>
+                        <td className="px-4 py-3 text-sm">{Number(order.amount).toLocaleString('ru-RU')} Flash USDT</td>
+                        <td className="px-4 py-3 text-sm font-bold text-green-400">${Number(order.price).toLocaleString('ru-RU')}</td>
+                        <td className="px-4 py-3 text-sm font-mono text-xs">{order.wallet_address}</td>
+                        <td className="px-4 py-3">
+                          <span className={`px-2 py-1 rounded text-xs font-medium ${
+                            order.status === 'completed' ? 'bg-green-500/20 text-green-400' :
+                            order.status === 'pending' ? 'bg-yellow-500/20 text-yellow-400' :
+                            'bg-red-500/20 text-red-400'
+                          }`}>
+                            {order.status === 'completed' ? 'Выполнен' : order.status === 'pending' ? 'Ожидает' : 'Отменен'}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-sm text-muted-foreground">
+                          {new Date(order.created_at).toLocaleString('ru-RU')}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            {flashUsdtOrders.length === 0 && (
+              <div className="text-center py-12 text-muted-foreground">
+                <Icon name="Package" size={48} className="mx-auto mb-4 opacity-50" />
+                <p>Заказов Flash USDT пока нет</p>
+              </div>
+            )}
+          </div>
         )}
 
         <AdminTopicEditDialog

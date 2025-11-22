@@ -4,11 +4,65 @@ from typing import Dict, Any
 import psycopg2
 from psycopg2.extras import RealDictCursor
 
+def get_admin_orders(event: Dict[str, Any]) -> Dict[str, Any]:
+    '''Get all Flash USDT orders for admin panel'''
+    try:
+        dsn = os.environ.get('DATABASE_URL')
+        if not dsn:
+            return {
+                'statusCode': 500,
+                'headers': {
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*'
+                },
+                'isBase64Encoded': False,
+                'body': json.dumps({'error': 'Database configuration error'})
+            }
+        
+        conn = psycopg2.connect(dsn)
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
+        
+        cursor.execute('''
+            SELECT 
+                fo.id, fo.user_id, fo.package_id, fo.amount, fo.price, 
+                fo.wallet_address, fo.status, fo.created_at, fo.updated_at,
+                u.username
+            FROM flash_usdt_orders fo
+            LEFT JOIN users u ON fo.user_id = u.id
+            ORDER BY fo.created_at DESC
+        ''')
+        
+        orders = cursor.fetchall()
+        cursor.close()
+        conn.close()
+        
+        return {
+            'statusCode': 200,
+            'headers': {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*'
+            },
+            'isBase64Encoded': False,
+            'body': json.dumps({
+                'orders': [dict(order) for order in orders]
+            }, default=str)
+        }
+    except Exception as e:
+        return {
+            'statusCode': 500,
+            'headers': {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*'
+            },
+            'isBase64Encoded': False,
+            'body': json.dumps({'error': str(e)})
+        }
+
 def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     '''
-    Business: Process Flash USDT purchases with balance check and deduction
-    Args: event with httpMethod, body containing userId, packageId, amount, price, walletAddress
-    Returns: HTTP response with transaction details or error
+    Business: Process Flash USDT purchases with balance check and deduction, admin orders view
+    Args: event with httpMethod, queryStringParameters (action=admin_orders), body for purchases
+    Returns: HTTP response with transaction details, orders list, or error
     '''
     method: str = event.get('httpMethod', 'GET')
     
@@ -17,11 +71,28 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             'statusCode': 200,
             'headers': {
                 'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Methods': 'POST, OPTIONS',
-                'Access-Control-Allow-Headers': 'Content-Type',
+                'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+                'Access-Control-Allow-Headers': 'Content-Type, X-User-Id',
                 'Access-Control-Max-Age': '86400'
             },
             'body': ''
+        }
+    
+    if method == 'GET':
+        query_params = event.get('queryStringParameters') or {}
+        action = query_params.get('action')
+        
+        if action == 'admin_orders':
+            return get_admin_orders(event)
+        
+        return {
+            'statusCode': 400,
+            'headers': {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*'
+            },
+            'isBase64Encoded': False,
+            'body': json.dumps({'error': 'Invalid action'})
         }
     
     if method != 'POST':
