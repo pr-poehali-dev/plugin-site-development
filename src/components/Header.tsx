@@ -109,13 +109,13 @@ const Header = ({
               <div className="flex items-center gap-3">
                 <Button 
                   variant="ghost" 
-                  className="text-left flex items-center gap-3"
+                  className="text-left flex items-center gap-3 group"
                   onClick={onShowProfile}
                 >
                   <div className="text-right">
-                    <p className="text-sm font-medium">{user.username}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {(user.balance || 0).toFixed(2)} USDT
+                    <p className="text-sm font-medium group-hover:text-orange-400 transition-colors">{user.username}</p>
+                    <p className="text-xs text-emerald-400">
+                      <span className="font-semibold">{(user.balance || 0).toFixed(2)}</span> <span className="text-emerald-500">USDT</span>
                     </p>
                   </div>
                   <Icon name="User" size={20} />
