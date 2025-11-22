@@ -596,23 +596,17 @@ const UserProfile = ({ user, isOwnProfile, onClose, onTopUpBalance, onUpdateProf
                     <p className="text-lg font-semibold text-green-400">{cryptoPayment.network}</p>
                   </div>
 
-                  <div className="flex items-center justify-center py-6">
-                    <div className="relative p-6 bg-white rounded-2xl shadow-lg">
-                      <div className="absolute inset-0 bg-gradient-to-br from-green-400/10 to-green-600/10 rounded-2xl" />
-                      <div className="relative">
-                        <QRCodeSVG 
-                          value={cryptoPayment.wallet_address} 
-                          size={220}
-                          level="H"
-                          includeMargin={false}
-                          fgColor="#16a34a"
-                          bgColor="#ffffff"
-                          style={{ display: 'block' }}
-                        />
-                      </div>
-                      <div className="absolute -top-3 -right-3 w-8 h-8 bg-green-500 rounded-full flex items-center justify-center shadow-lg">
-                        <Icon name="Wallet" size={16} className="text-white" />
-                      </div>
+                  <div className="flex items-center justify-center py-4">
+                    <div className="relative p-3 bg-gradient-to-br from-green-800 to-green-900 rounded-xl shadow-lg border border-green-700/50">
+                      <QRCodeSVG 
+                        value={cryptoPayment.wallet_address} 
+                        size={110}
+                        level="H"
+                        includeMargin={false}
+                        fgColor="#ffffff"
+                        bgColor="transparent"
+                        style={{ display: 'block' }}
+                      />
                     </div>
                   </div>
 
