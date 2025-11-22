@@ -502,6 +502,13 @@ const DealDetailDialog = ({ deal, user, onClose, onUpdate }: DealDetailDialogPro
 
   const joinDeal = async () => {
     if (!user) return;
+    
+    // Проверка баланса перед присоединением
+    if ((user.balance || 0) < currentDeal.price) {
+      alert(`Недостаточно USDT на балансе. У вас: ${(user.balance || 0).toFixed(2)} USDT, требуется: ${currentDeal.price} USDT. Пополните баланс для участия в сделке.`);
+      return;
+    }
+    
     setLoading(true);
 
     try {
@@ -520,10 +527,10 @@ const DealDetailDialog = ({ deal, user, onClose, onUpdate }: DealDetailDialogPro
       const data = await response.json();
       if (data.success) {
         alert('Вы присоединились к сделке! Средства заблокированы до завершения.');
+        await fetchDealDetails();
         onUpdate();
-        onClose();
       } else if (data.error === 'Insufficient balance') {
-        alert('Недостаточно средств на балансе. Пополните баланс для участия в сделке.');
+        alert(`Недостаточно USDT на балансе. Требуется: ${currentDeal.price} USDT. Пополните баланс для участия в сделке.`);
       } else {
         alert(data.error || 'Ошибка присоединения к сделке');
       }
@@ -598,7 +605,7 @@ const DealDetailDialog = ({ deal, user, onClose, onUpdate }: DealDetailDialogPro
     setLoading(true);
 
     try {
-      await fetch(ESCROW_URL, {
+      const response = await fetch(ESCROW_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -609,9 +616,13 @@ const DealDetailDialog = ({ deal, user, onClose, onUpdate }: DealDetailDialogPro
           deal_id: currentDeal.id
         })
       });
-      alert('Сделка завершена!');
-      onUpdate();
-      onClose();
+      
+      const data = await response.json();
+      if (data.success) {
+        alert('Сделка завершена!');
+        await fetchDealDetails();
+        onUpdate();
+      }
     } catch (error) {
       console.error('Ошибка:', error);
     } finally {
