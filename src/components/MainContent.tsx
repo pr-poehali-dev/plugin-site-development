@@ -220,7 +220,7 @@ const MainContent = ({
             )}
 
             {topicComments.map((comment, index) => (
-              <div key={comment.id} className="bg-card border border-border rounded-xl p-4 animate-slide-up" style={{ animationDelay: `${index * 0.05}s` }}
+              <div key={comment.id} className="bg-card border border-border rounded-xl p-4 animate-slide-up" style={{ animationDelay: `${index * 0.05}s` }}>
                 <div className="flex items-start gap-3">
                   <div className="relative">
                     <Avatar 
