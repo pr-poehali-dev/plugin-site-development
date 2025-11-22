@@ -107,6 +107,24 @@ const Index = () => {
     if ('Notification' in window && Notification.permission === 'default') {
       Notification.requestPermission();
     }
+    
+    const savedScrollPos = sessionStorage.getItem('scrollPosition');
+    if (savedScrollPos) {
+      setTimeout(() => {
+        window.scrollTo(0, parseInt(savedScrollPos));
+        sessionStorage.removeItem('scrollPosition');
+      }, 100);
+    }
+    
+    const saveScrollPosition = () => {
+      sessionStorage.setItem('scrollPosition', window.scrollY.toString());
+    };
+    
+    window.addEventListener('beforeunload', saveScrollPosition);
+    
+    return () => {
+      window.removeEventListener('beforeunload', saveScrollPosition);
+    };
   }, []);
 
   const handleAuth = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -225,6 +243,7 @@ const Index = () => {
       localStorage.setItem('activeCategory', finalCategory);
     }
     setSelectedTopic(null);
+    window.scrollTo(0, 0);
   };
 
   const handleUserClick = (userId: number) => {
