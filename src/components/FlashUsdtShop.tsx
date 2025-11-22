@@ -22,50 +22,25 @@ const FlashUsdtShop = ({ user, onShowAuthDialog, onRefreshUserBalance }: FlashUs
   const [walletAddress, setWalletAddress] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const handleTestPurchase = async () => {
+  const handleTestPurchase = () => {
     if (!user) {
       onShowAuthDialog();
       return;
     }
 
-    setIsProcessing(true);
+    const testPackage = {
+      id: 0,
+      amount: 10,
+      price: 100,
+      discount: '99%',
+      color: 'from-blue-600 to-blue-800',
+      borderColor: 'border-blue-500/30',
+      icon: 'TestTube',
+      popular: false
+    };
 
-    try {
-      const response = await fetch('https://functions.poehali.dev/9d93686d-9a6f-47bc-85a8-7b7c28e4edd7', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId: user.id,
-          packageId: 0,
-          amount: 1000,
-          price: 1,
-          walletAddress: 'TEST_WALLET_ADDRESS'
-        })
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Ошибка при создании тестового заказа');
-      }
-      
-      toast({
-        title: 'Тестовая покупка успешна',
-        description: 'Вы получили 1000 Flash USDT для тестирования (1 USDT списан с баланса).'
-      });
-
-      if (onRefreshUserBalance) {
-        onRefreshUserBalance();
-      }
-    } catch (error) {
-      toast({
-        title: 'Ошибка',
-        description: error instanceof Error ? error.message : 'Не удалось создать тестовый заказ.',
-        variant: 'destructive'
-      });
-    } finally {
-      setIsProcessing(false);
-    }
+    setSelectedPackage(testPackage);
+    setShowPurchaseDialog(true);
   };
 
   const packages = [
@@ -231,21 +206,11 @@ const FlashUsdtShop = ({ user, onShowAuthDialog, onRefreshUserBalance }: FlashUs
             </div>
             <Button
               onClick={handleTestPurchase}
-              disabled={isProcessing}
               className="bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900 text-white shadow-lg shadow-blue-500/30 whitespace-nowrap"
               size="lg"
             >
-              {isProcessing ? (
-                <>
-                  <Icon name="Loader2" size={20} className="mr-2 animate-spin" />
-                  Обработка...
-                </>
-              ) : (
-                <>
-                  <Icon name="TestTube" size={20} className="mr-2" />
-                  Купить тестовую сумму (1 USDT)
-                </>
-              )}
+              <Icon name="TestTube" size={20} className="mr-2" />
+              Купить тестовую сумму (100 USDT)
             </Button>
           </div>
           
@@ -452,8 +417,19 @@ const FlashUsdtShop = ({ user, onShowAuthDialog, onRefreshUserBalance }: FlashUs
 
           {selectedPackage && (
             <div className="space-y-6">
-              <Card className="p-4 bg-yellow-500/5 border-yellow-500/20">
+              <Card className={`p-4 ${selectedPackage.id === 0 ? 'bg-blue-500/5 border-blue-500/20' : 'bg-yellow-500/5 border-yellow-500/20'}`}>
                 <div className="space-y-2">
+                  {selectedPackage.id === 0 && (
+                    <div className="mb-3 p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Icon name="TestTube" size={20} className="text-blue-400" />
+                        <span className="font-bold text-blue-400">Тестовая покупка</span>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        Получите пробную сумму 10 Flash USDT для проверки качества токена
+                      </p>
+                    </div>
+                  )}
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-muted-foreground">Количество:</span>
                     <span className="font-bold text-lg">{selectedPackage.amount.toLocaleString('ru-RU')} Flash USDT</span>
