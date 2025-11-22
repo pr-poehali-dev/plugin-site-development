@@ -378,6 +378,116 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'isBase64Encoded': False
                 }
         
+        elif action == 'place_bet':
+            headers = event.get('headers', {})
+            user_id = headers.get('X-User-Id') or headers.get('x-user-id')
+            
+            if not user_id:
+                return {
+                    'statusCode': 401,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'error': 'Требуется авторизация'}),
+                    'isBase64Encoded': False
+                }
+            
+            amount = body_data.get('amount')
+            game_type = body_data.get('game_type', 'unknown')
+            
+            if not amount or amount <= 0:
+                return {
+                    'statusCode': 400,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'success': False, 'message': 'Некорректная сумма ставки'}),
+                    'isBase64Encoded': False
+                }
+            
+            cur.execute("SELECT balance FROM users WHERE id = %s", (int(user_id),))
+            user = cur.fetchone()
+            
+            if not user or user['balance'] < amount:
+                return {
+                    'statusCode': 400,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'success': False, 'message': 'Недостаточно средств'}),
+                    'isBase64Encoded': False
+                }
+            
+            cur.execute(
+                "UPDATE users SET balance = balance - %s WHERE id = %s RETURNING balance",
+                (float(amount), int(user_id))
+            )
+            result = cur.fetchone()
+            
+            cur.execute(
+                "INSERT INTO transactions (user_id, amount, type, description) VALUES (%s, %s, %s, %s)",
+                (int(user_id), -float(amount), 'bet', f'Ставка в игре {game_type}')
+            )
+            
+            conn.commit()
+            
+            return {
+                'statusCode': 200,
+                'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                'body': json.dumps({
+                    'success': True,
+                    'new_balance': float(result['balance']) if result else 0
+                }),
+                'isBase64Encoded': False
+            }
+        
+        elif action == 'complete_game':
+            headers = event.get('headers', {})
+            user_id = headers.get('X-User-Id') or headers.get('x-user-id')
+            
+            if not user_id:
+                return {
+                    'statusCode': 401,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'error': 'Требуется авторизация'}),
+                    'isBase64Encoded': False
+                }
+            
+            won = body_data.get('won', False)
+            amount = body_data.get('amount', 0)
+            game_type = body_data.get('game_type', 'unknown')
+            
+            if won and amount > 0:
+                cur.execute(
+                    "UPDATE users SET balance = balance + %s WHERE id = %s RETURNING balance",
+                    (float(amount), int(user_id))
+                )
+                result = cur.fetchone()
+                
+                cur.execute(
+                    "INSERT INTO transactions (user_id, amount, type, description) VALUES (%s, %s, %s, %s)",
+                    (int(user_id), float(amount), 'win', f'Выигрыш в игре {game_type}')
+                )
+                
+                conn.commit()
+                
+                return {
+                    'statusCode': 200,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({
+                        'success': True,
+                        'new_balance': float(result['balance']) if result else 0
+                    }),
+                    'isBase64Encoded': False
+                }
+            else:
+                cur.execute("SELECT balance FROM users WHERE id = %s", (int(user_id),))
+                user = cur.fetchone()
+                
+                return {
+                    'statusCode': 200,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({
+                        'success': True,
+                        'new_balance': float(user['balance']) if user else 0
+                    }),
+                    'isBase64Encoded': False
+                }
+        
         else:
             return {
                 'statusCode': 400,
