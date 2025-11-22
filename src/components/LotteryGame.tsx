@@ -42,8 +42,9 @@ interface ChatMessage {
 }
 
 const TICKET_PRICE = 50;
-const MAX_TICKETS = 25;
+const MAX_TICKETS = 10;
 const DRAW_DELAY_MINUTES = 30;
+const PRIZE_AMOUNT = 400;
 
 const LotteryGame = ({ user, onShowAuthDialog, onRefreshUserBalance }: LotteryGameProps) => {
   const { toast } = useToast();
@@ -301,7 +302,7 @@ const LotteryGame = ({ user, onShowAuthDialog, onRefreshUserBalance }: LotteryGa
       <div>
         <h1 className="text-3xl font-bold mb-2">🎫 Лотерея</h1>
         <p className="text-muted-foreground">
-          25 билетов по 50 USDT. Победитель получает весь призовой фонд
+          10 билетов по 50 USDT. Победитель получает 400 USDT
         </p>
       </div>
 
@@ -358,7 +359,7 @@ const LotteryGame = ({ user, onShowAuthDialog, onRefreshUserBalance }: LotteryGa
             <h3 className="text-2xl font-bold">🎉 Победитель определен!</h3>
             <p className="text-lg">
               <strong className="text-yellow-400">{currentRound.winner_username}</strong> выиграл{' '}
-              <strong className="text-green-400">{currentRound.prize_pool} USDT</strong>
+              <strong className="text-green-400">{PRIZE_AMOUNT} USDT</strong>
             </p>
             <p className="text-sm text-muted-foreground">
               Выигрышный билет: #{currentRound.winner_ticket_number}
@@ -526,9 +527,9 @@ const LotteryGame = ({ user, onShowAuthDialog, onRefreshUserBalance }: LotteryGa
           Правила лотереи
         </h3>
         <div className="space-y-3 text-sm text-muted-foreground">
-          <p>• <strong>Билетов:</strong> всего 25 мест в каждом розыгрыше</p>
+          <p>• <strong>Билетов:</strong> всего 10 мест в каждом розыгрыше</p>
           <p>• <strong>Цена билета:</strong> {TICKET_PRICE} USDT</p>
-          <p>• <strong>Призовой фонд:</strong> все деньги от продажи билетов</p>
+          <p>• <strong>Приз:</strong> фиксированная сумма {PRIZE_AMOUNT} USDT победителю</p>
           <p>• <strong>Покупка:</strong> один игрок может купить неограниченное количество билетов</p>
           <p>• <strong>Розыгрыш:</strong> через {DRAW_DELAY_MINUTES} минут после продажи всех билетов</p>
           <p>• <strong>Победитель:</strong> выбирается случайно из всех купленных билетов</p>

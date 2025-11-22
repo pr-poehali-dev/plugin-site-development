@@ -49,7 +49,7 @@ const CasinoHub = ({ user, onShowAuthDialog, onRefreshUserBalance }: CasinoHubPr
       id: 'lottery' as GameType,
       name: 'Лотерея',
       icon: 'Ticket',
-      description: '25 билетов по 50 USDT. Победитель получает всё',
+      description: '10 билетов по 50 USDT. Приз 400 USDT',
       color: 'from-indigo-600 to-indigo-800',
       available: true
     }
