@@ -137,6 +137,32 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     }, default=serialize_datetime),
                     'isBase64Encoded': False
                 }
+            
+            elif action == 'get_dispute_notifications':
+                if not user_id:
+                    return {
+                        'statusCode': 401,
+                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({'error': 'Unauthorized'}),
+                        'isBase64Encoded': False
+                    }
+                
+                cursor = conn.cursor(cursor_factory=RealDictCursor)
+                cursor.execute("""
+                    SELECT * FROM escrow_dispute_notifications
+                    WHERE user_id = %s AND is_read = false
+                    ORDER BY created_at DESC
+                """, (user_id,))
+                
+                notifications = cursor.fetchall()
+                cursor.close()
+                
+                return {
+                    'statusCode': 200,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'notifications': [dict(n) for n in notifications]}, default=serialize_datetime),
+                    'isBase64Encoded': False
+                }
         
         elif method == 'POST':
             if not user_id:
@@ -398,6 +424,109 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     VALUES (%s, %s, %s, true)
                 """
                 cursor.execute(msg_query, (deal_id, user_id, f'Открыт спор: {reason}'))
+                
+                conn.commit()
+                cursor.close()
+                
+                return {
+                    'statusCode': 200,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'success': True}),
+                    'isBase64Encoded': False
+                }
+            
+            elif action == 'resolve_dispute':
+                deal_id = body.get('deal_id')
+                winner_id = body.get('winner_id')
+                
+                cursor.execute('SELECT role FROM users WHERE id = %s', (user_id,))
+                user_role = cursor.fetchone()
+                
+                if not user_role or user_role['role'] != 'admin':
+                    cursor.close()
+                    return {
+                        'statusCode': 403,
+                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({'error': 'Access denied'}),
+                        'isBase64Encoded': False
+                    }
+                
+                cursor.execute("""
+                    SELECT seller_id, buyer_id, price, title, 
+                           seller.username as seller_name,
+                           buyer.username as buyer_name
+                    FROM escrow_deals
+                    LEFT JOIN users seller ON escrow_deals.seller_id = seller.id
+                    LEFT JOIN users buyer ON escrow_deals.buyer_id = buyer.id
+                    WHERE escrow_deals.id = %s AND status = 'dispute'
+                """, (deal_id,))
+                deal = cursor.fetchone()
+                
+                if not deal:
+                    cursor.close()
+                    return {
+                        'statusCode': 400,
+                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({'error': 'Deal not found or not in dispute'}),
+                        'isBase64Encoded': False
+                    }
+                
+                cursor.execute("""
+                    UPDATE escrow_deals
+                    SET status = 'completed', admin_decision = %s, completed_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
+                    WHERE id = %s
+                """, (f'Спор разрешен в пользу пользователя ID {winner_id}', deal_id))
+                
+                cursor.execute('UPDATE users SET balance = balance + %s WHERE id = %s', (deal['price'], winner_id))
+                
+                winner_name = deal['seller_name'] if winner_id == deal['seller_id'] else deal['buyer_name']
+                winner_desc = f"Спор разрешен в вашу пользу: {deal['title']}"
+                cursor.execute("""
+                    INSERT INTO transactions (user_id, amount, type, description)
+                    VALUES (%s, %s, 'dispute_win', %s)
+                """, (winner_id, deal['price'], winner_desc))
+                
+                loser_id = deal['buyer_id'] if winner_id == deal['seller_id'] else deal['seller_id']
+                loser_desc = f"Спор разрешен не в вашу пользу: {deal['title']}"
+                cursor.execute("""
+                    INSERT INTO transactions (user_id, amount, type, description)
+                    VALUES (%s, %s, 'dispute_loss', %s)
+                """, (loser_id, 0, loser_desc))
+                
+                msg_query = """
+                    INSERT INTO escrow_messages (deal_id, user_id, message, is_system)
+                    VALUES (%s, %s, %s, true)
+                """
+                cursor.execute(msg_query, (deal_id, user_id, f'Администрация разрешила спор в пользу {winner_name}'))
+                
+                winner_notif_msg = f'Спор по сделке "{deal["title"]}" разрешен в вашу пользу. Средства зачислены на баланс (+{deal["price"]} USDT)'
+                cursor.execute("""
+                    INSERT INTO escrow_dispute_notifications (user_id, deal_id, message)
+                    VALUES (%s, %s, %s)
+                """, (winner_id, deal_id, winner_notif_msg))
+                
+                loser_notif_msg = f'Спор по сделке "{deal["title"]}" разрешен не в вашу пользу. Средства переданы другой стороне'
+                cursor.execute("""
+                    INSERT INTO escrow_dispute_notifications (user_id, deal_id, message)
+                    VALUES (%s, %s, %s)
+                """, (loser_id, deal_id, loser_notif_msg))
+                
+                conn.commit()
+                cursor.close()
+                
+                return {
+                    'statusCode': 200,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'success': True}),
+                    'isBase64Encoded': False
+                }
+            
+            elif action == 'mark_dispute_notifications_read':
+                cursor.execute("""
+                    UPDATE escrow_dispute_notifications
+                    SET is_read = true
+                    WHERE user_id = %s AND is_read = false
+                """, (user_id,))
                 
                 conn.commit()
                 cursor.close()

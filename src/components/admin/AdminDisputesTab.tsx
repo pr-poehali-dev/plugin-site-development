@@ -79,9 +79,11 @@ const AdminDisputesTab = ({ disputes, currentUser, onUpdate }: AdminDisputesTabP
 
       const data = await response.json();
       if (data.success) {
+        const winner = winnerId === selectedDeal?.seller_id ? 'продавца' : 'покупателя';
         toast({
-          title: 'Успешно',
-          description: 'Спор разрешен'
+          title: 'Спор разрешен',
+          description: `Спор разрешен в пользу ${winner}. Участники получат уведомления.`,
+          duration: 5000
         });
         setSelectedDeal(null);
         onUpdate();

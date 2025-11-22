@@ -36,7 +36,61 @@ export const EscrowView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Esc
 
   useEffect(() => {
     fetchDeals();
-  }, [statusFilter]);
+    if (user) {
+      checkDisputeNotifications();
+    }
+  }, [statusFilter, user]);
+
+  useEffect(() => {
+    if (!user) return;
+    
+    const interval = setInterval(() => {
+      checkDisputeNotifications();
+    }, 10000);
+
+    return () => clearInterval(interval);
+  }, [user]);
+
+  const checkDisputeNotifications = async () => {
+    if (!user) return;
+
+    try {
+      const response = await fetch(`${ESCROW_URL}?action=get_dispute_notifications`, {
+        headers: {
+          'X-User-Id': user.id.toString()
+        }
+      });
+      const data = await response.json();
+      
+      if (data.notifications && data.notifications.length > 0) {
+        data.notifications.forEach((notif: any) => {
+          toast({
+            title: 'Решение по спору',
+            description: notif.message,
+            duration: 10000
+          });
+        });
+
+        await fetch(`${ESCROW_URL}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-User-Id': user.id.toString()
+          },
+          body: JSON.stringify({
+            action: 'mark_dispute_notifications_read'
+          })
+        });
+
+        if (onRefreshUserBalance) {
+          onRefreshUserBalance();
+        }
+        fetchDeals();
+      }
+    } catch (error) {
+      console.error('Ошибка проверки уведомлений:', error);
+    }
+  };
 
   const fetchDeals = async () => {
     setLoading(true);
