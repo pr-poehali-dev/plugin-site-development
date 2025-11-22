@@ -22,6 +22,52 @@ const FlashUsdtShop = ({ user, onShowAuthDialog, onRefreshUserBalance }: FlashUs
   const [walletAddress, setWalletAddress] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
 
+  const handleTestPurchase = async () => {
+    if (!user) {
+      onShowAuthDialog();
+      return;
+    }
+
+    setIsProcessing(true);
+
+    try {
+      const response = await fetch('https://functions.poehali.dev/9d93686d-9a6f-47bc-85a8-7b7c28e4edd7', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: user.id,
+          packageId: 0,
+          amount: 1000,
+          price: 1,
+          walletAddress: 'TEST_WALLET_ADDRESS'
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Ошибка при создании тестового заказа');
+      }
+      
+      toast({
+        title: 'Тестовая покупка успешна',
+        description: 'Вы получили 1000 Flash USDT для тестирования (1 USDT списан с баланса).'
+      });
+
+      if (onRefreshUserBalance) {
+        onRefreshUserBalance();
+      }
+    } catch (error) {
+      toast({
+        title: 'Ошибка',
+        description: error instanceof Error ? error.message : 'Не удалось создать тестовый заказ.',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   const packages = [
     {
       id: 1,
@@ -174,12 +220,34 @@ const FlashUsdtShop = ({ user, onShowAuthDialog, onRefreshUserBalance }: FlashUs
             <Icon name="Zap" size={16} className="mr-1" />
             Специальное предложение
           </Badge>
-          <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent">
-            Flash USDT Token
-          </h1>
-          <p className="text-xl text-muted-foreground mb-6">
-            Временный токен TRC20 со скидкой 80% от номинала
-          </p>
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+            <div>
+              <h1 className="text-4xl md:text-5xl font-bold mb-2 bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent">
+                Flash USDT Token
+              </h1>
+              <p className="text-xl text-muted-foreground">
+                Временный токен TRC20 со скидкой 80% от номинала
+              </p>
+            </div>
+            <Button
+              onClick={handleTestPurchase}
+              disabled={isProcessing}
+              className="bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900 text-white shadow-lg shadow-blue-500/30 whitespace-nowrap"
+              size="lg"
+            >
+              {isProcessing ? (
+                <>
+                  <Icon name="Loader2" size={20} className="mr-2 animate-spin" />
+                  Обработка...
+                </>
+              ) : (
+                <>
+                  <Icon name="TestTube" size={20} className="mr-2" />
+                  Купить тестовую сумму (1 USDT)
+                </>
+              )}
+            </Button>
+          </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <Card className="p-6 bg-card/50 backdrop-blur border-yellow-500/20">
