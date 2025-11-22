@@ -131,39 +131,163 @@ export const EscrowView = ({ user, onShowAuthDialog }: EscrowViewProps) => {
       </div>
 
       <Card className="p-6 bg-gradient-to-br from-green-800/10 to-green-900/5 border-green-800/20">
-        <div className="flex items-start gap-4">
-          <div className="w-12 h-12 bg-green-800/20 rounded-xl flex items-center justify-center flex-shrink-0">
-            <Icon name="ShieldCheck" size={24} className="text-green-400" />
+        <div className="space-y-6">
+          <div className="flex items-start gap-4">
+            <div className="w-12 h-12 bg-green-800/20 rounded-xl flex items-center justify-center flex-shrink-0">
+              <Icon name="ShieldCheck" size={24} className="text-green-400" />
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold mb-2">Как работает гарант-сервис?</h3>
+              <p className="text-sm text-muted-foreground">
+                Платформа выступает гарантом безопасности сделки между продавцом и покупателем.
+                Средства блокируются до момента подтверждения получения товара.
+              </p>
+            </div>
           </div>
-          <div className="space-y-3 flex-1">
-            <h3 className="text-lg font-semibold">Как работает гарант-сервис?</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-              <div className="flex items-start gap-2">
-                <div className="w-6 h-6 bg-green-800/30 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <span className="text-xs font-bold text-green-400">1</span>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-4">
+              <h4 className="font-semibold text-green-400 flex items-center gap-2">
+                <Icon name="Store" size={18} />
+                Для продавца
+              </h4>
+              <div className="space-y-3">
+                <div className="flex gap-3">
+                  <div className="w-8 h-8 bg-green-800/30 rounded-full flex items-center justify-center flex-shrink-0">
+                    <span className="text-xs font-bold text-green-400">1</span>
+                  </div>
+                  <div>
+                    <p className="font-medium text-sm">Создайте сделку</p>
+                    <p className="text-xs text-muted-foreground">
+                      Укажите название товара/услуги, подробное описание и цену в USDT
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <p className="font-medium text-green-400">Продавец создает сделку</p>
-                  <p className="text-muted-foreground text-xs">Описывает товар и указывает цену</p>
+                <div className="flex gap-3">
+                  <div className="w-8 h-8 bg-green-800/30 rounded-full flex items-center justify-center flex-shrink-0">
+                    <span className="text-xs font-bold text-green-400">2</span>
+                  </div>
+                  <div>
+                    <p className="font-medium text-sm">Дождитесь покупателя</p>
+                    <p className="text-xs text-muted-foreground">
+                      Ваша сделка появится в списке открытых. Покупатель выберет её и присоединится
+                    </p>
+                  </div>
+                </div>
+                <div className="flex gap-3">
+                  <div className="w-8 h-8 bg-green-800/30 rounded-full flex items-center justify-center flex-shrink-0">
+                    <span className="text-xs font-bold text-green-400">3</span>
+                  </div>
+                  <div>
+                    <p className="font-medium text-sm">Общайтесь в чате</p>
+                    <p className="text-xs text-muted-foreground">
+                      Обсудите детали передачи товара через защищенный чат сделки
+                    </p>
+                  </div>
+                </div>
+                <div className="flex gap-3">
+                  <div className="w-8 h-8 bg-green-800/30 rounded-full flex items-center justify-center flex-shrink-0">
+                    <span className="text-xs font-bold text-green-400">4</span>
+                  </div>
+                  <div>
+                    <p className="font-medium text-sm">Передайте товар</p>
+                    <p className="text-xs text-muted-foreground">
+                      После подтверждения оплаты покупателем передайте товар и нажмите "Товар передан"
+                    </p>
+                  </div>
+                </div>
+                <div className="flex gap-3">
+                  <div className="w-8 h-8 bg-green-800/30 rounded-full flex items-center justify-center flex-shrink-0">
+                    <span className="text-xs font-bold text-green-400">5</span>
+                  </div>
+                  <div>
+                    <p className="font-medium text-sm">Получите оплату</p>
+                    <p className="text-xs text-muted-foreground">
+                      После подтверждения покупателя деньги автоматически зачислятся на ваш баланс
+                    </p>
+                  </div>
                 </div>
               </div>
-              <div className="flex items-start gap-2">
-                <div className="w-6 h-6 bg-green-800/30 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <span className="text-xs font-bold text-green-400">2</span>
+            </div>
+
+            <div className="space-y-4">
+              <h4 className="font-semibold text-blue-400 flex items-center gap-2">
+                <Icon name="ShoppingCart" size={18} />
+                Для покупателя
+              </h4>
+              <div className="space-y-3">
+                <div className="flex gap-3">
+                  <div className="w-8 h-8 bg-blue-500/30 rounded-full flex items-center justify-center flex-shrink-0">
+                    <span className="text-xs font-bold text-blue-400">1</span>
+                  </div>
+                  <div>
+                    <p className="font-medium text-sm">Выберите сделку</p>
+                    <p className="text-xs text-muted-foreground">
+                      Просмотрите открытые сделки и выберите нужный товар по подходящей цене
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <p className="font-medium text-green-400">Покупатель вносит оплату</p>
-                  <p className="text-muted-foreground text-xs">Средства блокируются на платформе</p>
+                <div className="flex gap-3">
+                  <div className="w-8 h-8 bg-blue-500/30 rounded-full flex items-center justify-center flex-shrink-0">
+                    <span className="text-xs font-bold text-blue-400">2</span>
+                  </div>
+                  <div>
+                    <p className="font-medium text-sm">Присоединитесь к сделке</p>
+                    <p className="text-xs text-muted-foreground">
+                      Нажмите "Купить" — сделка перейдет в статус "В процессе" и станет недоступна другим
+                    </p>
+                  </div>
+                </div>
+                <div className="flex gap-3">
+                  <div className="w-8 h-8 bg-blue-500/30 rounded-full flex items-center justify-center flex-shrink-0">
+                    <span className="text-xs font-bold text-blue-400">3</span>
+                  </div>
+                  <div>
+                    <p className="font-medium text-sm">Внесите оплату</p>
+                    <p className="text-xs text-muted-foreground">
+                      Переведите указанную сумму продавцу и нажмите "Я оплатил товар"
+                    </p>
+                  </div>
+                </div>
+                <div className="flex gap-3">
+                  <div className="w-8 h-8 bg-blue-500/30 rounded-full flex items-center justify-center flex-shrink-0">
+                    <span className="text-xs font-bold text-blue-400">4</span>
+                  </div>
+                  <div>
+                    <p className="font-medium text-sm">Получите товар</p>
+                    <p className="text-xs text-muted-foreground">
+                      Продавец передаст товар после подтверждения вашей оплаты
+                    </p>
+                  </div>
+                </div>
+                <div className="flex gap-3">
+                  <div className="w-8 h-8 bg-blue-500/30 rounded-full flex items-center justify-center flex-shrink-0">
+                    <span className="text-xs font-bold text-blue-400">5</span>
+                  </div>
+                  <div>
+                    <p className="font-medium text-sm">Подтвердите получение</p>
+                    <p className="text-xs text-muted-foreground">
+                      Проверьте товар и нажмите "Подтвердить получение" — деньги перейдут продавцу
+                    </p>
+                  </div>
                 </div>
               </div>
-              <div className="flex items-start gap-2">
-                <div className="w-6 h-6 bg-green-800/30 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <span className="text-xs font-bold text-green-400">3</span>
-                </div>
-                <div>
-                  <p className="font-medium text-green-400">Товар передан</p>
-                  <p className="text-muted-foreground text-xs">Продавец получает оплату</p>
-                </div>
+            </div>
+          </div>
+
+          <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-4">
+            <div className="flex items-start gap-3">
+              <Icon name="AlertTriangle" size={20} className="text-yellow-400 flex-shrink-0 mt-0.5" />
+              <div className="space-y-2 text-sm">
+                <p className="font-semibold text-yellow-400">Важная информация:</p>
+                <ul className="space-y-1 text-muted-foreground text-xs">
+                  <li>• Средства покупателя блокируются на платформе до завершения сделки</li>
+                  <li>• Продавец получает оплату только после подтверждения получения товара покупателем</li>
+                  <li>• В случае спора администрация разберет ситуацию и примет решение</li>
+                  <li>• Все сообщения в чате сохраняются как доказательства</li>
+                  <li>• Не передавайте товар до получения подтверждения оплаты</li>
+                  <li>• Не подтверждайте получение до проверки товара</li>
+                </ul>
               </div>
             </div>
           </div>
