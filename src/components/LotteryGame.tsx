@@ -648,6 +648,7 @@ const LotteryGame = ({ user, onShowAuthDialog, onRefreshUserBalance }: LotteryGa
               placeholder={user ? 'Введите сообщение...' : 'Войдите для отправки'}
               disabled={!user || isSendingMessage}
               maxLength={500}
+              autoFocus={false}
             />
             <Button
               type="button"
