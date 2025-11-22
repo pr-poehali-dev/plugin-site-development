@@ -24,6 +24,10 @@ const ForumRoleBadge = ({ role }: ForumRoleBadgeProps) => {
       label: 'Модератор',
       className: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
     },
+    admin: {
+      label: 'Администратор',
+      className: 'bg-gradient-to-r from-red-500 to-orange-500 text-white border-0 font-semibold shadow-lg shadow-red-500/20',
+    },
     vip: {
       label: 'VIP',
       className: 'bg-amber-500/20 text-amber-400 border-amber-500/30',

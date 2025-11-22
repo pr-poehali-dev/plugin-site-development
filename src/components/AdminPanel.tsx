@@ -17,6 +17,7 @@ interface AdminPanelProps {
 }
 
 const FORUM_URL = 'https://functions.poehali.dev/045d6571-633c-4239-ae69-8d76c933532c';
+const ADMIN_URL = 'https://functions.poehali.dev/d4678b1c-2acd-40bb-b8c5-cefe8d14fad4';
 
 const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
   const [users, setUsers] = useState<User[]>([]);
@@ -27,10 +28,24 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
   const [editContent, setEditContent] = useState('');
 
   useEffect(() => {
-    if (activeTab === 'topics') {
+    if (activeTab === 'users') {
+      fetchUsers();
+    } else if (activeTab === 'topics') {
       fetchTopics();
     }
   }, [activeTab]);
+
+  const fetchUsers = async () => {
+    try {
+      const response = await fetch(`${ADMIN_URL}?action=users`, {
+        headers: { 'X-User-Id': currentUser.id.toString() }
+      });
+      const data = await response.json();
+      setUsers(data.users || []);
+    } catch (error) {
+      console.error('Ошибка загрузки пользователей:', error);
+    }
+  };
 
   const fetchTopics = async () => {
     try {
@@ -60,7 +75,81 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
   const handleBlockUser = async (userId: number, username: string) => {
     const reason = prompt(`Заблокировать пользователя ${username}?\nУкажите причину:`);
     if (!reason) return;
-    alert('Backend функция /admin не развернута из-за лимита функций (5/5). Для работы админ-панели необходимо увеличить лимит.');
+    
+    try {
+      const response = await fetch(ADMIN_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-User-Id': currentUser.id.toString()
+        },
+        body: JSON.stringify({
+          action: 'block_user',
+          user_id: userId,
+          reason: reason
+        })
+      });
+      
+      const data = await response.json();
+      if (data.success) {
+        fetchUsers();
+        alert('Пользователь заблокирован');
+      }
+    } catch (error) {
+      console.error('Ошибка блокировки:', error);
+      alert('Ошибка блокировки');
+    }
+  };
+
+  const handleUnblockUser = async (userId: number) => {
+    try {
+      const response = await fetch(ADMIN_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-User-Id': currentUser.id.toString()
+        },
+        body: JSON.stringify({
+          action: 'unblock_user',
+          user_id: userId
+        })
+      });
+      
+      const data = await response.json();
+      if (data.success) {
+        fetchUsers();
+        alert('Пользователь разблокирован');
+      }
+    } catch (error) {
+      console.error('Ошибка разблокировки:', error);
+      alert('Ошибка разблокировки');
+    }
+  };
+
+  const handleChangeForumRole = async (userId: number, forumRole: string) => {
+    try {
+      const response = await fetch(ADMIN_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-User-Id': currentUser.id.toString()
+        },
+        body: JSON.stringify({
+          action: 'set_forum_role',
+          user_id: userId,
+          forum_role: forumRole
+        })
+      });
+      
+      const data = await response.json();
+      if (data.success) {
+        fetchUsers();
+        alert('Роль обновлена');
+      }
+    } catch (error) {
+      console.error('Ошибка изменения роли:', error);
+      alert('Ошибка изменения роли');
+    }
   };
 
   return (
@@ -99,47 +188,68 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
           </button>
         </div>
 
-        <div className="bg-card/30 backdrop-blur-sm border border-amber-500/30 rounded-lg p-4 mb-6">
-          <div className="flex items-start gap-3">
-            <Icon name="AlertTriangle" size={20} className="text-amber-500 mt-0.5" />
-            <div>
-              <p className="text-sm text-amber-200">
-                <strong>Backend функция недоступна:</strong> Достигнут лимит функций (5/5). 
-                Для работы админ-панели необходимо увеличить лимит или удалить неиспользуемую функцию.
-              </p>
-              <p className="text-xs text-muted-foreground mt-1">
-                Функция <code>/backend/admin</code> создана, но не развернута. 
-                Кнопки управления пока не работают.
-              </p>
-            </div>
-          </div>
-        </div>
+
 
         {activeTab === 'users' && (
           <div className="space-y-4">
             <h2 className="text-xl font-semibold mb-4">Управление пользователями</h2>
-            <div className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-lg p-6">
-              <p className="text-muted-foreground text-center">
-                Список пользователей и управление доступно после развертывания backend функции
-              </p>
-              <div className="mt-6 space-y-3">
-                <div className="flex items-center justify-between p-4 bg-background/50 rounded-lg border border-border/30">
+            <div className="space-y-3">
+              {users.map(user => (
+                <div
+                  key={user.id}
+                  className="flex items-center justify-between p-4 bg-card/50 backdrop-blur-sm rounded-lg border border-border/50"
+                >
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
                       <Icon name="User" size={20} />
                     </div>
                     <div>
-                      <p className="font-medium">{currentUser.username}</p>
-                      <p className="text-xs text-muted-foreground">{currentUser.email}</p>
+                      <p className="font-medium">{user.username}</p>
+                      <p className="text-xs text-muted-foreground">{user.email}</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="px-3 py-1 bg-primary/20 text-primary text-xs rounded-full">
-                      Администратор
-                    </span>
+                  <div className="flex items-center gap-3">
+                    <div className="flex flex-col gap-1 text-right">
+                      <span className={`px-3 py-1 text-xs rounded-full ${
+                        user.role === 'admin' 
+                          ? 'bg-primary/20 text-primary' 
+                          : 'bg-muted text-muted-foreground'
+                      }`}>
+                        {user.role === 'admin' ? 'Администратор' : 'Пользователь'}
+                      </span>
+                      <select
+                        value={user.forum_role || 'new'}
+                        onChange={(e) => handleChangeForumRole(user.id, e.target.value)}
+                        className="px-2 py-1 text-xs rounded bg-background border border-border"
+                        disabled={user.id === currentUser.id}
+                      >
+                        <option value="new">Новичок</option>
+                        <option value="member">Участник</option>
+                        <option value="verified">Проверенный</option>
+                        <option value="moderator">Модератор</option>
+                        <option value="admin">Администратор</option>
+                        <option value="vip">VIP</option>
+                        <option value="legend">Легенда</option>
+                      </select>
+                    </div>
+                    {user.is_blocked && (
+                      <span className="px-3 py-1 bg-destructive/20 text-destructive text-xs rounded-full">
+                        Заблокирован
+                      </span>
+                    )}
+                    {user.id !== currentUser.id && (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => user.is_blocked ? handleUnblockUser(user.id) : handleBlockUser(user.id, user.username)}
+                        className={user.is_blocked ? 'text-green-500' : 'text-destructive'}
+                      >
+                        {user.is_blocked ? 'Разблокировать' : 'Заблокировать'}
+                      </Button>
+                    )}
                   </div>
                 </div>
-              </div>
+              ))}
             </div>
           </div>
         )}

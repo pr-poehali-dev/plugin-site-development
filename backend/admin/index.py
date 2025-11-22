@@ -74,7 +74,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             
             if action == 'users':
                 cur.execute("""
-                    SELECT id, username, email, role, is_blocked, created_at 
+                    SELECT id, username, email, role, forum_role, is_blocked, created_at 
                     FROM users 
                     ORDER BY created_at DESC 
                     LIMIT 100
@@ -161,6 +161,22 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 cur.execute("UPDATE users SET role = %s WHERE id = %s", (role, target_user_id))
                 
                 log_admin_action(user_id, 'set_role', 'user', target_user_id, f'Role: {role}', cur)
+                conn.commit()
+                
+                return {
+                    'statusCode': 200,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'success': True}),
+                    'isBase64Encoded': False
+                }
+            
+            elif action == 'set_forum_role':
+                target_user_id = body_data.get('user_id')
+                forum_role = body_data.get('forum_role', 'new')
+                
+                cur.execute("UPDATE users SET forum_role = %s WHERE id = %s", (forum_role, target_user_id))
+                
+                log_admin_action(user_id, 'set_forum_role', 'user', target_user_id, f'Forum role: {forum_role}', cur)
                 conn.commit()
                 
                 return {
