@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import Icon from '@/components/ui/icon';
+import { Input } from '@/components/ui/input';
 import { User } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 
@@ -32,6 +33,14 @@ interface LotteryRound {
   created_at: string;
 }
 
+interface ChatMessage {
+  id: number;
+  user_id: number;
+  username: string;
+  message: string;
+  created_at: string;
+}
+
 const TICKET_PRICE = 50;
 const MAX_TICKETS = 25;
 const DRAW_DELAY_MINUTES = 30;
@@ -44,11 +53,20 @@ const LotteryGame = ({ user, onShowAuthDialog, onRefreshUserBalance }: LotteryGa
   const [isProcessing, setIsProcessing] = useState(false);
   const [timeLeft, setTimeLeft] = useState<string>('');
   const [isLoading, setIsLoading] = useState(true);
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [chatMessage, setChatMessage] = useState('');
+  const [isSendingMessage, setIsSendingMessage] = useState(false);
+  const chatEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     loadLottery();
-    const interval = setInterval(loadLottery, 5000);
-    return () => clearInterval(interval);
+    loadChat();
+    const lotteryInterval = setInterval(loadLottery, 5000);
+    const chatInterval = setInterval(loadChat, 3000);
+    return () => {
+      clearInterval(lotteryInterval);
+      clearInterval(chatInterval);
+    };
   }, [user]);
 
   useEffect(() => {
@@ -71,6 +89,10 @@ const LotteryGame = ({ user, onShowAuthDialog, onRefreshUserBalance }: LotteryGa
       return () => clearInterval(interval);
     }
   }, [currentRound]);
+
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [chatMessages]);
 
   const loadLottery = async () => {
     try {
@@ -100,6 +122,84 @@ const LotteryGame = ({ user, onShowAuthDialog, onRefreshUserBalance }: LotteryGa
       console.error('Error loading lottery:', error);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const loadChat = async () => {
+    try {
+      const response = await fetch(AUTH_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          action: 'get_lottery_chat'
+        })
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setChatMessages(data.messages || []);
+      }
+    } catch (error) {
+      console.error('Error loading chat:', error);
+    }
+  };
+
+  const sendMessage = async () => {
+    if (!user) {
+      onShowAuthDialog();
+      return;
+    }
+
+    const trimmedMessage = chatMessage.trim();
+    if (!trimmedMessage) {
+      return;
+    }
+
+    if (trimmedMessage.length > 500) {
+      toast({
+        title: 'Ошибка',
+        description: 'Сообщение слишком длинное (макс. 500 символов)',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    setIsSendingMessage(true);
+
+    try {
+      const response = await fetch(AUTH_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-User-Id': user.id.toString()
+        },
+        body: JSON.stringify({
+          action: 'send_lottery_chat',
+          message: trimmedMessage
+        })
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setChatMessage('');
+        loadChat();
+      } else {
+        toast({
+          title: 'Ошибка',
+          description: data.message || 'Не удалось отправить сообщение',
+          variant: 'destructive'
+        });
+      }
+    } catch (error) {
+      toast({
+        title: 'Ошибка',
+        description: 'Ошибка соединения с сервером',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsSendingMessage(false);
     }
   };
 
@@ -168,6 +268,11 @@ const LotteryGame = ({ user, onShowAuthDialog, onRefreshUserBalance }: LotteryGa
     } finally {
       setIsProcessing(false);
     }
+  };
+
+  const formatTime = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
   };
 
   if (isLoading) {
@@ -262,63 +367,116 @@ const LotteryGame = ({ user, onShowAuthDialog, onRefreshUserBalance }: LotteryGa
         </Card>
       )}
 
-      <Card className="p-8 bg-gradient-to-b from-indigo-950/40 via-indigo-900/30 to-indigo-950/40 border-indigo-800/30 relative overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-indigo-800/5 via-transparent to-transparent"></div>
-        
-        <div className="relative space-y-6">
-          <div className="text-center space-y-4">
-            <div className="inline-block p-4 bg-indigo-600/20 rounded-2xl">
-              <Icon name="Ticket" size={48} className="text-indigo-400" />
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card className="p-8 bg-gradient-to-b from-indigo-950/40 via-indigo-900/30 to-indigo-950/40 border-indigo-800/30 relative overflow-hidden">
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-indigo-800/5 via-transparent to-transparent"></div>
+          
+          <div className="relative space-y-6">
+            <div className="text-center space-y-4">
+              <div className="inline-block p-4 bg-indigo-600/20 rounded-2xl">
+                <Icon name="Ticket" size={48} className="text-indigo-400" />
+              </div>
+              <h3 className="text-xl font-bold">Купить билет</h3>
+              <div className="flex items-center justify-center gap-2 text-3xl font-bold">
+                <span className="text-yellow-400">{TICKET_PRICE}</span>
+                <span className="text-muted-foreground">USDT</span>
+              </div>
             </div>
-            <h3 className="text-xl font-bold">Купить билет</h3>
-            <div className="flex items-center justify-center gap-2 text-3xl font-bold">
-              <span className="text-yellow-400">{TICKET_PRICE}</span>
-              <span className="text-muted-foreground">USDT</span>
-            </div>
+
+            {myTickets.length > 0 && (
+              <Card className="p-4 bg-indigo-800/20 border-indigo-800/30">
+                <p className="text-center mb-3 font-semibold">Ваши билеты ({myTickets.length}):</p>
+                <div className="flex flex-wrap gap-2 justify-center">
+                  {myTickets.map((num) => (
+                    <div
+                      key={num}
+                      className="w-12 h-12 rounded-lg bg-indigo-600/30 border-2 border-indigo-600/50 flex items-center justify-center font-bold text-lg"
+                    >
+                      {num}
+                    </div>
+                  ))}
+                </div>
+              </Card>
+            )}
+
+            <Button
+              onClick={buyTicket}
+              className="w-full bg-gradient-to-r from-indigo-600 to-indigo-800 hover:from-indigo-700 hover:to-indigo-900 text-lg h-14"
+              disabled={!user || isProcessing || availableTickets === 0 || isDrawing || isCompleted}
+            >
+              <Icon name="Ticket" size={20} className="mr-2" />
+              {!user ? 'Войдите для покупки' : 
+               isDrawing ? 'Идет розыгрыш' :
+               isCompleted ? 'Лотерея завершена' :
+               availableTickets === 0 ? 'Все билеты проданы' : 
+               `Купить билет (${TICKET_PRICE} USDT)`}
+            </Button>
+
+            {isDrawing && (
+              <Card className="p-4 bg-orange-800/20 border-orange-800/30">
+                <div className="flex items-center gap-3">
+                  <Icon name="Clock" size={24} className="text-orange-400 animate-pulse" />
+                  <div>
+                    <p className="font-semibold">Розыгрыш начнется через:</p>
+                    <p className="text-2xl font-bold text-orange-400">{timeLeft}</p>
+                  </div>
+                </div>
+              </Card>
+            )}
+          </div>
+        </Card>
+
+        <Card className="p-6 bg-card/50 flex flex-col">
+          <h3 className="font-semibold mb-4 flex items-center gap-2">
+            <Icon name="MessageSquare" size={20} className="text-blue-400" />
+            Чат участников
+          </h3>
+          
+          <div className="flex-1 overflow-y-auto max-h-[400px] mb-4 space-y-3">
+            {chatMessages.length === 0 ? (
+              <p className="text-center text-muted-foreground py-8">
+                Нет сообщений. Будьте первым!
+              </p>
+            ) : (
+              chatMessages.map((msg) => (
+                <div
+                  key={msg.id}
+                  className={`p-3 rounded-lg ${
+                    msg.user_id === user?.id
+                      ? 'bg-indigo-600/20 border border-indigo-600/30 ml-8'
+                      : 'bg-card/80 border border-border/50 mr-8'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="font-semibold text-sm">{msg.username}</span>
+                    <span className="text-xs text-muted-foreground">{formatTime(msg.created_at)}</span>
+                  </div>
+                  <p className="text-sm">{msg.message}</p>
+                </div>
+              ))
+            )}
+            <div ref={chatEndRef} />
           </div>
 
-          {myTickets.length > 0 && (
-            <Card className="p-4 bg-indigo-800/20 border-indigo-800/30">
-              <p className="text-center mb-3 font-semibold">Ваши билеты ({myTickets.length}):</p>
-              <div className="flex flex-wrap gap-2 justify-center">
-                {myTickets.map((num) => (
-                  <div
-                    key={num}
-                    className="w-12 h-12 rounded-lg bg-indigo-600/30 border-2 border-indigo-600/50 flex items-center justify-center font-bold text-lg"
-                  >
-                    {num}
-                  </div>
-                ))}
-              </div>
-            </Card>
-          )}
-
-          <Button
-            onClick={buyTicket}
-            className="w-full bg-gradient-to-r from-indigo-600 to-indigo-800 hover:from-indigo-700 hover:to-indigo-900 text-lg h-14"
-            disabled={!user || isProcessing || availableTickets === 0 || isDrawing || isCompleted}
-          >
-            <Icon name="Ticket" size={20} className="mr-2" />
-            {!user ? 'Войдите для покупки' : 
-             isDrawing ? 'Идет розыгрыш' :
-             isCompleted ? 'Лотерея завершена' :
-             availableTickets === 0 ? 'Все билеты проданы' : 
-             `Купить билет (${TICKET_PRICE} USDT)`}
-          </Button>
-
-          {isDrawing && (
-            <Card className="p-4 bg-orange-800/20 border-orange-800/30">
-              <div className="flex items-center gap-3">
-                <Icon name="Clock" size={24} className="text-orange-400 animate-pulse" />
-                <div>
-                  <p className="font-semibold">Розыгрыш начнется через:</p>
-                  <p className="text-2xl font-bold text-orange-400">{timeLeft}</p>
-                </div>
-              </div>
-            </Card>
-          )}
-        </div>
-      </Card>
+          <div className="flex gap-2">
+            <Input
+              value={chatMessage}
+              onChange={(e) => setChatMessage(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && !isSendingMessage && sendMessage()}
+              placeholder={user ? 'Введите сообщение...' : 'Войдите для отправки'}
+              disabled={!user || isSendingMessage}
+              maxLength={500}
+            />
+            <Button
+              onClick={sendMessage}
+              disabled={!user || isSendingMessage || !chatMessage.trim()}
+              className="bg-indigo-600 hover:bg-indigo-700"
+            >
+              <Icon name="Send" size={18} />
+            </Button>
+          </div>
+        </Card>
+      </div>
 
       <Card className="p-6 bg-card/50">
         <h3 className="font-semibold mb-4 flex items-center gap-2">
@@ -375,6 +533,7 @@ const LotteryGame = ({ user, onShowAuthDialog, onRefreshUserBalance }: LotteryGa
           <p>• <strong>Розыгрыш:</strong> через {DRAW_DELAY_MINUTES} минут после продажи всех билетов</p>
           <p>• <strong>Победитель:</strong> выбирается случайно из всех купленных билетов</p>
           <p>• <strong>Выплата:</strong> моментально на баланс победителя</p>
+          <p>• <strong>Чат:</strong> общайтесь с другими участниками во время ожидания розыгрыша</p>
         </div>
       </Card>
     </div>
