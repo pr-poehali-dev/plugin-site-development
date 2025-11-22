@@ -447,7 +447,7 @@ const LotteryGame = ({ user, onShowAuthDialog, onRefreshUserBalance }: LotteryGa
   }
 
   const availableTickets = MAX_TICKETS - tickets.length;
-  const prizePool = tickets.length * TICKET_PRICE;
+  const prizePool = PRIZE_AMOUNT;
   const isDrawing = currentRound?.status === 'drawing';
   const isCompleted = currentRound?.status === 'completed';
 
