@@ -115,7 +115,7 @@ const Header = ({
                   <div className="text-right">
                     <p className="text-sm font-medium text-white">{user.username}</p>
                     <p className="text-xs text-green-700">
-                      {(user.balance || 0).toFixed(2)} USDT
+                      {Number(user.balance || 0).toFixed(2)} USDT
                     </p>
                   </div>
                   <Icon name="User" size={20} />

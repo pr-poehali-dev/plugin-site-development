@@ -278,7 +278,7 @@ const UserProfile = ({ user, isOwnProfile, onClose, onTopUpBalance, onUpdateProf
                     </div>
                     <div>
                       <p className="text-sm text-muted-foreground">Баланс</p>
-                      <p className="text-3xl font-bold">{(user.balance || 0).toFixed(2)} USDT</p>
+                      <p className="text-3xl font-bold">{Number(user.balance || 0).toFixed(2)} USDT</p>
                     </div>
                   </div>
                   <Button 
