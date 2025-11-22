@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
 import { Category } from '@/types';
+import UsdtLogo from '@/components/UsdtLogo';
 
 interface SidebarProps {
   sidebarOpen: boolean;
@@ -31,10 +32,8 @@ const Sidebar = ({
     <aside className={`fixed top-0 left-0 h-full bg-sidebar border-r border-sidebar-border transition-all duration-300 z-30 ${sidebarOpen ? 'w-64' : 'w-0 -translate-x-full'}`}>
       <div className="p-4">
         <div className="flex items-center gap-3 mb-8">
-          <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
-            <Icon name="Layers" size={20} className="text-white" />
-          </div>
-          <span className="text-xl font-bold">ТП</span>
+          <UsdtLogo />
+          <span className="text-xl font-bold bg-gradient-to-r from-emerald-400 to-green-600 bg-clip-text text-transparent">USDT HUB</span>
         </div>
 
         <nav className="space-y-1">

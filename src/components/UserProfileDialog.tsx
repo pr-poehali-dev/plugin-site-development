@@ -121,7 +121,7 @@ const UserProfileDialog = ({ open, onOpenChange, userId, currentUserId, onSendMe
             <div className="flex items-start gap-4">
               <Avatar className="w-20 h-20">
                 <AvatarImage src={profile.avatar_url} />
-                <AvatarFallback className="bg-gradient-to-br from-purple-500 to-pink-500 text-white text-2xl">
+                <AvatarFallback className="bg-gradient-to-br from-emerald-500 to-green-600 text-white text-2xl">
                   {profile.username.charAt(0).toUpperCase()}
                 </AvatarFallback>
               </Avatar>

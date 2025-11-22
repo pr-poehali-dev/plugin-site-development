@@ -245,7 +245,7 @@ const MessagesPanel = ({ open, onOpenChange, userId, initialRecipientId }: Messa
                     }`}
                   >
                     <div className="flex items-start gap-3">
-                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold flex-shrink-0">
+                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center text-white font-bold flex-shrink-0">
                         {chat.username[0].toUpperCase()}
                       </div>
                       <div className="flex-1 min-w-0">

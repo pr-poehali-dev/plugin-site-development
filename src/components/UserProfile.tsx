@@ -232,7 +232,7 @@ const UserProfile = ({ user, isOwnProfile, onClose, onTopUpBalance, onUpdateProf
               <div className="relative group cursor-pointer" onClick={isOwnProfile ? handleAvatarSelect : undefined}>
                 <Avatar className="w-24 h-24">
                   <AvatarImage src={avatarPreview || user.avatar_url} />
-                  <AvatarFallback className="bg-gradient-to-br from-purple-500 to-pink-500 text-white text-3xl font-bold">
+                  <AvatarFallback className="bg-gradient-to-br from-emerald-500 to-green-600 text-white text-3xl font-bold">
                     {user.username[0].toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
@@ -269,10 +269,10 @@ const UserProfile = ({ user, isOwnProfile, onClose, onTopUpBalance, onUpdateProf
             </div>
 
             {isOwnProfile && (
-              <Card className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 border-purple-500/20 p-6">
+              <Card className="bg-gradient-to-br from-emerald-500/10 to-green-500/10 border-emerald-500/20 p-6">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center">
                       <Icon name="Wallet" size={24} className="text-white" />
                     </div>
                     <div>
@@ -282,7 +282,7 @@ const UserProfile = ({ user, isOwnProfile, onClose, onTopUpBalance, onUpdateProf
                   </div>
                   <Button 
                     onClick={() => setShowTopUpDialog(true)}
-                    className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+                    className="bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700"
                   >
                     <Icon name="Plus" size={18} className="mr-2" />
                     Пополнить
@@ -303,10 +303,10 @@ const UserProfile = ({ user, isOwnProfile, onClose, onTopUpBalance, onUpdateProf
 
               <TabsContent value="overview" className="space-y-4 mt-4">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <Card className="p-4 bg-card/50 border-border hover:border-purple-500/50 transition-colors">
+                  <Card className="p-4 bg-card/50 border-border hover:border-emerald-500/50 transition-colors">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center">
-                        <Icon name="Download" size={20} className="text-purple-400" />
+                      <div className="w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center">
+                        <Icon name="Download" size={20} className="text-emerald-400" />
                       </div>
                       <div>
                         <p className="text-sm text-muted-foreground">Загрузок</p>
@@ -315,10 +315,10 @@ const UserProfile = ({ user, isOwnProfile, onClose, onTopUpBalance, onUpdateProf
                     </div>
                   </Card>
 
-                  <Card className="p-4 bg-card/50 border-border hover:border-pink-500/50 transition-colors">
+                  <Card className="p-4 bg-card/50 border-border hover:border-green-500/50 transition-colors">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-pink-500/20 flex items-center justify-center">
-                        <Icon name="MessageSquare" size={20} className="text-pink-400" />
+                      <div className="w-10 h-10 rounded-lg bg-green-500/20 flex items-center justify-center">
+                        <Icon name="MessageSquare" size={20} className="text-green-400" />
                       </div>
                       <div>
                         <p className="text-sm text-muted-foreground">Сообщений</p>
@@ -522,7 +522,7 @@ const UserProfile = ({ user, isOwnProfile, onClose, onTopUpBalance, onUpdateProf
             <Button 
               onClick={handleTopUp}
               disabled={isLoading || !topUpAmount}
-              className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+              className="w-full bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700"
             >
               {isLoading ? (
                 <>
@@ -555,7 +555,7 @@ const UserProfile = ({ user, isOwnProfile, onClose, onTopUpBalance, onUpdateProf
 
           {cryptoPayment && (
             <div className="space-y-4">
-              <Card className="p-4 bg-gradient-to-br from-purple-500/10 to-pink-500/10 border-purple-500/20">
+              <Card className="p-4 bg-gradient-to-br from-emerald-500/10 to-green-500/10 border-emerald-500/20">
                 <div className="space-y-3">
                   <div>
                     <Label className="text-xs text-muted-foreground">Сумма</Label>
@@ -564,7 +564,7 @@ const UserProfile = ({ user, isOwnProfile, onClose, onTopUpBalance, onUpdateProf
                   
                   <div>
                     <Label className="text-xs text-muted-foreground">Сеть</Label>
-                    <p className="text-lg font-semibold text-purple-400">{cryptoPayment.network}</p>
+                    <p className="text-lg font-semibold text-emerald-400">{cryptoPayment.network}</p>
                   </div>
 
                   <div>
