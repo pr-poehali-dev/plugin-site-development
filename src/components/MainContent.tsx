@@ -66,17 +66,18 @@ const MainContent = ({
     <main className="p-6 animate-fade-in">
       {activeView === 'plugins' ? (
         <>
-          <div className="mb-6 animate-slide-up">
-            <h1 className="text-3xl font-bold mb-2">
-              {activeCategory === 'all' ? 'Все разделы' : 
-               activeCategory === 'new' ? 'Новинки' : 
-               activeCategory === 'popular' ? 'Популярное' :
-               categories.find(c => c.slug === activeCategory)?.name || 'Плагины'}
-            </h1>
-            <p className="text-muted-foreground">
-              {filteredPlugins.length} {filteredPlugins.length === 1 ? 'плагин' : 'плагинов'}
-            </p>
-          </div>
+          {activeCategory !== 'all' && (
+            <div className="mb-6 animate-slide-up">
+              <h1 className="text-3xl font-bold mb-2">
+                {activeCategory === 'new' ? 'Новинки' : 
+                 activeCategory === 'popular' ? 'Популярное' :
+                 categories.find(c => c.slug === activeCategory)?.name || 'Плагины'}
+              </h1>
+              <p className="text-muted-foreground">
+                {filteredPlugins.length} {filteredPlugins.length === 1 ? 'плагин' : 'плагинов'}
+              </p>
+            </div>
+          )}
 
           {activeCategory === 'all' ? (
             <div className="max-w-4xl mx-auto space-y-8 animate-scale-in">
