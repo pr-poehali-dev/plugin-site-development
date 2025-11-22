@@ -603,7 +603,7 @@ const UserProfile = ({ user, isOwnProfile, onClose, onTopUpBalance, onUpdateProf
               <Button
                 onClick={handleConfirmPayment}
                 disabled={isLoading}
-                className="w-full bg-gradient-to-r from-green-800 to-green-900 hover:from-green-700 hover:to-green-800"
+                className="w-full bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-500 hover:to-orange-600"
               >
                 {isLoading ? (
                   <>
