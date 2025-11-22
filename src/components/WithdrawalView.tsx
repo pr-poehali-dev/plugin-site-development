@@ -247,7 +247,7 @@ export const WithdrawalView = ({ user, onShowAuthDialog, onRefreshUserBalance }:
         </div>
         <Button
           onClick={() => setShowCreateDialog(true)}
-          className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-500 hover:to-green-600"
+          className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-400 hover:to-orange-500 shadow-lg shadow-orange-500/30"
         >
           <Icon name="ArrowDownToLine" size={18} className="mr-2" />
           Создать заявку
@@ -264,7 +264,7 @@ export const WithdrawalView = ({ user, onShowAuthDialog, onRefreshUserBalance }:
             <div className="space-y-2 text-sm text-muted-foreground">
               <p>• <strong>Минимальная сумма:</strong> 100 USDT</p>
               <p>• <strong>Комиссия:</strong> комиссии сети оплачиваются отдельно</p>
-              <p>• <strong>Время обработки:</strong> заявки обрабатываются администратором вручную</p>
+              <p>• <strong>Время обработки:</strong> заявки обрабатываются системой автоматически</p>
               <p>• <strong>Уведомления:</strong> вы получите уведомление о статусе заявки</p>
               <p>• <strong>Важно:</strong> убедитесь, что указали правильный USDT кошелек</p>
             </div>
@@ -396,7 +396,7 @@ export const WithdrawalView = ({ user, onShowAuthDialog, onRefreshUserBalance }:
             <Button
               onClick={createWithdrawal}
               disabled={isSubmitting}
-              className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-500 hover:to-green-600"
+              className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-400 hover:to-orange-500"
             >
               {isSubmitting ? 'Обработка...' : 'Создать заявку'}
             </Button>
