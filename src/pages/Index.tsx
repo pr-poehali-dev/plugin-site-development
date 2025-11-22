@@ -4,10 +4,13 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Textarea } from '@/components/ui/textarea';
 import Icon from '@/components/ui/icon';
 
 const BACKEND_URL = 'https://functions.poehali.dev/1e67c3bd-abb5-4647-aa02-57410816c1f0';
 const AUTH_URL = 'https://functions.poehali.dev/2497448a-6aff-4df5-97ef-9181cf792f03';
+const FORUM_URL = 'https://functions.poehali.dev/045d6571-633c-4239-ae69-8d76c933532c';
+const PROFILE_URL = 'https://functions.poehali.dev/74bcb5c3-ddb7-4f36-b172-909af29200f2';
 
 interface Plugin {
   id: number;
@@ -34,6 +37,31 @@ interface User {
   id: number;
   username: string;
   email: string;
+  avatar_url?: string;
+  vk_url?: string;
+  telegram?: string;
+  discord?: string;
+  bio?: string;
+}
+
+interface ForumTopic {
+  id: number;
+  title: string;
+  content?: string;
+  views: number;
+  is_pinned: boolean;
+  created_at: string;
+  author_name: string;
+  comments_count: number;
+}
+
+interface ForumComment {
+  id: number;
+  content: string;
+  created_at: string;
+  author_id: number;
+  author_name: string;
+  author_avatar: string | null;
 }
 
 const Index = () => {
@@ -45,6 +73,14 @@ const Index = () => {
   const [authDialogOpen, setAuthDialogOpen] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
+  const [forumTopics, setForumTopics] = useState<ForumTopic[]>([]);
+  const [selectedTopic, setSelectedTopic] = useState<ForumTopic | null>(null);
+  const [topicComments, setTopicComments] = useState<ForumComment[]>([]);
+  const [showTopicDialog, setShowTopicDialog] = useState(false);
+  const [showProfileDialog, setShowProfileDialog] = useState(false);
+  const [newTopicTitle, setNewTopicTitle] = useState('');
+  const [newTopicContent, setNewTopicContent] = useState('');
+  const [newComment, setNewComment] = useState('');
 
   useEffect(() => {
     fetchPlugins();
@@ -119,6 +155,104 @@ const Index = () => {
     return sorted;
   };
 
+  const fetchForumTopics = async (pluginId?: number) => {
+    try {
+      const params = new URLSearchParams();
+      if (pluginId) params.append('plugin_id', pluginId.toString());
+      const response = await fetch(`${FORUM_URL}?${params}`);
+      const data = await response.json();
+      setForumTopics(data.topics || []);
+    } catch (error) {
+      console.error('Ошибка загрузки тем:', error);
+    }
+  };
+
+  const handleCreateTopic = async () => {
+    if (!user) {
+      alert('Войдите для создания темы');
+      return;
+    }
+    if (!newTopicTitle || !newTopicContent) {
+      alert('Заполните все поля');
+      return;
+    }
+    try {
+      const response = await fetch(FORUM_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-User-Id': user.id.toString()
+        },
+        body: JSON.stringify({
+          action: 'create_topic',
+          title: newTopicTitle,
+          content: newTopicContent
+        })
+      });
+      const data = await response.json();
+      if (data.success) {
+        setNewTopicTitle('');
+        setNewTopicContent('');
+        setShowTopicDialog(false);
+        fetchForumTopics();
+      }
+    } catch (error) {
+      console.error('Ошибка создания темы:', error);
+    }
+  };
+
+  const handleCreateComment = async () => {
+    if (!user) {
+      alert('Войдите для комментирования');
+      return;
+    }
+    if (!newComment || !selectedTopic) return;
+    try {
+      const response = await fetch(FORUM_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-User-Id': user.id.toString()
+        },
+        body: JSON.stringify({
+          action: 'create_comment',
+          topic_id: selectedTopic.id,
+          content: newComment
+        })
+      });
+      const data = await response.json();
+      if (data.success) {
+        setNewComment('');
+        const topicResponse = await fetch(`${FORUM_URL}?topic_id=${selectedTopic.id}`);
+        const topicData = await topicResponse.json();
+        setTopicComments(topicData.comments || []);
+      }
+    } catch (error) {
+      console.error('Ошибка создания комментария:', error);
+    }
+  };
+
+  const handleUpdateProfile = async (profileData: Partial<User>) => {
+    if (!user) return;
+    try {
+      const response = await fetch(PROFILE_URL, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-User-Id': user.id.toString()
+        },
+        body: JSON.stringify(profileData)
+      });
+      const data = await response.json();
+      if (data.success) {
+        setUser(data.user);
+        localStorage.setItem('user', JSON.stringify(data.user));
+      }
+    } catch (error) {
+      console.error('Ошибка обновления профиля:', error);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background text-foreground flex">
       <aside className={`fixed top-0 left-0 h-full bg-sidebar border-r border-sidebar-border transition-all duration-300 z-30 ${sidebarOpen ? 'w-64' : 'w-0 -translate-x-full'}`}>
@@ -149,6 +283,16 @@ const Index = () => {
                 <span className="text-sm font-medium">{item.label}</span>
               </button>
             ))}
+            
+            {user && (
+              <button
+                onClick={() => setShowProfileDialog(true)}
+                className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg transition-colors hover:bg-sidebar-accent/50 mt-4"
+              >
+                <Icon name="User" size={18} />
+                <span className="text-sm font-medium">Личный кабинет</span>
+              </button>
+            )}
           </nav>
 
           <div className="mt-8 pt-8 border-t border-sidebar-border">
@@ -229,14 +373,23 @@ const Index = () => {
             </p>
           </div>
 
-          <Tabs defaultValue="newest" className="mb-6">
-            <TabsList>
-              <TabsTrigger value="newest">Последние посты</TabsTrigger>
-              <TabsTrigger value="new">Новые темы</TabsTrigger>
-              <TabsTrigger value="hot">Горячие темы</TabsTrigger>
-              <TabsTrigger value="views">Наиболее просматриваемые</TabsTrigger>
-            </TabsList>
-          </Tabs>
+          <div className="flex items-center justify-between mb-6">
+            <Tabs defaultValue="newest">
+              <TabsList>
+                <TabsTrigger value="newest">Последние посты</TabsTrigger>
+                <TabsTrigger value="new">Новые темы</TabsTrigger>
+                <TabsTrigger value="hot">Горячие темы</TabsTrigger>
+                <TabsTrigger value="views">Наиболее просматриваемые</TabsTrigger>
+              </TabsList>
+            </Tabs>
+            
+            {user && (
+              <Button onClick={() => setShowTopicDialog(true)} className="bg-primary">
+                <Icon name="Plus" size={18} className="mr-2" />
+                Создать тему
+              </Button>
+            )}
+          </div>
 
           <div className="space-y-3">
             {sortPlugins('newest').map((plugin) => (
@@ -342,6 +495,119 @@ const Index = () => {
               {authMode === 'login' ? 'Нет аккаунта? Зарегистрироваться' : 'Уже есть аккаунт? Войти'}
             </button>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showTopicDialog} onOpenChange={setShowTopicDialog}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Создать новую тему</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium mb-1 block">Название темы</label>
+              <Input 
+                value={newTopicTitle} 
+                onChange={(e) => setNewTopicTitle(e.target.value)}
+                placeholder="Введите название темы"
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium mb-1 block">Описание</label>
+              <Textarea 
+                value={newTopicContent}
+                onChange={(e) => setNewTopicContent(e.target.value)}
+                className="min-h-[150px]"
+                placeholder="Опишите вашу тему..."
+              />
+            </div>
+            <Button onClick={handleCreateTopic} className="w-full bg-primary">
+              Создать тему
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showProfileDialog} onOpenChange={setShowProfileDialog}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Личный кабинет</DialogTitle>
+          </DialogHeader>
+          {user && (
+            <div className="space-y-6">
+              <div className="flex items-center gap-4">
+                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-2xl font-bold">
+                  {user.username[0].toUpperCase()}
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold">{user.username}</h3>
+                  <p className="text-sm text-muted-foreground">{user.email}</p>
+                </div>
+              </div>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="text-sm font-medium mb-1 block">О себе</label>
+                  <Textarea 
+                    defaultValue={user.bio || ''}
+                    onBlur={(e) => handleUpdateProfile({ bio: e.target.value })}
+                    className="min-h-[100px]"
+                    placeholder="Расскажите о себе..."
+                  />
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-medium mb-1 block flex items-center gap-2">
+                      <Icon name="MessageCircle" size={16} />
+                      VK
+                    </label>
+                    <Input 
+                      defaultValue={user.vk_url || ''}
+                      onBlur={(e) => handleUpdateProfile({ vk_url: e.target.value })}
+                      placeholder="https://vk.com/..."
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="text-sm font-medium mb-1 block flex items-center gap-2">
+                      <Icon name="Send" size={16} />
+                      Telegram
+                    </label>
+                    <Input 
+                      defaultValue={user.telegram || ''}
+                      onBlur={(e) => handleUpdateProfile({ telegram: e.target.value })}
+                      placeholder="@username"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="text-sm font-medium mb-1 block flex items-center gap-2">
+                      <Icon name="MessageSquare" size={16} />
+                      Discord
+                    </label>
+                    <Input 
+                      defaultValue={user.discord || ''}
+                      onBlur={(e) => handleUpdateProfile({ discord: e.target.value })}
+                      placeholder="username#1234"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="text-sm font-medium mb-1 block flex items-center gap-2">
+                      <Icon name="Image" size={16} />
+                      URL аватарки
+                    </label>
+                    <Input 
+                      defaultValue={user.avatar_url || ''}
+                      onBlur={(e) => handleUpdateProfile({ avatar_url: e.target.value })}
+                      placeholder="https://..."
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>
