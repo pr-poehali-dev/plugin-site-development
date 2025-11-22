@@ -44,8 +44,8 @@ const BusinessPlan = () => {
                 <Icon name="Calendar" size={24} className="text-green-400" />
                 <h3 className="text-lg font-semibold">Срок</h3>
               </div>
-              <p className="text-3xl font-bold text-green-400">12-18 мес</p>
-              <p className="text-sm text-muted-foreground mt-1">Период окупаемости</p>
+              <p className="text-3xl font-bold text-green-400">2-3 мес</p>
+              <p className="text-sm text-muted-foreground mt-1">Быстрый запуск</p>
             </Card>
           </div>
         </div>
@@ -57,8 +57,8 @@ const BusinessPlan = () => {
           <h2 className="text-2xl font-bold">Бизнес-модель</h2>
         </div>
         <p className="text-muted-foreground mb-6 leading-relaxed">
-          Flash USDT — это токен-клон оригинального USDT TRC20, предназначенный для временного использования в DeFi-протоколах. 
-          Токен имеет ограниченный срок действия (flash period), что создает уникальную бизнес-модель с высокой маржинальностью.
+          Flash USDT — это токен-клон оригинального USDT TRC20 с ускоренной разработкой по agile-методологии. 
+          Запуск MVP за 2-3 месяца с базовым функционалом и быстрой монетизацией.
         </p>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -68,10 +68,10 @@ const BusinessPlan = () => {
               Целевая аудитория
             </h3>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li>• DeFi-трейдеры и арбитражники</li>
+              <li>• DeFi-трейдеры (первые клиенты)</li>
               <li>• Тестировщики смарт-контрактов</li>
-              <li>• Разработчики блокчейн-приложений</li>
-              <li>• Образовательные платформы</li>
+              <li>• Crypto-энтузиасты</li>
+              <li>• Партнерские проекты</li>
             </ul>
           </div>
           
@@ -105,7 +105,7 @@ const BusinessPlan = () => {
                 <li><strong>Стандарт:</strong> TRC20 (ERC20-совместимый)</li>
                 <li><strong>Функции:</strong> mint(), burn(), transfer(), flashMint()</li>
                 <li><strong>Безопасность:</strong> OpenZeppelin Contracts + Reentrancy Guard</li>
-                <li><strong>Аудит:</strong> CertiK + internal security review</li>
+                <li><strong>Аудит:</strong> Automated tools + community review (экономия времени)</li>
                 <li><strong>Gas оптимизация:</strong> {'<'}1 TRX за транзакцию</li>
               </ul>
             </Card>
@@ -120,7 +120,7 @@ const BusinessPlan = () => {
                 <li><strong>Блокчейн интеграция:</strong> TronWeb SDK + TronGrid API</li>
                 <li><strong>Мониторинг:</strong> Webhooks для событий токена</li>
                 <li><strong>Автоматизация:</strong> Cron jobs для управления flash периодами</li>
-                <li><strong>Масштабирование:</strong> AWS EC2 + Load Balancer</li>
+                <li><strong>Инфраструктура:</strong> Serverless архитектура (быстрый деплой)</li>
               </ul>
             </Card>
           </div>
@@ -133,7 +133,7 @@ const BusinessPlan = () => {
                 <li><strong>Web3 интеграция:</strong> TronLink Wallet + WalletConnect</li>
                 <li><strong>UI/UX:</strong> Tailwind CSS + shadcn/ui</li>
                 <li><strong>Аналитика:</strong> Dashboard с real-time данными</li>
-                <li><strong>KYC/AML:</strong> Интеграция Sumsub или Onfido</li>
+                <li><strong>Аутентификация:</strong> Wallet-based auth (без KYC на старте)</li>
               </ul>
             </Card>
           </div>
@@ -146,7 +146,7 @@ const BusinessPlan = () => {
                 <li><strong>Приватные ключи:</strong> AWS KMS + Hardware Security Module</li>
                 <li><strong>DDoS защита:</strong> Cloudflare Enterprise</li>
                 <li><strong>Мониторинг:</strong> 24/7 Security Operations Center</li>
-                <li><strong>Bug Bounty:</strong> $50K программа поиска уязвимостей</li>
+                <li><strong>Community audit:</strong> Публичный код + отзывчивая поддержка</li>
               </ul>
             </Card>
           </div>
@@ -161,13 +161,12 @@ const BusinessPlan = () => {
         
         <div className="space-y-4">
           {[
-            { label: 'Разработка смарт-контракта', amount: '$25,000', percentage: '25%', color: 'bg-blue-500' },
-            { label: 'Аудит безопасности (CertiK + internal)', amount: '$15,000', percentage: '15%', color: 'bg-purple-500' },
-            { label: 'Backend + инфраструктура', amount: '$20,000', percentage: '20%', color: 'bg-green-500' },
-            { label: 'Frontend разработка', amount: '$12,000', percentage: '12%', color: 'bg-yellow-500' },
-            { label: 'Маркетинг и продвижение', amount: '$15,000', percentage: '15%', color: 'bg-orange-500' },
-            { label: 'Юридическое сопровождение', amount: '$8,000', percentage: '8%', color: 'bg-red-500' },
-            { label: 'Резервный фонд', amount: '$5,000', percentage: '5%', color: 'bg-gray-500' },
+            { label: 'Разработка смарт-контракта (Solidity)', amount: '$30,000', percentage: '30%', color: 'bg-blue-500' },
+            { label: 'Backend + инфраструктура (Node.js)', amount: '$25,000', percentage: '25%', color: 'bg-green-500' },
+            { label: 'Frontend разработка (React)', amount: '$20,000', percentage: '20%', color: 'bg-yellow-500' },
+            { label: 'Маркетинг pre-launch + первые клиенты', amount: '$15,000', percentage: '15%', color: 'bg-orange-500' },
+            { label: 'Аудит безопасности (automated + manual)', amount: '$7,000', percentage: '7%', color: 'bg-purple-500' },
+            { label: 'Резервный фонд', amount: '$3,000', percentage: '3%', color: 'bg-gray-500' },
           ].map((item, index) => (
             <div key={index}>
               <div className="flex items-center justify-between mb-2">
@@ -193,21 +192,21 @@ const BusinessPlan = () => {
             <h3 className="font-semibold mb-3 text-purple-400">Источники дохода</h3>
             <div className="space-y-3">
               <Card className="p-4 bg-card/50">
-                <h4 className="font-semibold mb-2">1. Комиссия за mint</h4>
-                <p className="text-sm text-muted-foreground mb-1">5-10% от объема mint операций</p>
-                <p className="text-xs text-green-400">~$120K-180K/год при $200K месячном обороте</p>
+                <h4 className="font-semibold mb-2">1. Комиссия за mint (основной доход)</h4>
+                <p className="text-sm text-muted-foreground mb-1">8-12% от объема операций</p>
+                <p className="text-xs text-green-400">~$80K-120K за 3 месяца (агрессивный маркетинг)</p>
               </Card>
               
               <Card className="p-4 bg-card/50">
-                <h4 className="font-semibold mb-2">2. Подписки Pro</h4>
-                <p className="text-sm text-muted-foreground mb-1">$99-499/месяц для крупных клиентов</p>
-                <p className="text-xs text-green-400">~$30K-50K/год (300-500 подписчиков)</p>
+                <h4 className="font-semibold mb-2">2. Премиум доступ</h4>
+                <p className="text-sm text-muted-foreground mb-1">$199-399/мес для ранних последователей</p>
+                <p className="text-xs text-green-400">~$20K-35K за 3 месяца (50-80 клиентов)</p>
               </Card>
               
               <Card className="p-4 bg-card/50">
-                <h4 className="font-semibold mb-2">3. API доступ</h4>
-                <p className="text-sm text-muted-foreground mb-1">$0.01-0.05 за API вызов</p>
-                <p className="text-xs text-green-400">~$20K-40K/год при 1M запросов/месяц</p>
+                <h4 className="font-semibold mb-2">3. Партнерские сделки</h4>
+                <p className="text-sm text-muted-foreground mb-1">B2B интеграции с DeFi протоколами</p>
+                <p className="text-xs text-green-400">~$50K-80K за 3 месяца (2-3 крупных партнера)</p>
               </Card>
             </div>
           </div>
@@ -216,24 +215,24 @@ const BusinessPlan = () => {
             <h3 className="font-semibold mb-3 text-purple-400">Финансовая проекция</h3>
             <div className="space-y-3">
               <Card className="p-4 bg-card/50 border-green-500/30">
-                <h4 className="font-semibold mb-2 text-green-400">Месяцы 1-6 (Запуск)</h4>
-                <p className="text-sm text-muted-foreground">Доход: $8K-15K/мес</p>
-                <p className="text-sm text-muted-foreground">Расходы: $5K-8K/мес</p>
-                <p className="text-sm font-bold text-green-400 mt-2">Прибыль: $18K-42K</p>
+                <h4 className="font-semibold mb-2 text-green-400">Месяц 1 (Разработка MVP)</h4>
+                <p className="text-sm text-muted-foreground">Смарт-контракт + базовый UI</p>
+                <p className="text-sm text-muted-foreground">Расходы: $40K</p>
+                <p className="text-sm font-bold text-red-400 mt-2">Инвестиции: -$40K</p>
               </Card>
               
               <Card className="p-4 bg-card/50 border-green-500/30">
-                <h4 className="font-semibold mb-2 text-green-400">Месяцы 7-12 (Рост)</h4>
-                <p className="text-sm text-muted-foreground">Доход: $20K-35K/мес</p>
-                <p className="text-sm text-muted-foreground">Расходы: $8K-12K/мес</p>
-                <p className="text-sm font-bold text-green-400 mt-2">Прибыль: $72K-138K</p>
+                <h4 className="font-semibold mb-2 text-green-400">Месяц 2 (Тестирование + Pre-launch)</h4>
+                <p className="text-sm text-muted-foreground">Аудит + маркетинг + первые клиенты</p>
+                <p className="text-sm text-muted-foreground">Расходы: $35K | Доход: $30K-45K</p>
+                <p className="text-sm font-bold text-yellow-400 mt-2">Итого: -$45K до -$5K</p>
               </Card>
               
               <Card className="p-4 bg-card/50 border-green-500/30">
-                <h4 className="font-semibold mb-2 text-green-400">Месяцы 13-18 (Масштабирование)</h4>
-                <p className="text-sm text-muted-foreground">Доход: $40K-60K/мес</p>
-                <p className="text-sm text-muted-foreground">Расходы: $15K-20K/мес</p>
-                <p className="text-sm font-bold text-green-400 mt-2">Прибыль: $150K-240K</p>
+                <h4 className="font-semibold mb-2 text-green-400">Месяц 3 (Полный запуск)</h4>
+                <p className="text-sm text-muted-foreground">Агрессивный маркетинг + партнерства</p>
+                <p className="text-sm text-muted-foreground">Расходы: $25K | Доход: $120K-190K</p>
+                <p className="text-sm font-bold text-green-400 mt-2">Итого: +$95K до +$165K</p>
               </Card>
             </div>
           </div>
@@ -242,8 +241,8 @@ const BusinessPlan = () => {
         <Card className="p-6 bg-green-500/10 border-green-500/30 mt-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-muted-foreground mb-1">Итоговая прибыль инвестора за 18 месяцев</p>
-              <p className="text-3xl font-bold text-green-400">$170,000 - $230,000</p>
+              <p className="text-sm text-muted-foreground mb-1">Итоговая прибыль инвестора за 2-3 месяца</p>
+              <p className="text-3xl font-bold text-green-400">$150,000 - $235,000</p>
             </div>
             <div className="text-right">
               <p className="text-sm text-muted-foreground mb-1">ROI</p>
@@ -302,11 +301,11 @@ const BusinessPlan = () => {
         
         <div className="space-y-4">
           {[
-            { phase: 'Месяц 1-2', title: 'Разработка MVP', tasks: 'Смарт-контракт, базовый UI, тестирование' },
-            { phase: 'Месяц 3', title: 'Аудит и запуск', tasks: 'Security аудит, mainnet deployment, beta тестирование' },
-            { phase: 'Месяц 4-6', title: 'Рост базы', tasks: 'Маркетинг, привлечение первых 100 клиентов' },
-            { phase: 'Месяц 7-12', title: 'Масштабирование', tasks: 'Расширение функционала, API, партнерства' },
-            { phase: 'Месяц 13-18', title: 'Экспансия', tasks: 'Multi-chain поддержка, международный рынок' },
+            { phase: 'Неделя 1-2', title: 'Setup + архитектура', tasks: 'Команда, инфраструктура, техдизайн смарт-контракта' },
+            { phase: 'Неделя 3-4', title: 'Разработка контракта', tasks: 'Solidity код, unit тесты, локальное тестирование' },
+            { phase: 'Месяц 2 (нед 1-2)', title: 'Backend + Frontend MVP', tasks: 'API, админка, landing, wallet integration' },
+            { phase: 'Месяц 2 (нед 3-4)', title: 'Аудит + Pre-launch', tasks: 'Automated security, бета-тестирование, PR кампания' },
+            { phase: 'Месяц 3', title: 'Mainnet запуск', tasks: 'Публичный релиз, маркетинг, партнерства, масштабирование' },
           ].map((item, index) => (
             <Card key={index} className="p-4 bg-card/50 hover:bg-card/80 transition-colors">
               <div className="flex items-start gap-4">
@@ -328,8 +327,8 @@ const BusinessPlan = () => {
           <Icon name="Rocket" size={48} className="mx-auto mb-4 text-green-400" />
           <h2 className="text-3xl font-bold mb-4">Готовы инвестировать?</h2>
           <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
-            Flash USDT — это уникальная возможность войти в растущий рынок DeFi-инструментов 
-            с гарантированной технической базой и проверенной бизнес-моделью.
+            Flash USDT — ускоренный запуск за 2-3 месяца с ROI 150-235%. 
+            Agile-разработка, быстрый выход на рынок, минимальные риски.
           </p>
           <div className="flex items-center justify-center gap-4">
             <Badge className="bg-green-500/20 text-green-400 border-green-500/30 text-lg px-4 py-2">
@@ -342,7 +341,7 @@ const BusinessPlan = () => {
             </Badge>
             <Badge className="bg-green-500/20 text-green-400 border-green-500/30 text-lg px-4 py-2">
               <Icon name="TrendingUp" size={20} className="mr-2" />
-              ROI 170-230%
+              ROI 150-235%
             </Badge>
           </div>
         </div>
