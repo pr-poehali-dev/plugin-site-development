@@ -584,37 +584,41 @@ const UserProfile = ({ user, isOwnProfile, onClose, onTopUpBalance, onUpdateProf
 
           {cryptoPayment && (
             <div className="space-y-4">
-              <Card className="p-4 bg-gradient-to-br from-green-800/10 to-green-900/10 border-green-800/20">
-                <div className="space-y-3">
-                  <div>
-                    <Label className="text-xs text-muted-foreground">Сумма</Label>
-                    <p className="text-2xl font-bold">{cryptoPayment.amount} USDT</p>
-                  </div>
-                  
-                  <div>
-                    <Label className="text-xs text-muted-foreground">Сеть</Label>
-                    <p className="text-lg font-semibold text-green-400">{cryptoPayment.network}</p>
-                  </div>
-
-                  <div className="flex flex-col items-center justify-center py-6 space-y-3">
-                    <div className="relative p-5 bg-gradient-to-br from-green-800/90 to-green-900/90 rounded-2xl shadow-2xl border-2 border-green-600/40 backdrop-blur-sm">
-                      <div className="absolute inset-0 bg-gradient-to-br from-green-400/5 to-transparent rounded-2xl" />
-                      <div className="relative">
-                        <QRCodeSVG 
-                          value={cryptoPayment.wallet_address} 
-                          size={180}
-                          level="H"
-                          includeMargin={false}
-                          fgColor="#ffffff"
-                          bgColor="transparent"
-                          style={{ display: 'block' }}
-                        />
+              <Card className="p-6 bg-gradient-to-br from-green-800/10 to-green-900/10 border-green-800/20">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-center gap-8">
+                    <div className="flex flex-col items-center justify-center space-y-6">
+                      <div>
+                        <Label className="text-xs text-muted-foreground block text-center mb-2">Сумма</Label>
+                        <p className="text-3xl font-bold text-center">{cryptoPayment.amount} USDT</p>
+                      </div>
+                      
+                      <div>
+                        <Label className="text-xs text-muted-foreground block text-center mb-2">Сеть</Label>
+                        <p className="text-xl font-semibold text-green-400 text-center">{cryptoPayment.network}</p>
                       </div>
                     </div>
-                    <p className="text-xs text-muted-foreground flex items-center gap-1">
-                      <Icon name="Scan" size={14} />
-                      Отсканируйте QR-код для быстрого перевода
-                    </p>
+
+                    <div className="flex flex-col items-center space-y-3">
+                      <div className="relative p-5 bg-gradient-to-br from-green-800/90 to-green-900/90 rounded-2xl shadow-2xl border-2 border-green-600/40 backdrop-blur-sm">
+                        <div className="absolute inset-0 bg-gradient-to-br from-green-400/5 to-transparent rounded-2xl" />
+                        <div className="relative">
+                          <QRCodeSVG 
+                            value={cryptoPayment.wallet_address} 
+                            size={180}
+                            level="H"
+                            includeMargin={false}
+                            fgColor="#ffffff"
+                            bgColor="transparent"
+                            style={{ display: 'block' }}
+                          />
+                        </div>
+                      </div>
+                      <p className="text-xs text-muted-foreground flex items-center gap-1">
+                        <Icon name="Scan" size={14} />
+                        Сканируйте для перевода
+                      </p>
+                    </div>
                   </div>
 
                   <div>
