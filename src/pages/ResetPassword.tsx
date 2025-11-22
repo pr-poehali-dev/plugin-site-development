@@ -32,37 +32,38 @@ const ResetPassword = () => {
     }
 
     setToken(tokenFromUrl);
-    validateToken(tokenFromUrl);
-  }, [searchParams]);
-
-  const validateToken = async (tokenValue: string) => {
-    try {
-      const response = await fetch(`${PASSWORD_RESET_URL}?token=${tokenValue}`, {
-        method: 'GET'
-      });
-      const data = await response.json();
-      
-      if (data.valid) {
-        setTokenValid(true);
-      } else {
+    
+    const validateToken = async () => {
+      try {
+        const response = await fetch(`${PASSWORD_RESET_URL}?token=${tokenFromUrl}`, {
+          method: 'GET'
+        });
+        const data = await response.json();
+        
+        if (data.valid) {
+          setTokenValid(true);
+        } else {
+          toast({
+            title: 'Ошибка',
+            description: data.error || 'Токен недействителен или истёк',
+            variant: 'destructive'
+          });
+          setTimeout(() => navigate('/'), 3000);
+        }
+      } catch (error) {
         toast({
           title: 'Ошибка',
-          description: data.error || 'Токен недействителен или истёк',
+          description: 'Ошибка проверки токена',
           variant: 'destructive'
         });
         setTimeout(() => navigate('/'), 3000);
+      } finally {
+        setValidating(false);
       }
-    } catch (error) {
-      toast({
-        title: 'Ошибка',
-        description: 'Ошибка проверки токена',
-        variant: 'destructive'
-      });
-      setTimeout(() => navigate('/'), 3000);
-    } finally {
-      setValidating(false);
-    }
-  };
+    };
+    
+    validateToken();
+  }, [searchParams, toast, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
