@@ -44,10 +44,23 @@ export const ReferralTab = ({ user }: ReferralTabProps) => {
   });
   const [loading, setLoading] = useState(true);
   const [claiming, setClaiming] = useState(false);
+  const [canClaimBonus, setCanClaimBonus] = useState(false);
+  const [claimingBonus, setClaimingBonus] = useState(false);
 
   useEffect(() => {
     fetchReferralInfo();
+    checkBonusAvailability();
   }, [user.id]);
+
+  const checkBonusAvailability = () => {
+    const savedUser = localStorage.getItem('user');
+    if (savedUser) {
+      const userData = JSON.parse(savedUser);
+      const hasReferralCode = userData.referred_by_code && userData.referred_by_code.length > 0;
+      const bonusClaimed = userData.referral_bonus_claimed === true;
+      setCanClaimBonus(hasReferralCode && !bonusClaimed);
+    }
+  };
 
   const fetchReferralInfo = async () => {
     try {
@@ -91,6 +104,51 @@ export const ReferralTab = ({ user }: ReferralTabProps) => {
       title: 'Скопировано!',
       description: 'Реферальная ссылка скопирована в буфер обмена'
     });
+  };
+
+  const handleClaimBonus = async () => {
+    setClaimingBonus(true);
+    try {
+      const response = await fetch(AUTH_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-User-Id': user.id.toString()
+        },
+        body: JSON.stringify({
+          action: 'claim_referral_bonus'
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        toast({
+          title: '🎁 Бонус получен!',
+          description: `Вам начислено ${data.bonus_amount} USDT. Новый баланс: ${data.new_balance} USDT`
+        });
+        
+        const updatedUser = { ...user, balance: data.new_balance, referral_bonus_claimed: true };
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+        Object.assign(user, updatedUser);
+        
+        setCanClaimBonus(false);
+      } else {
+        toast({
+          title: 'Ошибка',
+          description: data.error || 'Ошибка получения бонуса',
+          variant: 'destructive'
+        });
+      }
+    } catch (error) {
+      toast({
+        title: 'Ошибка',
+        description: 'Ошибка подключения к серверу',
+        variant: 'destructive'
+      });
+    } finally {
+      setClaimingBonus(false);
+    }
   };
 
   const handleClaimReward = async () => {
@@ -150,6 +208,51 @@ export const ReferralTab = ({ user }: ReferralTabProps) => {
 
   return (
     <div className="space-y-4">
+      {canClaimBonus && (
+        <Card className="p-4 sm:p-6 bg-gradient-to-br from-yellow-500/20 to-orange-500/20 border-yellow-500/40 animate-pulse-slow">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-12 h-12 rounded-full bg-yellow-500/30 flex items-center justify-center">
+              <Icon name="Gift" size={24} className="text-yellow-400" />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-lg font-bold flex items-center gap-2">
+                🎁 Приветственный бонус!
+              </h3>
+              <p className="text-sm text-muted-foreground">Вы использовали реферальный код при регистрации</p>
+            </div>
+          </div>
+
+          <div className="bg-background/50 rounded-lg p-4 mb-4">
+            <p className="text-sm mb-2">
+              <strong>Поздравляем!</strong> Вы получили доступ к бонусу за использование реферального кода.
+            </p>
+            <p className="text-lg font-bold text-yellow-400">
+              <Icon name="DollarSign" size={20} className="inline mr-1" />
+              25 USDT ждут вас!
+            </p>
+          </div>
+
+          <Button 
+            onClick={handleClaimBonus}
+            disabled={claimingBonus}
+            className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-black font-bold"
+            size="lg"
+          >
+            {claimingBonus ? (
+              <>
+                <Icon name="Loader2" size={18} className="mr-2 animate-spin" />
+                Получение бонуса...
+              </>
+            ) : (
+              <>
+                <Icon name="Gift" size={18} className="mr-2" />
+                Получить 25 USDT
+              </>
+            )}
+          </Button>
+        </Card>
+      )}
+
       <Card className="p-4 sm:p-6 bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
         <div className="flex items-center gap-3 mb-4">
           <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center">

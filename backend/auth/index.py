@@ -156,7 +156,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             
             # Создание пользователя
             cur.execute(
-                f"INSERT INTO {SCHEMA}.users (username, email, password_hash, referred_by_code) VALUES (%s, %s, %s, %s) RETURNING id, username, email, avatar_url, role, forum_role, balance, created_at",
+                f"INSERT INTO {SCHEMA}.users (username, email, password_hash, referred_by_code) VALUES (%s, %s, %s, %s) RETURNING id, username, email, avatar_url, role, forum_role, balance, created_at, referred_by_code, referral_bonus_claimed",
                 (username, email, password_hash, referral_code if referral_code else None)
             )
             user = cur.fetchone()
@@ -213,7 +213,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             password_hash = hash_password(password)
             
             cur.execute(
-                f"SELECT id, username, email, avatar_url, role, forum_role, is_blocked, balance, created_at FROM {SCHEMA}.users WHERE username = %s AND password_hash = %s",
+                f"SELECT id, username, email, avatar_url, role, forum_role, is_blocked, balance, created_at, referred_by_code, referral_bonus_claimed FROM {SCHEMA}.users WHERE username = %s AND password_hash = %s",
                 (username, password_hash)
             )
             user = cur.fetchone()
@@ -284,7 +284,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'isBase64Encoded': False
                 }
             
-            cur.execute(f"SELECT id, username, email, avatar_url, role, forum_role, balance, created_at FROM {SCHEMA}.users WHERE id = %s", (user_id,))
+            cur.execute(f"SELECT id, username, email, avatar_url, role, forum_role, balance, created_at, referred_by_code, referral_bonus_claimed FROM {SCHEMA}.users WHERE id = %s", (user_id,))
             user = cur.fetchone()
             
             if not user:
@@ -1133,6 +1133,69 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 'body': json.dumps({
                     'success': True,
                     'reward_amount': reward_amount,
+                    'new_balance': new_balance
+                }),
+                'isBase64Encoded': False
+            }
+        
+        elif action == 'claim_referral_bonus':
+            headers = event.get('headers', {})
+            user_id = headers.get('X-User-Id') or headers.get('x-user-id')
+            
+            if not user_id:
+                return {
+                    'statusCode': 401,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'error': 'Требуется авторизация'}),
+                    'isBase64Encoded': False
+                }
+            
+            cur.execute(
+                f"SELECT referred_by_code, referral_bonus_claimed FROM {SCHEMA}.users WHERE id = %s",
+                (int(user_id),)
+            )
+            user_data = cur.fetchone()
+            
+            if not user_data or not user_data['referred_by_code']:
+                return {
+                    'statusCode': 400,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'error': 'Вы не использовали реферальный код при регистрации'}),
+                    'isBase64Encoded': False
+                }
+            
+            if user_data['referral_bonus_claimed']:
+                return {
+                    'statusCode': 400,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'error': 'Бонус уже получен'}),
+                    'isBase64Encoded': False
+                }
+            
+            bonus_amount = 25
+            
+            cur.execute(
+                f"UPDATE {SCHEMA}.users SET balance = balance + %s, referral_bonus_claimed = TRUE WHERE id = %s",
+                (bonus_amount, int(user_id))
+            )
+            
+            cur.execute(
+                f"INSERT INTO {SCHEMA}.transactions (user_id, amount, type, description) VALUES (%s, %s, 'referral_bonus', 'Бонус за использование реферального кода')",
+                (int(user_id), bonus_amount)
+            )
+            
+            conn.commit()
+            
+            cur.execute(f"SELECT balance FROM {SCHEMA}.users WHERE id = %s", (int(user_id),))
+            updated_user = cur.fetchone()
+            new_balance = float(updated_user['balance']) if updated_user else 0
+            
+            return {
+                'statusCode': 200,
+                'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                'body': json.dumps({
+                    'success': True,
+                    'bonus_amount': bonus_amount,
                     'new_balance': new_balance
                 }),
                 'isBase64Encoded': False
