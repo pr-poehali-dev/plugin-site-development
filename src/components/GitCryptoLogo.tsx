@@ -14,7 +14,7 @@ const GitCryptoLogo = () => {
             
             <g className="letters-group">
               <path 
-                d="M 14 10 A 8 8 0 0 0 14 32 L 14 28 A 4 4 0 0 1 14 14 L 20 14" 
+                d="M 11 10 A 8 8 0 0 0 11 32 L 11 28 A 4 4 0 0 1 11 14 L 17 14" 
                 stroke="url(#gcGradient)" 
                 strokeWidth="3" 
                 strokeLinecap="round"
@@ -23,9 +23,9 @@ const GitCryptoLogo = () => {
               />
               
               <line 
-                x1="20" 
+                x1="17" 
                 y1="21" 
-                x2="14" 
+                x2="11" 
                 y2="21" 
                 stroke="url(#gcGradient)" 
                 strokeWidth="3" 
@@ -34,7 +34,7 @@ const GitCryptoLogo = () => {
               />
               
               <path 
-                d="M 28 10 A 8 8 0 0 0 28 32" 
+                d="M 31 10 A 8 8 0 0 0 31 32" 
                 stroke="url(#gcGradient)" 
                 strokeWidth="3" 
                 strokeLinecap="round"
@@ -43,28 +43,28 @@ const GitCryptoLogo = () => {
               />
               
               <circle 
-                cx="17" 
+                cx="14" 
                 cy="10" 
                 r="1.5" 
                 fill="url(#gcGradient)" 
                 className="dot dot-1"
               />
               <circle 
-                cx="31" 
+                cx="34" 
                 cy="10" 
                 r="1.5" 
                 fill="url(#gcGradient)" 
                 className="dot dot-2"
               />
               <circle 
-                cx="17" 
+                cx="14" 
                 cy="32" 
                 r="1.5" 
                 fill="url(#gcGradient)" 
                 className="dot dot-3"
               />
               <circle 
-                cx="31" 
+                cx="34" 
                 cy="32" 
                 r="1.5" 
                 fill="url(#gcGradient)" 
