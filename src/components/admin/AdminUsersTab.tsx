@@ -8,6 +8,7 @@ interface AdminUsersTabProps {
   onBlockUser: (userId: number, username: string) => void;
   onUnblockUser: (userId: number) => void;
   onChangeForumRole: (userId: number, forumRole: string) => void;
+  onDeleteUser: (userId: number, username: string) => void;
 }
 
 const AdminUsersTab = ({ 
@@ -15,7 +16,8 @@ const AdminUsersTab = ({
   currentUser, 
   onBlockUser, 
   onUnblockUser, 
-  onChangeForumRole 
+  onChangeForumRole,
+  onDeleteUser
 }: AdminUsersTabProps) => {
   return (
     <div className="space-y-4">
@@ -65,14 +67,24 @@ const AdminUsersTab = ({
                 </span>
               )}
               {user.id !== currentUser.id && (
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => user.is_blocked ? onUnblockUser(user.id) : onBlockUser(user.id, user.username)}
-                  className={user.is_blocked ? 'text-green-500' : 'text-destructive'}
-                >
-                  {user.is_blocked ? 'Разблокировать' : 'Заблокировать'}
-                </Button>
+                <>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => user.is_blocked ? onUnblockUser(user.id) : onBlockUser(user.id, user.username)}
+                    className={user.is_blocked ? 'text-green-500' : 'text-destructive'}
+                  >
+                    {user.is_blocked ? 'Разблокировать' : 'Заблокировать'}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => onDeleteUser(user.id, user.username)}
+                    className="text-red-500 hover:text-red-600"
+                  >
+                    <Icon name="Trash2" size={16} />
+                  </Button>
+                </>
               )}
             </div>
           </div>

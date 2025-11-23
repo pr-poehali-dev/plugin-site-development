@@ -236,6 +236,40 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'isBase64Encoded': False
                 }
             
+            elif action == 'delete_user':
+                target_user_id = body_data.get('user_id')
+                
+                if not target_user_id:
+                    return {
+                        'statusCode': 400,
+                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({'error': 'user_id обязателен'}),
+                        'isBase64Encoded': False
+                    }
+                
+                cur.execute(f"SELECT username FROM {SCHEMA}.users WHERE id = %s", (target_user_id,))
+                target_user = cur.fetchone()
+                
+                if not target_user:
+                    return {
+                        'statusCode': 404,
+                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({'error': 'Пользователь не найден'}),
+                        'isBase64Encoded': False
+                    }
+                
+                log_admin_action(user_id, 'delete_user', 'user', target_user_id, f"Deleted user: {target_user['username']}", cur)
+                
+                cur.execute(f"DELETE FROM {SCHEMA}.users WHERE id = %s", (target_user_id,))
+                conn.commit()
+                
+                return {
+                    'statusCode': 200,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'success': True}),
+                    'isBase64Encoded': False
+                }
+            
             elif action == 'set_role':
                 target_user_id = body_data.get('user_id')
                 role = body_data.get('role', 'user')

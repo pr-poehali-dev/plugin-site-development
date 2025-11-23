@@ -368,6 +368,47 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
     }
   };
 
+  const handleDeleteUser = async (userId: number, username: string) => {
+    const confirmed = window.confirm(`Удалить пользователя ${username}? Это действие нельзя отменить!`);
+    if (!confirmed) return;
+    
+    try {
+      const response = await fetch(ADMIN_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-User-Id': currentUser.id.toString()
+        },
+        body: JSON.stringify({
+          action: 'delete_user',
+          user_id: userId
+        })
+      });
+      
+      const data = await response.json();
+      if (data.success) {
+        fetchUsers();
+        toast({
+          title: 'Успешно',
+          description: 'Пользователь удалён'
+        });
+      } else {
+        toast({
+          title: 'Ошибка',
+          description: data.error || 'Ошибка удаления пользователя',
+          variant: 'destructive'
+        });
+      }
+    } catch (error) {
+      console.error('Ошибка удаления пользователя:', error);
+      toast({
+        title: 'Ошибка',
+        description: 'Ошибка удаления пользователя',
+        variant: 'destructive'
+      });
+    }
+  };
+
   const handleChangeForumRole = async (userId: number, forumRole: string) => {
     try {
       const response = await fetch(ADMIN_URL, {
@@ -615,6 +656,7 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
             onBlockUser={handleBlockUser}
             onUnblockUser={handleUnblockUser}
             onChangeForumRole={handleChangeForumRole}
+            onDeleteUser={handleDeleteUser}
           />
         )}
 
