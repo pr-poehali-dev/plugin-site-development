@@ -11,6 +11,7 @@ import TermsPage from './TermsPage';
 import RulesPage from './RulesPage';
 import SmartContractsPage from './SmartContractsPage';
 import ReferralProgramPage from './ReferralProgramPage';
+import AboutPage from './AboutPage';
 
 interface MainContentProps {
   activeView: 'plugins' | 'forum';
@@ -58,6 +59,8 @@ const MainContent = ({
       {activeView === 'plugins' ? (
         activeCategory === 'rules' ? (
           <RulesPage />
+        ) : activeCategory === 'about' ? (
+          <AboutPage />
         ) : activeCategory === 'faq' ? (
           <FAQPage />
         ) : activeCategory === 'support' ? (
