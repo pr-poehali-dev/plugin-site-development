@@ -769,6 +769,40 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 'isBase64Encoded': False
             }
         
+        elif action == 'clear_lottery_data':
+            headers = event.get('headers', {})
+            user_id = headers.get('X-User-Id') or headers.get('x-user-id')
+            
+            if not user_id:
+                return {
+                    'statusCode': 401,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'success': False, 'message': 'Требуется авторизация'}),
+                    'isBase64Encoded': False
+                }
+            
+            cur.execute("SELECT role FROM users WHERE id = %s", (int(user_id),))
+            user = cur.fetchone()
+            
+            if not user or user.get('role') != 'admin':
+                return {
+                    'statusCode': 403,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'success': False, 'message': 'Недостаточно прав'}),
+                    'isBase64Encoded': False
+                }
+            
+            cur.execute("DELETE FROM lottery_chat")
+            cur.execute("DELETE FROM lottery_rounds WHERE status = 'completed'")
+            conn.commit()
+            
+            return {
+                'statusCode': 200,
+                'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                'body': json.dumps({'success': True, 'message': 'История чата и победителей очищена'}),
+                'isBase64Encoded': False
+            }
+        
         elif action == 'get_lottery_history':
             cur.execute(
                 "SELECT id, status, total_tickets, prize_pool, winner_ticket_number, winner_user_id, winner_username, created_at, completed_at FROM lottery_rounds WHERE status = 'completed' ORDER BY completed_at DESC LIMIT 20"
