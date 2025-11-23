@@ -12,6 +12,7 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { getAvatarGradient } from '@/utils/avatarColors';
 import { useToast } from '@/hooks/use-toast';
 import UserRankBadge from '@/components/UserRankBadge';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const ESCROW_URL = 'https://functions.poehali.dev/82c75fbc-83e4-4448-9ff8-1c8ef9bbec09';
 
@@ -22,6 +23,7 @@ interface EscrowViewProps {
 }
 
 export const EscrowView = ({ user, onShowAuthDialog, onRefreshUserBalance }: EscrowViewProps) => {
+  const { t } = useLanguage();
   const { toast } = useToast();
   const [deals, setDeals] = useState<EscrowDeal[]>([]);
   const [loading, setLoading] = useState(true);
@@ -185,9 +187,9 @@ export const EscrowView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Esc
     <div className="space-y-3 sm:space-y-4 md:space-y-6 animate-fade-in">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-1 sm:mb-2">Гарант-сервис</h1>
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-1 sm:mb-2">{t('escrowTitle')}</h1>
           <p className="text-xs sm:text-sm md:text-base text-muted-foreground">
-            Безопасный обмен криптовалют с гарантией платформы
+            {t('escrowSubtitle')}
           </p>
         </div>
         <Button
@@ -195,7 +197,7 @@ export const EscrowView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Esc
           className="bg-gradient-to-r from-green-800 to-green-900 hover:from-green-700 hover:to-green-800 w-full sm:w-auto text-xs sm:text-sm h-9 sm:h-10"
         >
           <Icon name="Plus" size={16} className="mr-1.5 sm:mr-2 sm:w-[18px] sm:h-[18px]" />
-          Создать сделку
+          {t('createDeal')}
         </Button>
       </div>
 
@@ -206,9 +208,9 @@ export const EscrowView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Esc
               <Icon name="ShieldCheck" size={20} className="text-green-400 sm:w-6 sm:h-6" />
             </div>
             <div>
-              <h3 className="text-base sm:text-lg font-semibold mb-1 sm:mb-2">Как это работает?</h3>
+              <h3 className="text-base sm:text-lg font-semibold mb-1 sm:mb-2">{t('howItWorks')}</h3>
               <p className="text-xs sm:text-sm text-muted-foreground">
-                Мы блокируем криптовалюту покупателя до тех пор, пока он не получит свои монеты. Продавец получает оплату только после подтверждения покупателем. Это защищает обе стороны от обмана.
+                {t('howItWorksDesc')}
               </p>
             </div>
           </div>
