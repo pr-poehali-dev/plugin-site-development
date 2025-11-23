@@ -115,7 +115,7 @@ export const ForumTopicsList = ({
         {sortForumTopics(forumTopics).map((topic, index) => (
           <div
             key={topic.id}
-            className="bg-card border border-border rounded-lg p-2.5 sm:p-3 md:p-4 hover:border-primary/50 transition-all cursor-pointer group animate-slide-up"
+            className="bg-card border border-border rounded-lg p-2.5 sm:p-3 md:p-4 hover:border-primary/50 transition-all duration-300 cursor-pointer group animate-slide-up hover:shadow-lg active:scale-[0.99] tap-highlight"
             style={{ animationDelay: `${index * 0.05}s` }}
           >
             <div className="flex flex-col sm:flex-row items-start justify-between gap-3 sm:gap-4">

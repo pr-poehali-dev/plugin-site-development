@@ -80,8 +80,8 @@ const Sidebar = ({
                   onToggleSidebar();
                 }
               }}
-              className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg transition-colors ${
-                (activeView === item.view && (item.view === 'forum' || activeCategory === item.id)) ? 'bg-sidebar-accent text-sidebar-accent-foreground' : 'hover:bg-sidebar-accent/50'
+              className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all duration-200 tap-highlight ${
+                (activeView === item.view && (item.view === 'forum' || activeCategory === item.id)) ? 'bg-sidebar-accent text-sidebar-accent-foreground' : 'hover:bg-sidebar-accent/50 active:bg-sidebar-accent/70'
               }`}
             >
               <Icon name={item.icon as any} size={18} />
@@ -98,7 +98,7 @@ const Sidebar = ({
                     onToggleSidebar();
                   }
                 }}
-                className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg transition-colors hover:bg-sidebar-accent/50 mt-4 relative"
+                className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all duration-200 tap-highlight hover:bg-sidebar-accent/50 active:bg-sidebar-accent/70 mt-4 relative"
               >
                 <Icon name="Mail" size={18} />
                 <span className="text-sm font-medium">Сообщения</span>
@@ -115,7 +115,7 @@ const Sidebar = ({
                     onToggleSidebar();
                   }
                 }}
-                className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg transition-colors hover:bg-sidebar-accent/50"
+                className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all duration-200 tap-highlight hover:bg-sidebar-accent/50 active:bg-sidebar-accent/70"
               >
                 <Icon name="User" size={18} />
                 <span className="text-sm font-medium">Личный кабинет</span>
@@ -132,7 +132,7 @@ const Sidebar = ({
                         onToggleSidebar();
                       }
                     }}
-                    className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg transition-colors hover:bg-sidebar-accent/50 bg-primary/10 border border-primary/30"
+                    className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all duration-200 tap-highlight hover:bg-sidebar-accent/50 active:bg-sidebar-accent/70 bg-primary/10 border border-primary/30"
                   >
                     <Icon name="Shield" size={18} className="text-primary" />
                     <span className="text-sm font-medium text-primary">Админ-панель</span>
@@ -158,8 +158,8 @@ const Sidebar = ({
                   onToggleSidebar();
                 }
               }}
-              className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg transition-colors text-sm ${
-                activeCategory === item.slug ? 'bg-sidebar-accent' : 'hover:bg-sidebar-accent/50'
+              className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200 tap-highlight text-sm ${
+                activeCategory === item.slug ? 'bg-sidebar-accent' : 'hover:bg-sidebar-accent/50 active:bg-sidebar-accent/70'
               }`}
               data-support-link={item.slug === 'flash' ? 'true' : undefined}
             >
