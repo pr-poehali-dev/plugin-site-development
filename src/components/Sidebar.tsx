@@ -171,7 +171,6 @@ const Sidebar = ({
       </div>
     </aside>
     </>
-  )
   );
 };
 
