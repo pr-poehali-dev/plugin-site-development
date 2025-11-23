@@ -9,7 +9,6 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ForumTopic, User } from '@/types';
 import { useState } from 'react';
 import { getAvatarGradient } from '@/utils/avatarColors';
-import { useLanguage } from '@/contexts/LanguageContext';
 
 interface ForumTopicsListProps {
   forumTopics: ForumTopic[];
@@ -63,7 +62,6 @@ export const ForumTopicsList = ({
   onTopicSelect,
   onUserClick
 }: ForumTopicsListProps) => {
-  const { t } = useLanguage();
   const [forumSortBy, setForumSortBy] = useState<'newest' | 'hot' | 'views'>('newest');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -103,9 +101,9 @@ export const ForumTopicsList = ({
   return (
     <>
       <div className="mb-3 sm:mb-4 md:mb-6 animate-slide-up">
-        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-1 sm:mb-2">{t('forumTitle')}</h1>
+        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-1 sm:mb-2">Форум</h1>
         <p className="text-xs sm:text-sm md:text-base text-muted-foreground">
-          {forumTopics.length} {forumTopics.length === 1 ? t('topicsCountSingle') : t('topicsCount')}
+          {forumTopics.length} {forumTopics.length === 1 ? 'тема' : 'тем'}
         </p>
       </div>
 
@@ -115,7 +113,7 @@ export const ForumTopicsList = ({
           <Icon name="Search" size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <Input
             type="text"
-            placeholder={t('searchTopics')}
+            placeholder="Поиск по темам..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-9 h-9 text-sm"
@@ -134,16 +132,16 @@ export const ForumTopicsList = ({
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-3 mb-3 sm:mb-4 md:mb-6">
         <Tabs value={forumSortBy} onValueChange={(v) => setForumSortBy(v as any)} className="w-full sm:w-auto">
           <TabsList className="grid w-full grid-cols-3 h-9 sm:h-10">
-            <TabsTrigger value="newest" className="text-[10px] sm:text-xs md:text-sm">{t('latest')}</TabsTrigger>
-            <TabsTrigger value="hot" className="text-[10px] sm:text-xs md:text-sm">{t('hot')}</TabsTrigger>
-            <TabsTrigger value="views" className="text-[10px] sm:text-xs md:text-sm">{t('popular')}</TabsTrigger>
+            <TabsTrigger value="newest" className="text-[10px] sm:text-xs md:text-sm">Последние</TabsTrigger>
+            <TabsTrigger value="hot" className="text-[10px] sm:text-xs md:text-sm">Горячие</TabsTrigger>
+            <TabsTrigger value="views" className="text-[10px] sm:text-xs md:text-sm">Популярные</TabsTrigger>
           </TabsList>
         </Tabs>
         
         {user && (
           <Button onClick={onShowTopicDialog} className="bg-primary w-full sm:w-auto text-xs sm:text-sm h-9 sm:h-10">
             <Icon name="Plus" size={16} className="mr-1.5 sm:mr-2 sm:w-[18px] sm:h-[18px]" />
-            {t('createTopic')}
+            Создать тему
           </Button>
         )}
       </div>
@@ -182,7 +180,7 @@ export const ForumTopicsList = ({
                     {topic.is_pinned && (
                       <Badge variant="default" className="bg-primary">
                         <Icon name="Pin" size={12} className="mr-1" />
-                        {t('pinned')}
+                        Закреплено
                       </Badge>
                     )}
                   </div>
@@ -191,17 +189,17 @@ export const ForumTopicsList = ({
                   </h3>
                   <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-muted-foreground flex-wrap">
                     <span className="flex items-center gap-1.5">
-                      {t('author')} <button onClick={(e) => { e.stopPropagation(); topic.author_id && onUserClick(topic.author_id); }} className="hover:text-primary transition-colors">{topic.author_name}</button>
+                      Автор: <button onClick={(e) => { e.stopPropagation(); topic.author_id && onUserClick(topic.author_id); }} className="hover:text-primary transition-colors">{topic.author_name}</button>
                       <ForumRoleBadge role={topic.author_forum_role} />
                     </span>
                     <span>•</span>
-                    <span title={getFullDateTime(topic.created_at)}>{t('created')} {getTimeAgo(topic.created_at)}</span>
+                    <span title={getFullDateTime(topic.created_at)}>Создана: {getTimeAgo(topic.created_at)}</span>
                     {topic.updated_at && topic.updated_at !== topic.created_at && (
                       <>
                         <span>•</span>
                         <span title={getFullDateTime(topic.updated_at)} className="flex items-center gap-1">
                           <Icon name="Clock" size={12} />
-                          {t('updated')} {getTimeAgo(topic.updated_at)}
+                          Обновлена: {getTimeAgo(topic.updated_at)}
                         </span>
                       </>
                     )}

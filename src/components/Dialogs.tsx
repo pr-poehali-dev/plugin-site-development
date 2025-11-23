@@ -8,7 +8,6 @@ import { useState, useRef } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { getAvatarGradient } from '@/utils/avatarColors';
 import { useToast } from '@/hooks/use-toast';
-import { useLanguage } from '@/contexts/LanguageContext';
 
 interface DialogsProps {
   authDialogOpen: boolean;
@@ -52,7 +51,6 @@ const Dialogs = ({
   onUpdateProfile,
   onAuthDialogAttemptClose,
 }: DialogsProps) => {
-  const { t } = useLanguage();
   const { toast } = useToast();
   const savedRefCode = localStorage.getItem('referralCode') || '';
   
@@ -206,10 +204,10 @@ const Dialogs = ({
               <Icon name="Rocket" size={32} className="text-primary" />
             </div>
             <DialogTitle className="text-center text-3xl font-bold bg-gradient-to-r from-primary via-primary/80 to-primary/60 bg-clip-text text-transparent">
-              {authMode === 'login' ? t('welcome') : t('registerTitle')}
+              {authMode === 'login' ? 'Добро пожаловать' : 'Регистрация'}
             </DialogTitle>
             <p className="text-center text-sm text-muted-foreground">
-              {authMode === 'login' ? t('enterToContinue') : t('createAccountFast')}
+              {authMode === 'login' ? 'Войдите, чтобы продолжить' : 'Создайте аккаунт за несколько секунд'}
             </p>
           </DialogHeader>
 

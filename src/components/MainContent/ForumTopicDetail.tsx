@@ -7,7 +7,6 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ForumTopic, ForumComment, User } from '@/types';
 import { useState } from 'react';
 import { getAvatarGradient } from '@/utils/avatarColors';
-import { useLanguage } from '@/contexts/LanguageContext';
 
 interface ForumTopicDetailProps {
   selectedTopic: ForumTopic;
@@ -39,7 +38,6 @@ export const ForumTopicDetail = ({
   onCreateComment,
   onUserClick
 }: ForumTopicDetailProps) => {
-  const { t } = useLanguage();
   const [replyingTo, setReplyingTo] = useState<number | null>(null);
   const [replyContent, setReplyContent] = useState('');
 
@@ -128,7 +126,7 @@ export const ForumTopicDetail = ({
                 className="text-xs h-7"
               >
                 <Icon name="Reply" size={14} className="mr-1" />
-                {t('replyButton')}
+                Ответить
               </Button>
             )}
           </div>
@@ -137,7 +135,7 @@ export const ForumTopicDetail = ({
         {replyingTo === comment.id && (
           <div className="mt-3 ml-14 bg-muted/50 rounded-lg p-3">
             <Textarea
-              placeholder={`${t('replyTo')} ${comment.author_name}...`}
+              placeholder={`Ответ на комментарий ${comment.author_name}...`}
               value={replyContent}
               onChange={(e) => {
                 setReplyContent(e.target.value);
@@ -148,10 +146,10 @@ export const ForumTopicDetail = ({
             <div className="flex gap-2">
               <Button onClick={handleSendReply} disabled={!replyContent.trim()} size="sm">
                 <Icon name="Send" size={14} className="mr-1" />
-                {t('sendReply')}
+                Отправить
               </Button>
               <Button onClick={handleCancelReply} variant="ghost" size="sm">
-                {t('cancel')}
+                Отмена
               </Button>
             </div>
           </div>
@@ -172,7 +170,7 @@ export const ForumTopicDetail = ({
       <div className="mb-6 animate-slide-up">
         <Button variant="ghost" onClick={onBackToTopics} className="mb-4">
           <Icon name="ArrowLeft" size={18} className="mr-2" />
-          {t('backToTopics')}
+          Назад к темам
         </Button>
         <div className="bg-card border border-border rounded-xl p-6 animate-scale-in">
           <div className="flex items-start gap-4 mb-6">
@@ -197,13 +195,13 @@ export const ForumTopicDetail = ({
               <h1 className="text-2xl font-bold mb-2">{selectedTopic.title}</h1>
               <div className="flex items-center gap-3 text-sm text-muted-foreground flex-wrap">
                 <span className="flex items-center gap-2">
-                  {t('author')} <button onClick={() => selectedTopic.author_id && onUserClick(selectedTopic.author_id)} className="hover:text-primary transition-colors">{selectedTopic.author_name}</button>
+                  Автор: <button onClick={() => selectedTopic.author_id && onUserClick(selectedTopic.author_id)} className="hover:text-primary transition-colors">{selectedTopic.author_name}</button>
                   <ForumRoleBadge role={selectedTopic.author_forum_role} />
                 </span>
                 <span>•</span>
                 <span>{new Date(selectedTopic.created_at).toLocaleDateString('ru')}</span>
                 <span>•</span>
-                <span>{selectedTopic.views} {t('views')}</span>
+                <span>{selectedTopic.views} просмотров</span>
               </div>
             </div>
           </div>

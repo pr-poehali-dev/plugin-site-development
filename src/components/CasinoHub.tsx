@@ -3,7 +3,6 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
 import { User } from '@/types';
-import { useLanguage } from '@/contexts/LanguageContext';
 import BlackjackGame from './BlackjackGame';
 import BaccaratGame from './BaccaratGame';
 import DiceGame from './DiceGame';
@@ -18,40 +17,39 @@ interface CasinoHubProps {
 type GameType = 'menu' | 'blackjack' | 'baccarat' | 'dice' | 'lottery';
 
 const CasinoHub = ({ user, onShowAuthDialog, onRefreshUserBalance }: CasinoHubProps) => {
-  const { t } = useLanguage();
   const [selectedGame, setSelectedGame] = useState<GameType>('menu');
 
   const games = [
     {
       id: 'blackjack' as GameType,
-      name: t('blackjack'),
+      name: 'Блэкджек',
       icon: 'Spade',
-      description: t('blackjackDesc'),
+      description: 'Наберите 21 очко или больше дилера',
       color: 'from-green-600 to-green-800',
       available: true
     },
     {
       id: 'baccarat' as GameType,
-      name: t('baccarat'),
+      name: 'Баккара',
       icon: 'Diamond',
-      description: t('baccaratDesc'),
+      description: 'Классическая карточная игра казино',
       color: 'from-purple-600 to-purple-800',
       available: true
     },
 
     {
       id: 'dice' as GameType,
-      name: t('dice'),
+      name: 'Dice',
       icon: 'Dices',
-      description: t('diceDesc'),
+      description: 'Бросайте кубик и угадывайте результат',
       color: 'from-orange-600 to-orange-800',
       available: true
     },
     {
       id: 'lottery' as GameType,
-      name: t('lottery'),
+      name: 'Лотерея',
       icon: 'Ticket',
-      description: t('lotteryDesc'),
+      description: '10 билетов по 50 USDT. Приз 400 USDT',
       color: 'from-indigo-600 to-indigo-800',
       available: true
     }
@@ -67,7 +65,7 @@ const CasinoHub = ({ user, onShowAuthDialog, onRefreshUserBalance }: CasinoHubPr
           className="gap-2"
         >
           <Icon name="ArrowLeft" size={18} />
-          {t('backToCasino')}
+          Назад в казино
         </Button>
         <BlackjackGame 
           user={user} 
@@ -88,7 +86,7 @@ const CasinoHub = ({ user, onShowAuthDialog, onRefreshUserBalance }: CasinoHubPr
           className="gap-2"
         >
           <Icon name="ArrowLeft" size={18} />
-          {t('backToCasino')}
+          Назад в казино
         </Button>
         <BaccaratGame 
           user={user} 
@@ -111,7 +109,7 @@ const CasinoHub = ({ user, onShowAuthDialog, onRefreshUserBalance }: CasinoHubPr
           className="gap-2"
         >
           <Icon name="ArrowLeft" size={18} />
-          {t('backToCasino')}
+          Назад в казино
         </Button>
         <DiceGame 
           user={user} 
@@ -132,7 +130,7 @@ const CasinoHub = ({ user, onShowAuthDialog, onRefreshUserBalance }: CasinoHubPr
           className="gap-2"
         >
           <Icon name="ArrowLeft" size={18} />
-          {t('backToCasino')}
+          Назад в казино
         </Button>
         <LotteryGame 
           user={user} 
@@ -146,9 +144,9 @@ const CasinoHub = ({ user, onShowAuthDialog, onRefreshUserBalance }: CasinoHubPr
   return (
     <div className="space-y-6 animate-fade-in">
       <div>
-        <h1 className="text-3xl font-bold mb-2">{t('casinoTitle')}</h1>
+        <h1 className="text-3xl font-bold mb-2">🎰 Казино</h1>
         <p className="text-muted-foreground">
-          {t('casinoSubtitle')}
+          Выберите игру и испытайте удачу. Играйте на реальные USDT
         </p>
       </div>
 
@@ -205,7 +203,7 @@ const CasinoHub = ({ user, onShowAuthDialog, onRefreshUserBalance }: CasinoHubPr
                 </div>
                 {!game.available && (
                   <div className="px-3 py-1 bg-white/20 rounded-full backdrop-blur-sm">
-                    <span className="text-xs font-semibold text-white">{t('comingSoon')}</span>
+                    <span className="text-xs font-semibold text-white">Скоро</span>
                   </div>
                 )}
               </div>
@@ -215,13 +213,13 @@ const CasinoHub = ({ user, onShowAuthDialog, onRefreshUserBalance }: CasinoHubPr
 
               {game.available ? (
                 <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-xl text-white font-semibold transition-all">
-                  <span>{t('play')}</span>
+                  <span>Играть</span>
                   <Icon name="ArrowRight" size={18} className="group-hover:translate-x-1 transition-transform" />
                 </div>
               ) : (
                 <div className="flex items-center gap-2 text-white/60 text-sm">
                   <Icon name="Lock" size={16} />
-                  <span>{t('inDevelopment')}</span>
+                  <span>В разработке</span>
                 </div>
               )}
             </div>
