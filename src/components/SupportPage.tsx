@@ -24,6 +24,9 @@ const SupportPage = ({ user, onShowAuthDialog }: SupportPageProps) => {
   const categories = [
     { value: 'account', label: 'Проблемы с аккаунтом', icon: 'User' },
     { value: 'payment', label: 'Вопросы по платежам', icon: 'CreditCard' },
+    { value: 'casino', label: 'Казино', icon: 'Spade' },
+    { value: 'garant', label: 'Гарант сделка', icon: 'Shield' },
+    { value: 'flash', label: 'Flash USDT', icon: 'Zap' },
     { value: 'forum', label: 'Проблемы с форумом', icon: 'MessageSquare' },
     { value: 'technical', label: 'Технические проблемы', icon: 'Settings' },
     { value: 'other', label: 'Другое', icon: 'HelpCircle' }
