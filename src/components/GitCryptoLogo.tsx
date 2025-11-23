@@ -1,16 +1,9 @@
 const GitCryptoLogo = () => {
   return (
-    <div className="relative w-10 h-10 flex items-center justify-center">
-      <div className="absolute inset-0 animate-pulse">
-        <div className="w-full h-full rounded-full bg-gradient-to-br from-green-500 via-teal-500 to-cyan-600 opacity-30 blur-sm"></div>
-      </div>
-      
-      <div className="relative w-10 h-10 rounded-full bg-gradient-to-br from-green-500 via-teal-500 to-cyan-600 flex items-center justify-center overflow-hidden group shadow-lg">
-        <div className="absolute inset-0 bg-gradient-to-br from-green-400 via-teal-400 to-cyan-500 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-        
-        <div className="relative z-10 flex flex-col items-center justify-center">
-          <div className="git-crypto-fragments">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="git-crypto-icon">
+    <div className="relative flex items-center justify-center">
+      <div className="relative z-10 flex flex-col items-center justify-center">
+        <div className="git-crypto-fragments">
+          <svg width="42" height="42" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="git-crypto-icon">
               {/* Hexagon shape like Tether */}
               <path 
                 d="M12 2L21 7V17L12 22L3 17V7L12 2Z" 
@@ -63,8 +56,6 @@ const GitCryptoLogo = () => {
             </svg>
           </div>
         </div>
-        
-        <div className="absolute inset-0 bg-gradient-to-t from-white/20 to-transparent opacity-50"></div>
       </div>
 
       <style>{`
