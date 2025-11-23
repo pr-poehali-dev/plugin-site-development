@@ -18,6 +18,8 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
+SCHEMA = 't_p32599880_plugin_site_developm'
+
 def get_db_connection():
     """Получить подключение к БД"""
     database_url = os.environ.get('DATABASE_URL')
@@ -107,7 +109,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 }
             
             cur.execute(
-                "SELECT user_id, expires_at FROM password_reset_tokens WHERE token = %s AND used = false",
+                f"SELECT user_id, expires_at FROM {SCHEMA}.password_reset_tokens WHERE token = %s AND used = false",
                 (token,)
             )
             reset_token = cur.fetchone()
@@ -158,7 +160,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'isBase64Encoded': False
                 }
             
-            cur.execute("SELECT id, username FROM users WHERE email = %s", (email,))
+            cur.execute(f"SELECT id, username FROM {SCHEMA}.users WHERE email = %s", (email,))
             user = cur.fetchone()
             
             if not user:
@@ -173,7 +175,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             expires_at = datetime.datetime.now() + datetime.timedelta(hours=1)
             
             cur.execute(
-                "INSERT INTO password_reset_tokens (user_id, token, expires_at) VALUES (%s, %s, %s)",
+                f"INSERT INTO {SCHEMA}.password_reset_tokens (user_id, token, expires_at) VALUES (%s, %s, %s)",
                 (user['id'], token, expires_at)
             )
             conn.commit()
@@ -237,7 +239,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 }
             
             cur.execute(
-                "SELECT user_id, expires_at FROM password_reset_tokens WHERE token = %s AND used = false",
+                f"SELECT user_id, expires_at FROM {SCHEMA}.password_reset_tokens WHERE token = %s AND used = false",
                 (token,)
             )
             reset_token = cur.fetchone()
@@ -261,12 +263,12 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             password_hash = hash_password(new_password)
             
             cur.execute(
-                "UPDATE users SET password_hash = %s WHERE id = %s",
+                f"UPDATE {SCHEMA}.users SET password_hash = %s WHERE id = %s",
                 (password_hash, reset_token['user_id'])
             )
             
             cur.execute(
-                "UPDATE password_reset_tokens SET used = true WHERE token = %s",
+                f"UPDATE {SCHEMA}.password_reset_tokens SET used = true WHERE token = %s",
                 (token,)
             )
             
