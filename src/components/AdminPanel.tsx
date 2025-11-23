@@ -50,6 +50,12 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
   const [adminNotifications, setAdminNotifications] = useState<any[]>([]);
   const [showNotifications, setShowNotifications] = useState(false);
   const notificationsRef = useRef<HTMLDivElement>(null);
+  const [notificationCounts, setNotificationCounts] = useState<Record<string, number>>({
+    balance_topup: 0,
+    verification_request: 0,
+    withdrawal_request: 0,
+    escrow_dispute: 0
+  });
 
   useEffect(() => {
     if (activeTab === 'users') {
@@ -247,6 +253,22 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
           (notif: any) => !notif.is_read
         );
         setAdminNotifications(unreadNotifications);
+        
+        // Подсчитываем уведомления по типам
+        const counts = {
+          balance_topup: 0,
+          verification_request: 0,
+          withdrawal_request: 0,
+          escrow_dispute: 0
+        };
+        
+        unreadNotifications.forEach((notif: any) => {
+          if (notif.type in counts) {
+            counts[notif.type as keyof typeof counts]++;
+          }
+        });
+        
+        setNotificationCounts(counts);
       }
     } catch (error) {
       console.error('Ошибка загрузки админ-уведомлений:', error);
@@ -630,7 +652,7 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
           <div className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-xl p-1 inline-flex overflow-x-auto w-full sm:w-auto">
             <button
               onClick={() => setActiveTab('users')}
-              className={`px-3 sm:px-6 py-2 rounded-lg transition-all text-xs sm:text-sm whitespace-nowrap ${
+              className={`px-3 sm:px-6 py-2 rounded-lg transition-all text-xs sm:text-sm whitespace-nowrap relative ${
                 activeTab === 'users'
                   ? 'bg-primary text-primary-foreground'
                   : 'text-muted-foreground hover:text-foreground'
@@ -640,7 +662,7 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
             </button>
             <button
               onClick={() => setActiveTab('topics')}
-              className={`px-3 sm:px-6 py-2 rounded-lg transition-all text-xs sm:text-sm whitespace-nowrap ${
+              className={`px-3 sm:px-6 py-2 rounded-lg transition-all text-xs sm:text-sm whitespace-nowrap relative ${
                 activeTab === 'topics'
                   ? 'bg-primary text-primary-foreground'
                   : 'text-muted-foreground hover:text-foreground'
@@ -650,33 +672,48 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
             </button>
             <button
               onClick={() => setActiveTab('disputes')}
-              className={`px-3 sm:px-6 py-2 rounded-lg transition-all text-xs sm:text-sm whitespace-nowrap ${
+              className={`px-3 sm:px-6 py-2 rounded-lg transition-all text-xs sm:text-sm whitespace-nowrap relative ${
                 activeTab === 'disputes'
                   ? 'bg-primary text-primary-foreground'
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
               Споры
+              {notificationCounts.escrow_dispute > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 bg-red-500 text-white text-[9px] sm:text-[10px] rounded-full flex items-center justify-center font-semibold">
+                  {notificationCounts.escrow_dispute}
+                </span>
+              )}
             </button>
             <button
               onClick={() => setActiveTab('deposits')}
-              className={`px-3 sm:px-6 py-2 rounded-lg transition-all text-xs sm:text-sm whitespace-nowrap ${
+              className={`px-3 sm:px-6 py-2 rounded-lg transition-all text-xs sm:text-sm whitespace-nowrap relative ${
                 activeTab === 'deposits'
                   ? 'bg-primary text-primary-foreground'
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
               Ввод
+              {notificationCounts.balance_topup > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 bg-red-500 text-white text-[9px] sm:text-[10px] rounded-full flex items-center justify-center font-semibold">
+                  {notificationCounts.balance_topup}
+                </span>
+              )}
             </button>
             <button
               onClick={() => setActiveTab('withdrawals')}
-              className={`px-3 sm:px-6 py-2 rounded-lg transition-all text-xs sm:text-sm whitespace-nowrap ${
+              className={`px-3 sm:px-6 py-2 rounded-lg transition-all text-xs sm:text-sm whitespace-nowrap relative ${
                 activeTab === 'withdrawals'
                   ? 'bg-primary text-primary-foreground'
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
               Вывод
+              {notificationCounts.withdrawal_request > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 bg-red-500 text-white text-[9px] sm:text-[10px] rounded-full flex items-center justify-center font-semibold">
+                  {notificationCounts.withdrawal_request}
+                </span>
+              )}
             </button>
             <button
               onClick={() => setActiveTab('escrow')}
@@ -720,13 +757,18 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
             </button>
             <button
               onClick={() => setActiveTab('verification')}
-              className={`px-3 sm:px-6 py-2 rounded-lg transition-all text-xs sm:text-sm whitespace-nowrap ${
+              className={`px-3 sm:px-6 py-2 rounded-lg transition-all text-xs sm:text-sm whitespace-nowrap relative ${
                 activeTab === 'verification'
                   ? 'bg-primary text-primary-foreground'
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
               Верификация
+              {notificationCounts.verification_request > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 bg-red-500 text-white text-[9px] sm:text-[10px] rounded-full flex items-center justify-center font-semibold">
+                  {notificationCounts.verification_request}
+                </span>
+              )}
             </button>
           </div>
         </div>
