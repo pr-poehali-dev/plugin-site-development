@@ -179,11 +179,10 @@ const Header = ({
                       {Number(animatedBalance).toFixed(2)} USDT
                     </p>
                   </div>
-                  <div className="text-right sm:hidden flex flex-col items-end">
-                    <p className={`text-xs text-green-400 font-bold leading-tight`}>
-                      {Number(animatedBalance).toFixed(1)}
-                    </p>
-                    <p className="text-[10px] text-muted-foreground leading-tight">USDT</p>
+                  <div className="sm:hidden flex items-center gap-1">
+                    <span className={`text-xs text-green-400 font-bold transition-all duration-300 ${isBalanceChanging ? 'scale-110' : 'scale-100'}`}>
+                      {Number(animatedBalance).toFixed(1)} USDT
+                    </span>
                   </div>
                   <Icon name="User" className="w-5 h-5" />
                 </Button>
