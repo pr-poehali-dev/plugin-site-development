@@ -227,7 +227,7 @@ const MessagesPanel = ({ open, onOpenChange, userId, initialRecipientId }: Messa
           {/* Список чатов - показывается на мобилке когда чат не выбран */}
           <div className={`${showChatList ? 'flex' : 'hidden sm:flex'} w-full sm:w-80 md:w-96 flex-col border-r border-border relative`}>
             {/* Шапка списка чатов */}
-            <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-muted/30">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-muted/30 mt-6 sm:mt-0">
               <h2 className="text-xl font-semibold">Чаты</h2>
             </div>
 
