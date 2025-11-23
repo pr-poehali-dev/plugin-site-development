@@ -143,8 +143,8 @@ const UserProfileDialog = ({ open, onOpenChange, userId, currentUserId, onSendMe
                       {profile.username.charAt(0).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
-                  <div className="absolute -bottom-2 -right-2">
-                    <UserRankBadge forumRole={profile.forum_role} size="md" />
+                  <div className="absolute -top-1 -right-1">
+                    <UserRankBadge forumRole={profile.forum_role} size="lg" />
                   </div>
                 </div>
               </div>

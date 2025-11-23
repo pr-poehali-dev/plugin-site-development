@@ -59,8 +59,8 @@ const UserRankBadge = ({ forumRole, size = 'md', className = '' }: UserRankBadge
       hideLabel: false
     },
     lg: {
-      badge: 'px-2 py-0.5 text-[10px] sm:text-xs gap-1',
-      icon: 12,
+      badge: 'px-2 py-1 text-xs gap-1',
+      icon: 14,
       hideLabel: false
     }
   };
@@ -79,8 +79,8 @@ const UserRankBadge = ({ forumRole, size = 'md', className = '' }: UserRankBadge
       `}
       variant="outline"
     >
-      <Icon name={config.icon as any} size={sizes[size].icon} className={sizes[size].hideLabel ? '' : 'mr-0.5 sm:mr-1'} />
-      {!sizes[size].hideLabel && <span className="hidden sm:inline">{config.label}</span>}
+      <Icon name={config.icon as any} size={sizes[size].icon} />
+      {!sizes[size].hideLabel && <span>{config.label}</span>}
       {sizes[size].hideLabel && <span className="sr-only">{config.label}</span>}
     </Badge>
   );
