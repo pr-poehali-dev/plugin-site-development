@@ -75,15 +75,10 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
     const saved = localStorage.getItem('admin_read_sections');
     return saved ? new Set(JSON.parse(saved)) : new Set();
   });
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   useEffect(() => {
-    // Отмечаем текущий раздел как прочитанный
-    setReadSections(prev => {
-      const newSet = new Set([...prev, activeTab]);
-      localStorage.setItem('admin_read_sections', JSON.stringify([...newSet]));
-      return newSet;
-    });
-    
+    // Загружаем данные для активной вкладки
     if (activeTab === 'users') {
       fetchUsers();
     } else if (activeTab === 'topics') {
@@ -102,25 +97,29 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
       fetchTickets();
     } else if (activeTab === 'btc-withdrawals') {
       fetchBtcWithdrawals();
-    } else if (activeTab === 'verification') {
-      // Верификация загружается в компоненте
     }
+  }, [activeTab]);
+
+  useEffect(() => {
+    // Загружаем уведомления и счётчики сразу при открытии админ-панели
+    const loadInitialData = async () => {
+      await Promise.all([
+        fetchAdminNotifications(),
+        fetchAllCounts()
+      ]);
+      // После первой загрузки отключаем флаг
+      setTimeout(() => setIsInitialLoad(false), 100);
+    };
     
-    // Загружаем уведомления и счётчики сразу
-    fetchAdminNotifications();
-    fetchAllCounts();
+    loadInitialData();
     
-    // Обновляем каждые 10 секунд для более быстрой реакции
+    // Обновляем каждые 10 секунд для быстрой реакции
     const interval = setInterval(() => {
       fetchAdminNotifications();
       fetchAllCounts();
     }, 10000);
     
     return () => clearInterval(interval);
-  }, [activeTab]);
-
-  useEffect(() => {
-    markNotificationsRead();
   }, []);
 
   useEffect(() => {
@@ -352,7 +351,7 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
       Object.keys(newCounts).forEach(key => {
         const oldCount = sectionCounts[key as keyof typeof sectionCounts];
         const newCount = newCounts[key as keyof typeof newCounts];
-        if (newCount > oldCount && oldCount !== undefined) {
+        if (newCount > oldCount && oldCount !== undefined && !isInitialLoad) {
           sectionsToUnread.add(key);
           
           // Показываем toast для каждого нового элемента
@@ -362,6 +361,9 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
             description: diff === 1 ? `Появился новый элемент в разделе "${sectionNames[key]}"` : `Появилось ${diff} новых элементов`,
             duration: 5000
           });
+        } else if (newCount > oldCount && oldCount !== undefined && isInitialLoad) {
+          // При первой загрузке только отмечаем разделы как непрочитанные, но не показываем toast
+          sectionsToUnread.add(key);
         }
       });
 
@@ -393,11 +395,11 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
           (notif: any) => !notif.is_read
         );
         
-        // Показываем toast для новых уведомлений
+        // Показываем toast для новых уведомлений (не при первой загрузке)
         const prevCount = adminNotifications.length;
         const newCount = unreadNotifications.length;
         
-        if (newCount > prevCount && prevCount !== 0) {
+        if (newCount > prevCount && !isInitialLoad) {
           const newNotifs = unreadNotifications.slice(0, newCount - prevCount);
           newNotifs.forEach((notif: any) => {
             toast({
@@ -751,6 +753,21 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
     return readSections.has(section) ? 0 : count;
   };
 
+  // Функция для отметки раздела как прочитанного при клике
+  const markSectionAsRead = (section: string) => {
+    setReadSections(prev => {
+      const newSet = new Set([...prev, section]);
+      localStorage.setItem('admin_read_sections', JSON.stringify([...newSet]));
+      return newSet;
+    });
+  };
+
+  // Обработчик смены вкладки
+  const handleTabChange = (tab: typeof activeTab) => {
+    setActiveTab(tab);
+    markSectionAsRead(tab);
+  };
+
   return (
     <div className="fixed inset-0 bg-background/95 z-50 overflow-auto animate-fade-in">
       <div className="container max-w-7xl mx-auto p-3 sm:p-6 animate-slide-up">
@@ -812,7 +829,7 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-3">
           <div className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-xl p-1 inline-flex overflow-x-auto w-full sm:w-auto">
             <button
-              onClick={() => setActiveTab('users')}
+              onClick={() => handleTabChange('users')}
               className={`px-3 sm:px-6 py-2 rounded-lg transition-all text-xs sm:text-sm whitespace-nowrap relative ${
                 activeTab === 'users'
                   ? 'bg-primary text-primary-foreground'
@@ -827,7 +844,7 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
               )}
             </button>
             <button
-              onClick={() => setActiveTab('topics')}
+              onClick={() => handleTabChange('topics')}
               className={`px-3 sm:px-6 py-2 rounded-lg transition-all text-xs sm:text-sm whitespace-nowrap relative ${
                 activeTab === 'topics'
                   ? 'bg-primary text-primary-foreground'
@@ -842,7 +859,7 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
               )}
             </button>
             <button
-              onClick={() => setActiveTab('disputes')}
+              onClick={() => handleTabChange('disputes')}
               className={`px-3 sm:px-6 py-2 rounded-lg transition-all text-xs sm:text-sm whitespace-nowrap relative ${
                 activeTab === 'disputes'
                   ? 'bg-primary text-primary-foreground'
@@ -857,7 +874,7 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
               )}
             </button>
             <button
-              onClick={() => setActiveTab('deposits')}
+              onClick={() => handleTabChange('deposits')}
               className={`px-3 sm:px-6 py-2 rounded-lg transition-all text-xs sm:text-sm whitespace-nowrap relative ${
                 activeTab === 'deposits'
                   ? 'bg-primary text-primary-foreground'
@@ -872,7 +889,7 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
               )}
             </button>
             <button
-              onClick={() => setActiveTab('withdrawals')}
+              onClick={() => handleTabChange('withdrawals')}
               className={`px-3 sm:px-6 py-2 rounded-lg transition-all text-xs sm:text-sm whitespace-nowrap relative ${
                 activeTab === 'withdrawals'
                   ? 'bg-primary text-primary-foreground'
@@ -887,7 +904,7 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
               )}
             </button>
             <button
-              onClick={() => setActiveTab('escrow')}
+              onClick={() => handleTabChange('escrow')}
               className={`px-3 sm:px-6 py-2 rounded-lg transition-all text-xs sm:text-sm whitespace-nowrap relative ${
                 activeTab === 'escrow'
                   ? 'bg-primary text-primary-foreground'
@@ -902,7 +919,7 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
               )}
             </button>
             <button
-              onClick={() => setActiveTab('flash-usdt')}
+              onClick={() => handleTabChange('flash-usdt')}
               className={`px-3 sm:px-6 py-2 rounded-lg transition-all text-xs sm:text-sm whitespace-nowrap relative ${
                 activeTab === 'flash-usdt'
                   ? 'bg-primary text-primary-foreground'
@@ -917,7 +934,7 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
               )}
             </button>
             <button
-              onClick={() => setActiveTab('btc-withdrawals')}
+              onClick={() => handleTabChange('btc-withdrawals')}
               className={`px-3 sm:px-6 py-2 rounded-lg transition-all text-xs sm:text-sm whitespace-nowrap relative ${
                 activeTab === 'btc-withdrawals'
                   ? 'bg-primary text-primary-foreground'
@@ -932,7 +949,7 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
               )}
             </button>
             <button
-              onClick={() => setActiveTab('tickets')}
+              onClick={() => handleTabChange('tickets')}
               className={`px-3 sm:px-6 py-2 rounded-lg transition-all text-xs sm:text-sm whitespace-nowrap relative ${
                 activeTab === 'tickets'
                   ? 'bg-primary text-primary-foreground'
@@ -947,7 +964,7 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
               )}
             </button>
             <button
-              onClick={() => setActiveTab('verification')}
+              onClick={() => handleTabChange('verification')}
               className={`px-3 sm:px-6 py-2 rounded-lg transition-all text-xs sm:text-sm whitespace-nowrap relative ${
                 activeTab === 'verification'
                   ? 'bg-primary text-primary-foreground'
