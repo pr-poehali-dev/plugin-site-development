@@ -31,38 +31,38 @@ export const PluginsView = ({
   return (
     <>
       {activeCategory !== 'all' && (
-        <div className="mb-6 animate-slide-up">
-          <h1 className="text-3xl font-bold mb-2">
+        <div className="mb-4 sm:mb-6 animate-slide-up">
+          <h1 className="text-2xl sm:text-3xl font-bold mb-2">
             {activeCategory === 'new' ? 'Новинки' : 
              activeCategory === 'popular' ? 'Популярное' :
              categories.find(c => c.slug === activeCategory)?.name || 'Плагины'}
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-sm sm:text-base text-muted-foreground">
             {filteredPlugins.length} {filteredPlugins.length === 1 ? 'плагин' : 'плагинов'}
           </p>
         </div>
       )}
 
       {activeCategory === 'all' ? (
-        <div className="max-w-4xl mx-auto space-y-8 animate-scale-in">
-          <div className="relative overflow-hidden bg-gradient-to-br from-green-800/20 via-teal-800/10 to-cyan-900/10 border border-green-500/30 rounded-2xl p-8 md:p-12 shadow-xl">
+        <div className="max-w-4xl mx-auto space-y-6 sm:space-y-8 animate-scale-in">
+          <div className="relative overflow-hidden bg-gradient-to-br from-green-800/20 via-teal-800/10 to-cyan-900/10 border border-green-500/30 rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 lg:p-12 shadow-xl">
             <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-green-500/10 to-cyan-500/10 rounded-full blur-3xl"></div>
             <div className="absolute bottom-0 left-0 w-64 h-64 bg-gradient-to-tr from-teal-500/10 to-green-600/10 rounded-full blur-3xl"></div>
             
             <div className="relative z-10">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-16 h-16 bg-gradient-to-br from-green-500 via-teal-500 to-cyan-600 rounded-2xl flex items-center justify-center shadow-lg">
-                  <Icon name="GitBranch" size={32} className="text-white" />
+              <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
+                <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 bg-gradient-to-br from-green-500 via-teal-500 to-cyan-600 rounded-xl sm:rounded-2xl flex items-center justify-center shadow-lg">
+                  <Icon name="GitBranch" size={24} className="text-white sm:w-7 sm:h-7 md:w-8 md:h-8" />
                 </div>
                 <div>
-                  <h1 className="text-4xl font-bold bg-gradient-to-r from-green-400 via-teal-400 to-cyan-500 bg-clip-text text-transparent">
+                  <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-green-400 via-teal-400 to-cyan-500 bg-clip-text text-transparent">
                     GIT CRYPTO
                   </h1>
-                  <p className="text-muted-foreground font-medium">Криптовалютное сообщество</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground font-medium">Криптовалютное сообщество</p>
                 </div>
               </div>
 
-              <p className="text-lg text-foreground/90 mb-6 leading-relaxed">
+              <p className="text-sm sm:text-base md:text-lg text-foreground/90 mb-4 sm:mb-6 leading-relaxed">
                 Добро пожаловать в <span className="bg-gradient-to-r from-green-400 via-teal-400 to-cyan-500 bg-clip-text text-transparent font-bold">GIT CRYPTO</span> — сообщество энтузиастов, 
                 увлечённых миром стейблкоинов и криптовалют. Сообщество создано с целью изучения информационной 
                 безопасности в сфере криптовалют. Здесь мы обсуждаем всё, что связано с USDT: 
@@ -70,13 +70,13 @@ export const PluginsView = ({
                 по безопасному хранению и использованию цифровых активов.
               </p>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+              <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4 mb-4 sm:mb-6 md:mb-8">
                 <div className="bg-background/50 backdrop-blur-sm border border-green-800/20 rounded-xl p-4 hover:border-green-700/40 transition-colors">
                   <div className="flex items-center gap-3 mb-2">
                     <div className="w-10 h-10 bg-green-800/20 rounded-lg flex items-center justify-center">
-                      <Icon name="MessageSquare" size={20} className="text-green-400" />
+                      <Icon name="MessageSquare" size={16} className="text-green-400 sm:w-[18px] sm:h-[18px] md:w-5 md:h-5" />
                     </div>
-                    <h3 className="font-semibold">Обсуждения</h3>
+                    <h3 className="text-xs sm:text-sm md:text-base font-semibold">Обсуждения</h3>
                   </div>
                   <p className="text-sm text-muted-foreground">
                     Делитесь опытом работы с USDT, задавайте вопросы и находите единомышленников

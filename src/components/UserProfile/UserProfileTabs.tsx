@@ -85,22 +85,22 @@ export const UserProfileTabs = ({
     <>
       <Tabs value={activeTab} onValueChange={onTabChange} className="w-full">
         <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="settings">Настройки</TabsTrigger>
-          <TabsTrigger value="transactions">Транзакции</TabsTrigger>
+          <TabsTrigger value="settings" className="text-xs sm:text-sm">Настройки</TabsTrigger>
+          <TabsTrigger value="transactions" className="text-xs sm:text-sm">Транзакции</TabsTrigger>
         </TabsList>
 
-      <TabsContent value="transactions" className="space-y-4 mt-4">
+      <TabsContent value="transactions" className="space-y-3 sm:space-y-4 mt-3 sm:mt-4">
         {transactionsLoading ? (
           <div className="flex items-center justify-center py-12">
             <Icon name="Loader2" size={32} className="animate-spin text-muted-foreground" />
           </div>
         ) : transactions.length === 0 ? (
-          <Card className="p-8 text-center">
+          <Card className="p-4 sm:p-6 md:p-8 text-center">
             <Icon name="Receipt" size={48} className="mx-auto mb-4 text-muted-foreground" />
             <p className="text-muted-foreground">История транзакций пуста</p>
           </Card>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-2 sm:space-y-3">
             {transactions.map((transaction) => {
               const getTransactionIcon = () => {
                 if (transaction.type === 'escrow_sale') return { icon: 'ShoppingBag', color: 'green' };
@@ -119,10 +119,10 @@ export const UserProfileTabs = ({
               const isNeutral = amount === 0;
 
               return (
-                <Card key={transaction.id} className="p-4 hover:bg-accent/50 transition-colors">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                <Card key={transaction.id} className="p-3 sm:p-4 hover:bg-accent/50 transition-colors">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                      <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center shrink-0 ${
                         color === 'green' ? 'bg-green-500/20' : 
                         color === 'blue' ? 'bg-blue-500/20' : 
                         color === 'gray' ? 'bg-gray-500/20' : 
@@ -130,18 +130,18 @@ export const UserProfileTabs = ({
                       }`}>
                         <Icon 
                           name={icon as any} 
-                          size={20} 
-                          className={
+                          size={16} 
+                          className={`sm:w-5 sm:h-5 ${
                             color === 'green' ? 'text-green-400' : 
                             color === 'blue' ? 'text-blue-400' : 
                             color === 'gray' ? 'text-gray-400' : 
                             'text-red-400'
-                          }
+                          }`}
                         />
                       </div>
-                      <div>
-                        <p className="font-medium">{transaction.description}</p>
-                        <p className="text-xs text-muted-foreground">
+                      <div className="min-w-0">
+                        <p className="font-medium text-sm sm:text-base truncate">{transaction.description}</p>
+                        <p className="text-xs text-muted-foreground truncate">
                           {new Date(transaction.created_at).toLocaleString('ru-RU', {
                             year: 'numeric',
                             month: 'long',
@@ -152,7 +152,7 @@ export const UserProfileTabs = ({
                         </p>
                       </div>
                     </div>
-                    <div className={`text-lg font-bold ${
+                    <div className={`text-sm sm:text-base md:text-lg font-bold shrink-0 ${
                       isNeutral ? 'text-muted-foreground' :
                       isPositive ? 'text-green-400' : 'text-red-400'
                     }`}>

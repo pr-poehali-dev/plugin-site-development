@@ -310,13 +310,13 @@ const UserProfile = ({ user, isOwnProfile, onClose, onTopUpBalance, onUpdateProf
 
   return (
     <>
-      <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in">
-        <Card className="w-full max-w-3xl max-h-[90vh] overflow-y-auto bg-card border-border animate-scale-in">
-          <div className="p-6 space-y-6">
+      <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-2 sm:p-4 animate-fade-in">
+        <Card className="w-full max-w-3xl max-h-[95vh] sm:max-h-[90vh] overflow-y-auto bg-card border-border animate-scale-in">
+          <div className="p-3 sm:p-4 md:p-6 space-y-3 sm:space-y-4 md:space-y-6">
             <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-bold">Личный кабинет</h2>
-              <Button variant="ghost" size="icon" onClick={onClose}>
-                <Icon name="X" size={24} />
+              <h2 className="text-xl sm:text-2xl font-bold">Личный кабинет</h2>
+              <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8 sm:h-10 sm:w-10">
+                <Icon name="X" size={20} className="sm:w-6 sm:h-6" />
               </Button>
             </div>
 

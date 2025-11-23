@@ -101,10 +101,10 @@ const AdminTicketsTab = ({ tickets, currentUser, onRefresh }: AdminTicketsTabPro
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
+    <div className="space-y-3 sm:space-y-4">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0">
         <div>
-          <h3 className="text-lg font-semibold">Тикеты поддержки</h3>
+          <h3 className="text-base sm:text-lg font-semibold">Тикеты поддержки</h3>
           <p className="text-sm text-muted-foreground">
             Всего: {tickets.length} | Открытых: {tickets.filter(t => t.status === 'open').length}
           </p>
@@ -124,18 +124,18 @@ const AdminTicketsTab = ({ tickets, currentUser, onRefresh }: AdminTicketsTabPro
       </div>
 
       {filteredTickets.length === 0 ? (
-        <Card className="p-8 text-center">
-          <Icon name="Inbox" size={48} className="mx-auto mb-4 text-muted-foreground" />
+        <Card className="p-4 sm:p-6 md:p-8 text-center">
+          <Icon name="Inbox" size={36} className="mx-auto mb-4 text-muted-foreground sm:w-12 sm:h-12" />
           <p className="text-muted-foreground">Нет тикетов</p>
         </Card>
       ) : (
         <div className="space-y-3">
           {filteredTickets.map(ticket => (
-            <Card key={ticket.id} className="p-4">
-              <div className="space-y-3">
-                <div className="flex items-start justify-between gap-4">
+            <Card key={ticket.id} className="p-3 sm:p-4">
+              <div className="space-y-2 sm:space-y-3">
+                <div className="flex flex-col sm:flex-row items-start justify-between gap-2 sm:gap-4">
                   <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
+                    <div className="flex items-center gap-2 sm:gap-3 mb-2 flex-wrap">
                       <span className={`text-sm font-medium ${statusLabels[ticket.status].color}`}>
                         {statusLabels[ticket.status].label}
                       </span>
@@ -146,8 +146,8 @@ const AdminTicketsTab = ({ tickets, currentUser, onRefresh }: AdminTicketsTabPro
                         #{ticket.id}
                       </span>
                     </div>
-                    <h4 className="font-semibold mb-1">{ticket.subject}</h4>
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <h4 className="text-sm sm:text-base font-semibold mb-1">{ticket.subject}</h4>
+                    <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-muted-foreground flex-wrap">
                       <Icon name="User" size={14} />
                       <span>{ticket.username}</span>
                       <span>•</span>

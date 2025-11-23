@@ -43,11 +43,11 @@ export const UserProfileHeader = ({
         className="hidden"
       />
 
-      <div className="flex items-start gap-6">
+      <div className="flex items-start gap-3 sm:gap-4 md:gap-6">
         <div className="relative group cursor-pointer" onClick={isOwnProfile ? onAvatarSelect : undefined}>
-          <Avatar className="w-24 h-24">
+          <Avatar className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24">
             <AvatarImage src={avatarPreview || user.avatar_url} />
-            <AvatarFallback className={`bg-gradient-to-br ${getAvatarGradient(user.username)} text-white text-3xl font-bold`}>
+            <AvatarFallback className={`bg-gradient-to-br ${getAvatarGradient(user.username)} text-white text-xl sm:text-2xl md:text-3xl font-bold`}>
               {user.username[0].toUpperCase()}
             </AvatarFallback>
           </Avatar>
@@ -62,59 +62,59 @@ export const UserProfileHeader = ({
           )}
         </div>
 
-        <div className="flex-1 space-y-3">
+        <div className="flex-1 space-y-2 sm:space-y-3 min-w-0">
           <div>
-            <h3 className="text-2xl font-bold">{user.username}</h3>
-            <p className="text-muted-foreground">{user.email}</p>
+            <h3 className="text-lg sm:text-xl md:text-2xl font-bold truncate">{user.username}</h3>
+            <p className="text-xs sm:text-sm text-muted-foreground truncate">{user.email}</p>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
             <ForumRoleBadge role={user.forum_role} />
             {user.role === 'admin' && (
-              <span className="px-3 py-1 bg-red-500/20 text-red-400 rounded-lg text-sm font-medium">
+              <span className="px-2 sm:px-3 py-0.5 sm:py-1 bg-red-500/20 text-red-400 rounded-lg text-xs sm:text-sm font-medium">
                 Администратор
               </span>
             )}
           </div>
 
           {user.bio && (
-            <p className="text-foreground/80 mt-2">{user.bio}</p>
+            <p className="text-xs sm:text-sm text-foreground/80 mt-2 line-clamp-3">{user.bio}</p>
           )}
         </div>
       </div>
 
       {isOwnProfile && (
-        <Card className="bg-gradient-to-br from-green-800/10 to-green-900/10 border-green-800/20 p-6">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-800 to-green-900 flex items-center justify-center">
-                <Icon name="Wallet" size={24} className="text-white" />
+        <Card className="bg-gradient-to-br from-green-800/10 to-green-900/10 border-green-800/20 p-3 sm:p-4 md:p-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0 mb-3 sm:mb-4">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-green-800 to-green-900 flex items-center justify-center">
+                <Icon name="Wallet" size={20} className="text-white sm:w-6 sm:h-6" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Баланс</p>
-                <p className={`text-3xl font-bold transition-all duration-300 ${isBalanceChanging ? 'scale-110 text-green-400' : 'scale-100'}`}>
+                <p className="text-xs sm:text-sm text-muted-foreground">Баланс</p>
+                <p className={`text-xl sm:text-2xl md:text-3xl font-bold transition-all duration-300 ${isBalanceChanging ? 'scale-110 text-green-400' : 'scale-100'}`}>
                   {Number(animatedBalance).toFixed(2)} USDT
                 </p>
               </div>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 w-full sm:w-auto">
               <Button 
                 onClick={onShowTopUpDialog}
-                className="bg-gradient-to-r from-green-800 to-green-900 hover:from-green-700 hover:to-green-800"
+                className="bg-gradient-to-r from-green-800 to-green-900 hover:from-green-700 hover:to-green-800 flex-1 sm:flex-none text-xs sm:text-sm"
               >
-                <Icon name="Plus" size={18} className="mr-2" />
+                <Icon name="Plus" size={16} className="mr-1.5 sm:mr-2 sm:w-[18px] sm:h-[18px]" />
                 Пополнить
               </Button>
               <Button 
                 onClick={onShowWithdrawalDialog}
-                className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-400 hover:to-orange-500 shadow-lg shadow-orange-500/20"
+                className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-400 hover:to-orange-500 shadow-lg shadow-orange-500/20 flex-1 sm:flex-none text-xs sm:text-sm"
               >
-                <Icon name="ArrowDownToLine" size={18} className="mr-2" />
+                <Icon name="ArrowDownToLine" size={16} className="mr-1.5 sm:mr-2 sm:w-[18px] sm:h-[18px]" />
                 Вывод
               </Button>
             </div>
           </div>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-xs sm:text-sm text-muted-foreground">
             Используйте баланс в USDT для покупки товаров
           </p>
         </Card>

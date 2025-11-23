@@ -3,18 +3,18 @@ import Icon from '@/components/ui/icon';
 
 const TermsPage = () => {
   return (
-    <div className="space-y-6 animate-fade-in max-w-4xl">
+    <div className="space-y-4 sm:space-y-6 animate-fade-in max-w-4xl">
       <div>
-        <h1 className="text-3xl font-bold mb-2">📜 Условия пользования</h1>
-        <p className="text-muted-foreground">
+        <h1 className="text-2xl sm:text-3xl font-bold mb-2">📜 Условия пользования</h1>
+        <p className="text-sm sm:text-base text-muted-foreground">
           Последнее обновление: {new Date().toLocaleDateString('ru-RU')}
         </p>
       </div>
 
       <Card className="p-6 bg-primary/10 border-primary/30">
         <div className="flex items-start gap-4">
-          <Icon name="Info" size={24} className="text-primary flex-shrink-0 mt-1" />
-          <div className="text-sm">
+          <Icon name="Info" size={20} className="text-primary flex-shrink-0 mt-1 sm:w-6 sm:h-6" />
+          <div className="text-xs sm:text-sm">
             <p className="font-medium mb-2">Важная информация</p>
             <p className="text-muted-foreground">
               Используя платформу Git Crypto, вы соглашаетесь с настоящими Условиями пользования. 
@@ -24,12 +24,12 @@ const TermsPage = () => {
         </div>
       </Card>
 
-      <Card className="p-6">
-        <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-          <Icon name="FileText" size={24} className="text-primary" />
+      <Card className="p-3 sm:p-4 md:p-6">
+        <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4 flex items-center gap-2">
+          <Icon name="FileText" size={20} className="text-primary sm:w-6 sm:h-6" />
           1. Общие положения
         </h2>
-        <div className="space-y-3 text-muted-foreground">
+        <div className="space-y-2 sm:space-y-3 text-xs sm:text-sm text-muted-foreground">
           <p>
             1.1. Настоящие Условия пользования (далее — «Условия») регулируют отношения между 
             администрацией платформы Git Crypto (далее — «Платформа», «Мы») и пользователями 
@@ -52,12 +52,12 @@ const TermsPage = () => {
         </div>
       </Card>
 
-      <Card className="p-6">
-        <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+      <Card className="p-3 sm:p-4 md:p-6">
+        <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4 flex items-center gap-2">
           <Icon name="UserCheck" size={24} className="text-primary" />
           2. Регистрация и учетная запись
         </h2>
-        <div className="space-y-3 text-muted-foreground">
+        <div className="space-y-2 sm:space-y-3 text-xs sm:text-sm text-muted-foreground">
           <p>
             2.1. Для доступа ко всем функциям Платформы необходимо пройти регистрацию, указав 
             корректные данные: имя пользователя, адрес электронной почты и пароль.
@@ -77,12 +77,12 @@ const TermsPage = () => {
         </div>
       </Card>
 
-      <Card className="p-6">
-        <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+      <Card className="p-3 sm:p-4 md:p-6">
+        <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4 flex items-center gap-2">
           <Icon name="Wallet" size={24} className="text-primary" />
           3. Финансовые операции
         </h2>
-        <div className="space-y-3 text-muted-foreground">
+        <div className="space-y-2 sm:space-y-3 text-xs sm:text-sm text-muted-foreground">
           <p>
             3.1. Все финансовые операции на Платформе осуществляются в криптовалюте USDT 
             (Tether USD) и других поддерживаемых цифровых активах.
@@ -106,12 +106,12 @@ const TermsPage = () => {
         </div>
       </Card>
 
-      <Card className="p-6">
-        <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+      <Card className="p-3 sm:p-4 md:p-6">
+        <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4 flex items-center gap-2">
           <Icon name="Ticket" size={24} className="text-primary" />
           4. Лотерея
         </h2>
-        <div className="space-y-3 text-muted-foreground">
+        <div className="space-y-2 sm:space-y-3 text-xs sm:text-sm text-muted-foreground">
           <p>
             4.1. Лотерея проводится автоматически при продаже всех доступных билетов в розыгрыше. 
             Победитель определяется случайным образом с использованием генератора случайных чисел.
@@ -131,12 +131,12 @@ const TermsPage = () => {
         </div>
       </Card>
 
-      <Card className="p-6">
-        <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+      <Card className="p-3 sm:p-4 md:p-6">
+        <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4 flex items-center gap-2">
           <Icon name="ShieldAlert" size={24} className="text-primary" />
           5. Запрещенные действия
         </h2>
-        <div className="space-y-3 text-muted-foreground">
+        <div className="space-y-2 sm:space-y-3 text-xs sm:text-sm text-muted-foreground">
           <p>
             5.1. Использование Платформы в незаконных целях, включая отмывание денег, 
             финансирование терроризма, мошенничество.
@@ -160,12 +160,12 @@ const TermsPage = () => {
         </div>
       </Card>
 
-      <Card className="p-6">
-        <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+      <Card className="p-3 sm:p-4 md:p-6">
+        <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4 flex items-center gap-2">
           <Icon name="Shield" size={24} className="text-primary" />
           6. Безопасность и конфиденциальность
         </h2>
-        <div className="space-y-3 text-muted-foreground">
+        <div className="space-y-2 sm:space-y-3 text-xs sm:text-sm text-muted-foreground">
           <p>
             6.1. Администрация обязуется защищать персональные данные пользователей в соответствии 
             с действующим законодательством о защите данных.
@@ -186,12 +186,12 @@ const TermsPage = () => {
         </div>
       </Card>
 
-      <Card className="p-6">
-        <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+      <Card className="p-3 sm:p-4 md:p-6">
+        <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4 flex items-center gap-2">
           <Icon name="AlertTriangle" size={24} className="text-primary" />
           7. Ограничение ответственности
         </h2>
-        <div className="space-y-3 text-muted-foreground">
+        <div className="space-y-2 sm:space-y-3 text-xs sm:text-sm text-muted-foreground">
           <p>
             7.1. Платформа предоставляется «как есть» без каких-либо гарантий. Администрация 
             не несет ответственности за временную недоступность сервиса, технические сбои, 
@@ -212,12 +212,12 @@ const TermsPage = () => {
         </div>
       </Card>
 
-      <Card className="p-6">
-        <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+      <Card className="p-3 sm:p-4 md:p-6">
+        <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4 flex items-center gap-2">
           <Icon name="Scale" size={24} className="text-primary" />
           8. Разрешение споров
         </h2>
-        <div className="space-y-3 text-muted-foreground">
+        <div className="space-y-2 sm:space-y-3 text-xs sm:text-sm text-muted-foreground">
           <p>
             8.1. Все споры и разногласия между Платформой и пользователем решаются путем 
             переговоров. Пользователь обязуется сначала обратиться в службу поддержки.
@@ -232,12 +232,12 @@ const TermsPage = () => {
         </div>
       </Card>
 
-      <Card className="p-6">
-        <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+      <Card className="p-3 sm:p-4 md:p-6">
+        <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4 flex items-center gap-2">
           <Icon name="MessageCircle" size={24} className="text-primary" />
           9. Контактная информация
         </h2>
-        <div className="space-y-3 text-muted-foreground">
+        <div className="space-y-2 sm:space-y-3 text-xs sm:text-sm text-muted-foreground">
           <p>
             9.1. По всем вопросам, связанным с настоящими Условиями, работой Платформы или 
             возникшими проблемами, Вы можете обратиться в службу поддержки через раздел 
@@ -254,12 +254,12 @@ const TermsPage = () => {
         </div>
       </Card>
 
-      <Card className="p-6">
-        <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+      <Card className="p-3 sm:p-4 md:p-6">
+        <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4 flex items-center gap-2">
           <Icon name="FileCheck" size={24} className="text-primary" />
           10. Заключительные положения
         </h2>
-        <div className="space-y-3 text-muted-foreground">
+        <div className="space-y-2 sm:space-y-3 text-xs sm:text-sm text-muted-foreground">
           <p>
             10.1. Настоящие Условия вступают в силу с момента начала использования Платформы 
             и действуют до прекращения использования сервисов.
