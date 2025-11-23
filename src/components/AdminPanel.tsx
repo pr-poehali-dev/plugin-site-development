@@ -467,21 +467,21 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
   return (
     <div className="fixed inset-0 bg-background/95 z-50 overflow-auto animate-fade-in">
       <div className="container max-w-7xl mx-auto p-3 sm:p-6 animate-slide-up">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-3">
-            <Icon name="Shield" size={28} className="text-primary" />
-            <h1 className="text-3xl font-bold">Админ-панель</h1>
+        <div className="flex items-center justify-between mb-4 sm:mb-6">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <Icon name="Shield" size={24} className="text-primary sm:w-7 sm:h-7" />
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold">Админ-панель</h1>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <div className="relative" ref={notificationsRef}>
               <Button 
                 onClick={() => setShowNotifications(!showNotifications)} 
                 variant="ghost"
-                className="relative"
+                className="relative px-2 sm:px-3"
               >
-                <Icon name="Bell" size={20} />
+                <Icon name="Bell" size={18} className="sm:w-5 sm:h-5" />
                 {adminNotifications.length > 0 && (
-                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-orange-500 text-white text-xs rounded-full flex items-center justify-center">
+                  <span className="absolute -top-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 bg-orange-500 text-white text-[10px] sm:text-xs rounded-full flex items-center justify-center">
                     {adminNotifications.length}
                   </span>
                 )}
@@ -508,8 +508,8 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
                 </div>
               )}
             </div>
-            <Button onClick={onClose} variant="ghost">
-              <Icon name="X" size={20} />
+            <Button onClick={onClose} variant="ghost" className="px-2 sm:px-3">
+              <Icon name="X" size={18} className="sm:w-5 sm:h-5" />
             </Button>
           </div>
         </div>

@@ -71,71 +71,71 @@ export const PluginsView = ({
               </p>
 
               <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4 mb-4 sm:mb-6 md:mb-8">
-                <div className="bg-background/50 backdrop-blur-sm border border-green-800/20 rounded-xl p-4 hover:border-green-700/40 transition-colors">
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className="w-10 h-10 bg-green-800/20 rounded-lg flex items-center justify-center">
-                      <Icon name="MessageSquare" size={16} className="text-green-400 sm:w-[18px] sm:h-[18px] md:w-5 md:h-5" />
+                <div className="bg-background/50 backdrop-blur-sm border border-green-800/20 rounded-lg sm:rounded-xl p-3 sm:p-4 hover:border-green-700/40 transition-colors">
+                  <div className="flex items-center gap-2 sm:gap-3 mb-1.5 sm:mb-2">
+                    <div className="w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 bg-green-800/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <Icon name="MessageSquare" size={14} className="text-green-400 sm:w-4 sm:h-4 md:w-5 md:h-5" />
                     </div>
                     <h3 className="text-xs sm:text-sm md:text-base font-semibold">Обсуждения</h3>
                   </div>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-[11px] sm:text-xs md:text-sm text-muted-foreground leading-tight">
                     Делитесь опытом работы с USDT, задавайте вопросы и находите единомышленников
                   </p>
                 </div>
 
-                <div className="bg-background/50 backdrop-blur-sm border border-green-800/20 rounded-xl p-4 hover:border-green-700/40 transition-colors">
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className="w-10 h-10 bg-green-800/20 rounded-lg flex items-center justify-center">
-                      <Icon name="ShieldCheck" size={20} className="text-green-400" />
+                <div className="bg-background/50 backdrop-blur-sm border border-green-800/20 rounded-lg sm:rounded-xl p-3 sm:p-4 hover:border-green-700/40 transition-colors">
+                  <div className="flex items-center gap-2 sm:gap-3 mb-1.5 sm:mb-2">
+                    <div className="w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 bg-green-800/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <Icon name="ShieldCheck" size={16} className="text-green-400 sm:w-[18px] sm:h-[18px] md:w-5 md:h-5" />
                     </div>
-                    <h3 className="font-semibold">Гарант-сервис</h3>
+                    <h3 className="text-xs sm:text-sm md:text-base font-semibold">Гарант-сервис</h3>
                   </div>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-[11px] sm:text-xs md:text-sm text-muted-foreground leading-tight">
                     Наша платформа предоставляет услуги гарант-сервиса для безопасных сделок
                   </p>
                 </div>
 
-                <div className="bg-background/50 backdrop-blur-sm border border-green-800/20 rounded-xl p-4 hover:border-green-700/40 transition-colors">
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className="w-10 h-10 bg-green-800/20 rounded-lg flex items-center justify-center">
-                      <Icon name="Shield" size={20} className="text-green-400" />
+                <div className="bg-background/50 backdrop-blur-sm border border-green-800/20 rounded-lg sm:rounded-xl p-3 sm:p-4 hover:border-green-700/40 transition-colors">
+                  <div className="flex items-center gap-2 sm:gap-3 mb-1.5 sm:mb-2">
+                    <div className="w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 bg-green-800/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <Icon name="Shield" size={16} className="text-green-400 sm:w-[18px] sm:h-[18px] md:w-5 md:h-5" />
                     </div>
-                    <h3 className="font-semibold">Безопасность</h3>
+                    <h3 className="text-xs sm:text-sm md:text-base font-semibold">Безопасность</h3>
                   </div>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-[11px] sm:text-xs md:text-sm text-muted-foreground leading-tight">
                     Узнайте о лучших практиках защиты ваших криптоактивов и безопасных транзакциях
                   </p>
                 </div>
 
-                <div className="bg-background/50 backdrop-blur-sm border border-green-800/20 rounded-xl p-4 hover:border-green-700/40 transition-colors">
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className="w-10 h-10 bg-green-800/20 rounded-lg flex items-center justify-center">
-                      <Icon name="TrendingUp" size={20} className="text-green-400" />
+                <div className="bg-background/50 backdrop-blur-sm border border-green-800/20 rounded-lg sm:rounded-xl p-3 sm:p-4 hover:border-green-700/40 transition-colors">
+                  <div className="flex items-center gap-2 sm:gap-3 mb-1.5 sm:mb-2">
+                    <div className="w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 bg-green-800/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <Icon name="TrendingUp" size={16} className="text-green-400 sm:w-[18px] sm:h-[18px] md:w-5 md:h-5" />
                     </div>
-                    <h3 className="font-semibold">Новости</h3>
+                    <h3 className="text-xs sm:text-sm md:text-base font-semibold">Новости</h3>
                   </div>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-[11px] sm:text-xs md:text-sm text-muted-foreground leading-tight">
                     Следите за последними обновлениями, трендами и изменениями в мире криптовалют
                   </p>
                 </div>
               </div>
 
-              <div className="flex flex-wrap gap-3">
-                <div className="flex items-center gap-2 px-4 py-2 bg-green-800/10 border border-green-800/20 rounded-lg">
-                  <Icon name="Check" size={16} className="text-green-400" />
-                  <span className="text-sm">TRC20 / ERC20</span>
+              <div className="flex flex-wrap gap-2 sm:gap-3">
+                <div className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 md:px-4 py-1.5 sm:py-2 bg-green-800/10 border border-green-800/20 rounded-lg">
+                  <Icon name="Check" size={14} className="text-green-400 sm:w-4 sm:h-4" />
+                  <span className="text-xs sm:text-sm">TRC20 / ERC20</span>
                 </div>
-                <div className="flex items-center gap-2 px-4 py-2 bg-green-800/10 border border-green-800/20 rounded-lg">
-                  <Icon name="Check" size={16} className="text-green-400" />
-                  <span className="text-sm">DeFi & Стейблкоины</span>
+                <div className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 md:px-4 py-1.5 sm:py-2 bg-green-800/10 border border-green-800/20 rounded-lg">
+                  <Icon name="Check" size={14} className="text-green-400 sm:w-4 sm:h-4" />
+                  <span className="text-xs sm:text-sm">DeFi & Стейблкоины</span>
                 </div>
-                <div className="flex items-center gap-2 px-4 py-2 bg-green-800/10 border border-green-800/20 rounded-lg">
-                  <Icon name="Check" size={16} className="text-green-400" />
-                  <span className="text-sm">P2P торговля</span>
+                <div className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 md:px-4 py-1.5 sm:py-2 bg-green-800/10 border border-green-800/20 rounded-lg">
+                  <Icon name="Check" size={14} className="text-green-400 sm:w-4 sm:h-4" />
+                  <span className="text-xs sm:text-sm">P2P торговля</span>
                 </div>
-                <div className="flex items-center gap-2 px-4 py-2 bg-green-800/10 border border-green-800/20 rounded-lg">
-                  <Icon name="Check" size={16} className="text-green-400" />
-                  <span className="text-sm">Кошельки & Биржи</span>
+                <div className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 md:px-4 py-1.5 sm:py-2 bg-green-800/10 border border-green-800/20 rounded-lg">
+                  <Icon name="Check" size={14} className="text-green-400 sm:w-4 sm:h-4" />
+                  <span className="text-xs sm:text-sm">Кошельки & Биржи</span>
                 </div>
               </div>
             </div>

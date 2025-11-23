@@ -273,28 +273,28 @@ const BaccaratGame = ({ user, onShowAuthDialog, onRefreshUserBalance }: Baccarat
         </p>
       </div>
 
-      <Card className="p-8 bg-gradient-to-b from-purple-950/40 via-purple-900/30 to-purple-950/40 border-purple-800/30 relative overflow-hidden">
+      <Card className="p-4 sm:p-6 md:p-8 bg-gradient-to-b from-purple-950/40 via-purple-900/30 to-purple-950/40 border-purple-800/30 relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-purple-800/5 via-transparent to-transparent"></div>
         
-        <div className="relative space-y-8">
-          <div className="space-y-6 pb-6 border-b border-purple-800/20">
-            <div className="flex items-center justify-center gap-4">
-              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-red-500/30 to-red-600/20 border-2 border-red-500/40 flex items-center justify-center">
-                <Icon name="Building2" size={28} className="text-red-400" />
+        <div className="relative space-y-4 sm:space-y-6 md:space-y-8">
+          <div className="space-y-4 sm:space-y-6 pb-4 sm:pb-6 border-b border-purple-800/20 min-h-[180px] sm:min-h-[200px]">
+            <div className="flex items-center justify-center gap-3 sm:gap-4">
+              <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full bg-gradient-to-br from-red-500/30 to-red-600/20 border-2 border-red-500/40 flex items-center justify-center">
+                <Icon name="Building2" size={20} className="text-red-400 sm:w-6 sm:h-6 md:w-7 md:h-7" />
               </div>
               <div className="text-center">
-                <h3 className="text-xl font-bold text-red-400">Банкир</h3>
-                <p className="text-sm text-muted-foreground">
+                <h3 className="text-base sm:text-lg md:text-xl font-bold text-red-400">Банкир</h3>
+                <p className="text-xs sm:text-sm text-muted-foreground">
                   {gameState === 'betting' ? 'Ожидание' : `Очки: ${bankerValue}`}
                 </p>
               </div>
             </div>
             {bankerHand.length > 0 && gameState !== 'betting' && (
-              <div className="flex gap-3 justify-center">
+              <div className="flex gap-2 sm:gap-3 justify-center">
                 {bankerHand.map((card, i) => (
                   <div
                     key={i}
-                    className={`w-20 h-28 bg-white rounded-xl flex flex-col items-center justify-center text-3xl font-bold shadow-2xl transform transition-all duration-300 ${
+                    className={`w-16 h-24 sm:w-20 sm:h-28 bg-white rounded-lg sm:rounded-xl flex flex-col items-center justify-center text-2xl sm:text-3xl font-bold shadow-2xl transform transition-all duration-300 ${
                       card.suit === '♥' || card.suit === '♦' ? 'text-red-600' : 'text-black'
                     }`}
                     style={{ 
@@ -303,28 +303,28 @@ const BaccaratGame = ({ user, onShowAuthDialog, onRefreshUserBalance }: Baccarat
                     }}
                   >
                     <span>{card.rank}</span>
-                    <span className="text-2xl">{card.suit}</span>
+                    <span className="text-lg sm:text-2xl">{card.suit}</span>
                   </div>
                 ))}
               </div>
             )}
           </div>
 
-          <div className="py-8 relative">
-            <div className="relative h-32 bg-purple-800/20 rounded-2xl border-4 border-purple-800/30 flex items-center justify-center shadow-inner">
-              <Icon name="Diamond" size={64} className="text-purple-800/30" />
-              <div className="absolute top-4 left-4 text-xs font-bold text-purple-800/40">BACCARAT</div>
-              <div className="absolute bottom-4 right-4 text-xs font-bold text-purple-800/40">9</div>
+          <div className="py-4 sm:py-6 md:py-8 relative">
+            <div className="relative h-20 sm:h-24 md:h-32 bg-purple-800/20 rounded-xl sm:rounded-2xl border-2 sm:border-4 border-purple-800/30 flex items-center justify-center shadow-inner">
+              <Icon name="Diamond" size={32} className="text-purple-800/30 sm:w-12 sm:h-12 md:w-16 md:h-16" />
+              <div className="absolute top-2 left-2 sm:top-4 sm:left-4 text-[10px] sm:text-xs font-bold text-purple-800/40">BACCARAT</div>
+              <div className="absolute bottom-2 right-2 sm:bottom-4 sm:right-4 text-[10px] sm:text-xs font-bold text-purple-800/40">9</div>
             </div>
           </div>
 
-          <div className="space-y-6 pt-6 border-t border-purple-800/20">
+          <div className="space-y-4 sm:space-y-6 pt-4 sm:pt-6 border-t border-purple-800/20 min-h-[180px] sm:min-h-[200px]">
             {playerHand.length > 0 && (
-              <div className="flex gap-3 justify-center">
+              <div className="flex gap-2 sm:gap-3 justify-center">
                 {playerHand.map((card, i) => (
                   <div
                     key={i}
-                    className={`w-20 h-28 bg-white rounded-xl flex flex-col items-center justify-center text-3xl font-bold shadow-2xl transform transition-all duration-300 ${
+                    className={`w-16 h-24 sm:w-20 sm:h-28 bg-white rounded-lg sm:rounded-xl flex flex-col items-center justify-center text-2xl sm:text-3xl font-bold shadow-2xl transform transition-all duration-300 ${
                       card.suit === '♥' || card.suit === '♦' ? 'text-red-600' : 'text-black'
                     }`}
                     style={{ 
@@ -333,20 +333,20 @@ const BaccaratGame = ({ user, onShowAuthDialog, onRefreshUserBalance }: Baccarat
                     }}
                   >
                     <span>{card.rank}</span>
-                    <span className="text-2xl">{card.suit}</span>
+                    <span className="text-lg sm:text-2xl">{card.suit}</span>
                   </div>
                 ))}
               </div>
             )}
-            <div className="flex items-center justify-center gap-4">
+            <div className="flex items-center justify-center gap-3 sm:gap-4">
               <div className="text-center">
-                <h3 className="text-xl font-bold text-blue-400">Игрок</h3>
-                <p className="text-sm text-muted-foreground">
+                <h3 className="text-base sm:text-lg md:text-xl font-bold text-blue-400">Игрок</h3>
+                <p className="text-xs sm:text-sm text-muted-foreground">
                   {gameState === 'betting' ? 'Ожидание' : `Очки: ${playerValue}`}
                 </p>
               </div>
-              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500/30 to-blue-600/20 border-2 border-blue-500/40 flex items-center justify-center">
-                <Icon name="User" size={28} className="text-blue-400" />
+              <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full bg-gradient-to-br from-blue-500/30 to-blue-600/20 border-2 border-blue-500/40 flex items-center justify-center">
+                <Icon name="User" size={20} className="text-blue-400 sm:w-6 sm:h-6 md:w-7 md:h-7" />
               </div>
             </div>
           </div>

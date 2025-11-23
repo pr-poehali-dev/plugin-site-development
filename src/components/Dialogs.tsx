@@ -270,29 +270,30 @@ const Dialogs = ({
       </Dialog>
 
       <Dialog open={showTopicDialog} onOpenChange={onTopicDialogChange}>
-        <DialogContent className="max-w-2xl animate-scale-in">
+        <DialogContent className="max-w-[95vw] sm:max-w-2xl animate-scale-in">
           <DialogHeader>
-            <DialogTitle>Создать новую тему</DialogTitle>
+            <DialogTitle className="text-lg sm:text-xl">Создать новую тему</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             <div>
-              <label className="text-sm font-medium mb-1 block">Название темы</label>
+              <label className="text-xs sm:text-sm font-medium mb-1 block">Название темы</label>
               <Input 
                 value={newTopicTitle} 
                 onChange={(e) => onTopicTitleChange(e.target.value)}
                 placeholder="Введите название темы"
+                className="text-sm sm:text-base"
               />
             </div>
             <div>
-              <label className="text-sm font-medium mb-1 block">Описание</label>
+              <label className="text-xs sm:text-sm font-medium mb-1 block">Описание</label>
               <Textarea 
                 value={newTopicContent}
                 onChange={(e) => onTopicContentChange(e.target.value)}
-                className="min-h-[150px]"
+                className="min-h-[120px] sm:min-h-[150px] text-sm sm:text-base"
                 placeholder="Опишите вашу тему..."
               />
             </div>
-            <Button onClick={onCreateTopic} className="w-full bg-primary">
+            <Button onClick={onCreateTopic} className="w-full bg-primary text-sm sm:text-base">
               Создать тему
             </Button>
           </div>
