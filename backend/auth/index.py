@@ -156,7 +156,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             
             # Создание пользователя
             cur.execute(
-                f"INSERT INTO {SCHEMA}.users (username, email, password_hash, referred_by_code) VALUES (%s, %s, %s, %s) RETURNING id, username, email, avatar_url, role, forum_role, balance, created_at, referred_by_code, referral_bonus_claimed",
+                f"INSERT INTO {SCHEMA}.users (username, email, password_hash, referred_by_code) VALUES (%s, %s, %s, %s) RETURNING id, username, email, avatar_url, role, forum_role, balance, created_at, referred_by_code, referral_bonus_claimed, vip_until",
                 (username, email, password_hash, referral_code if referral_code else None)
             )
             user = cur.fetchone()
@@ -213,7 +213,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             password_hash = hash_password(password)
             
             cur.execute(
-                f"SELECT id, username, email, avatar_url, role, forum_role, is_blocked, balance, created_at, referred_by_code, referral_bonus_claimed FROM {SCHEMA}.users WHERE username = %s AND password_hash = %s",
+                f"SELECT id, username, email, avatar_url, role, forum_role, is_blocked, balance, created_at, referred_by_code, referral_bonus_claimed, vip_until FROM {SCHEMA}.users WHERE username = %s AND password_hash = %s",
                 (username, password_hash)
             )
             user = cur.fetchone()
@@ -284,7 +284,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'isBase64Encoded': False
                 }
             
-            cur.execute(f"SELECT id, username, email, avatar_url, role, forum_role, balance, created_at, referred_by_code, referral_bonus_claimed FROM {SCHEMA}.users WHERE id = %s", (user_id,))
+            cur.execute(f"SELECT id, username, email, avatar_url, role, forum_role, balance, created_at, referred_by_code, referral_bonus_claimed, vip_until FROM {SCHEMA}.users WHERE id = %s", (user_id,))
             user = cur.fetchone()
             
             if not user:

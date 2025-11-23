@@ -1,0 +1,43 @@
+{
+  "tests": [
+    {
+      "name": "OPTIONS request for CORS",
+      "method": "OPTIONS",
+      "path": "/",
+      "expectedStatus": 200,
+      "expectedBody": "",
+      "bodyMatcher": "exact"
+    },
+    {
+      "name": "POST without user ID header",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "action": "purchase_vip"
+      },
+      "expectedStatus": 401,
+      "expectedBody": {
+        "success": false,
+        "error": "User ID required"
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "POST with invalid action",
+      "method": "POST",
+      "path": "/",
+      "headers": {
+        "X-User-Id": "1"
+      },
+      "body": {
+        "action": "invalid_action"
+      },
+      "expectedStatus": 400,
+      "expectedBody": {
+        "success": false,
+        "error": "Invalid request"
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}

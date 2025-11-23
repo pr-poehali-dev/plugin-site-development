@@ -6,6 +6,8 @@ import { User } from '@/types';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 
+const VIP_PURCHASE_URL = 'https://functions.poehali.dev/d28b5823-1cfa-4ef4-9dd8-ac4a3c2ab44c';
+
 interface SmartContractsPageProps {
   user?: User | null;
 }
@@ -72,11 +74,47 @@ const SmartContractsPage = ({ user }: SmartContractsPageProps) => {
     setIsPurchasing(true);
     
     try {
-      toast({
-        title: 'В разработке',
-        description: 'Функция покупки VIP-статуса скоро будет доступна',
+      const response = await fetch(VIP_PURCHASE_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-User-Id': user.id.toString()
+        },
+        body: JSON.stringify({
+          action: 'purchase_vip'
+        })
       });
+
+      const data = await response.json();
+
+      if (data.success) {
+        const updatedUser = {
+          ...user,
+          balance: data.new_balance,
+          vip_until: data.vip_until
+        };
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+        
+        toast({
+          title: '🎉 VIP статус активирован!',
+          description: data.message,
+          duration: 5000
+        });
+
+        setShowVipDialog(false);
+        
+        setTimeout(() => {
+          window.location.reload();
+        }, 1500);
+      } else {
+        toast({
+          title: 'Ошибка',
+          description: data.error || 'Не удалось приобрести VIP-статус',
+          variant: 'destructive'
+        });
+      }
     } catch (error) {
+      console.error('Purchase VIP error:', error);
       toast({
         title: 'Ошибка',
         description: 'Не удалось приобрести VIP-статус',
