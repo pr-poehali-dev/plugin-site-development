@@ -59,6 +59,8 @@ export interface ForumComment {
   author_avatar: string | null;
   author_forum_role?: string;
   author_last_seen?: string;
+  parent_id?: number | null;
+  replies?: ForumComment[];
 }
 
 export interface SearchResult {

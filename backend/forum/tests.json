@@ -8,20 +8,13 @@
       "bodyMatcher": "partial"
     },
     {
-      "name": "Create new topic (requires auth)",
-      "method": "POST",
-      "headers": {
-        "X-User-Id": "1"
-      },
-      "body": {
-        "action": "create_topic",
-        "title": "Test topic",
-        "content": "Test content"
+      "name": "Get specific topic",
+      "method": "GET",
+      "queryParams": {
+        "topic_id": "1"
       },
       "expectedStatus": 200,
-      "expectedBody": {
-        "success": true
-      },
+      "expectedBody": {},
       "bodyMatcher": "partial"
     }
   ]

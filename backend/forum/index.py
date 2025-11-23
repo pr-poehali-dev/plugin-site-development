@@ -74,7 +74,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 
                 cur.execute("""
                     SELECT 
-                        fc.id, fc.content, fc.created_at,
+                        fc.id, fc.content, fc.created_at, fc.parent_id,
                         u.id as author_id, u.username as author_name, u.avatar_url as author_avatar,
                         u.forum_role as author_forum_role, u.last_seen_at as author_last_seen
                     FROM forum_comments fc
@@ -179,6 +179,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             elif action == 'create_comment':
                 topic_id = body_data.get('topic_id')
                 content = body_data.get('content', '').strip()
+                parent_id = body_data.get('parent_id')
                 
                 if not topic_id or not content:
                     return {
@@ -208,10 +209,10 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     }
                 
                 cur.execute("""
-                    INSERT INTO forum_comments (topic_id, author_id, content)
-                    VALUES (%s, %s, %s)
-                    RETURNING id, content, created_at
-                """, (topic_id, user_id, content))
+                    INSERT INTO forum_comments (topic_id, author_id, content, parent_id)
+                    VALUES (%s, %s, %s, %s)
+                    RETURNING id, content, created_at, parent_id
+                """, (topic_id, user_id, content, parent_id))
                 
                 new_comment = cur.fetchone()
                 

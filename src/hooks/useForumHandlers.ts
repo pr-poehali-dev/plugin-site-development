@@ -70,7 +70,7 @@ export const useForumHandlers = ({
     }
   };
 
-  const handleCreateComment = async () => {
+  const handleCreateComment = async (parentId?: number) => {
     if (!user) {
       alert('Войдите для комментирования');
       return;
@@ -86,7 +86,8 @@ export const useForumHandlers = ({
         body: JSON.stringify({
           action: 'create_comment',
           topic_id: selectedTopic.id,
-          content: newComment
+          content: newComment,
+          parent_id: parentId || null
         })
       });
       const data = await response.json();
