@@ -154,19 +154,52 @@ const CasinoHub = ({ user, onShowAuthDialog, onRefreshUserBalance }: CasinoHubPr
         {games.map((game) => (
           <Card 
             key={game.id}
-            className={`p-6 bg-gradient-to-br ${game.color} border-0 relative overflow-hidden group cursor-pointer transition-all duration-300 hover:scale-105 ${
+            className={`p-0 bg-gradient-to-br ${game.color} border-0 relative overflow-hidden group cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl ${
               !game.available ? 'opacity-60 cursor-not-allowed' : ''
             }`}
             onClick={() => game.available && setSelectedGame(game.id)}
           >
-            <div className="absolute inset-0 bg-black/20"></div>
-            <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16"></div>
-            <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full -ml-12 -mb-12"></div>
+            {/* Тематический фоновый паттерн */}
+            <div className="absolute inset-0">
+              {game.id === 'blackjack' && (
+                <>
+                  <div className="absolute top-4 right-8 text-white/10 text-6xl font-bold rotate-12">♠</div>
+                  <div className="absolute bottom-8 left-4 text-white/10 text-5xl font-bold -rotate-12">♥</div>
+                  <div className="absolute top-1/2 right-4 text-white/10 text-4xl font-bold">♦</div>
+                  <div className="absolute bottom-4 right-1/3 text-white/10 text-5xl font-bold rotate-45">♣</div>
+                </>
+              )}
+              {game.id === 'baccarat' && (
+                <>
+                  <div className="absolute top-6 right-6 text-white/10 text-7xl font-bold">♦</div>
+                  <div className="absolute bottom-6 left-6 text-white/10 text-6xl font-bold rotate-180">♦</div>
+                  <div className="absolute top-1/3 left-1/4 text-white/10 text-5xl font-bold rotate-45">♦</div>
+                </>
+              )}
+              {game.id === 'dice' && (
+                <>
+                  <div className="absolute top-8 right-12 w-16 h-16 border-4 border-white/10 rounded-lg rotate-12 flex items-center justify-center">
+                    <div className="w-3 h-3 bg-white/20 rounded-full"></div>
+                  </div>
+                  <div className="absolute bottom-12 left-8 w-20 h-20 border-4 border-white/10 rounded-lg -rotate-12"></div>
+                  <div className="absolute top-1/2 right-1/4 w-12 h-12 border-4 border-white/10 rounded-lg rotate-45"></div>
+                </>
+              )}
+              {game.id === 'lottery' && (
+                <>
+                  <div className="absolute top-4 right-4 text-white/10 text-6xl">🎫</div>
+                  <div className="absolute bottom-8 left-8 text-white/10 text-5xl rotate-12">🎟️</div>
+                  <div className="absolute top-1/2 left-1/4 text-white/10 text-4xl -rotate-12">✨</div>
+                  <div className="absolute bottom-1/3 right-1/3 text-white/10 text-5xl">🎰</div>
+                </>
+              )}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/20 to-transparent"></div>
+            </div>
             
-            <div className="relative z-10">
+            <div className="relative z-10 p-6">
               <div className="flex items-start justify-between mb-4">
-                <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm">
-                  <Icon name={game.icon as any} size={32} className="text-white" />
+                <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm shadow-lg">
+                  <Icon name={game.icon as any} size={32} className="text-white drop-shadow-lg" />
                 </div>
                 {!game.available && (
                   <div className="px-3 py-1 bg-white/20 rounded-full backdrop-blur-sm">
@@ -175,11 +208,11 @@ const CasinoHub = ({ user, onShowAuthDialog, onRefreshUserBalance }: CasinoHubPr
                 )}
               </div>
 
-              <h3 className="text-2xl font-bold text-white mb-2">{game.name}</h3>
-              <p className="text-white/80 text-sm mb-4">{game.description}</p>
+              <h3 className="text-2xl font-bold text-white mb-2 drop-shadow-lg">{game.name}</h3>
+              <p className="text-white/90 text-sm mb-6 drop-shadow-md">{game.description}</p>
 
               {game.available ? (
-                <div className="flex items-center gap-2 text-white font-semibold">
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-xl text-white font-semibold transition-all">
                   <span>Играть</span>
                   <Icon name="ArrowRight" size={18} className="group-hover:translate-x-1 transition-transform" />
                 </div>
