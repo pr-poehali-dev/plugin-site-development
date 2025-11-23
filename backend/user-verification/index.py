@@ -143,6 +143,20 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     (user_id, full_name, birth_date, passport_photo, selfie_photo)
                 )
                 request_id = cur.fetchone()['id']
+                
+                # Получаем имя пользователя
+                cur.execute(f"SELECT username FROM {SCHEMA}.users WHERE id = %s", (user_id,))
+                user_info = cur.fetchone()
+                username = user_info['username'] if user_info else f"ID {user_id}"
+                
+                # Создаем уведомление для админа
+                cur.execute(
+                    f"""INSERT INTO {SCHEMA}.admin_notifications 
+                    (type, title, message, related_id, related_type) 
+                    VALUES (%s, %s, %s, %s, %s)""",
+                    ('verification_request', '✅ Новая заявка на верификацию', f"Пользователь {username} подал заявку на верификацию", request_id, 'verification')
+                )
+                
                 conn.commit()
                 
                 return {

@@ -471,6 +471,9 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 deal_id = body.get('deal_id')
                 reason = body.get('reason', 'Не указана причина')
                 
+                cursor.execute('SELECT title, seller_id, buyer_id FROM escrow_deals WHERE id = %s', (deal_id,))
+                deal_info = cursor.fetchone()
+                
                 query = """
                     UPDATE escrow_deals
                     SET dispute = true, dispute_reason = %s, status = 'dispute', updated_at = CURRENT_TIMESTAMP
@@ -483,6 +486,15 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     VALUES (%s, %s, %s, true)
                 """
                 cursor.execute(msg_query, (deal_id, user_id, f'Открыт спор: {reason}'))
+                
+                cursor.execute('SELECT username FROM users WHERE id = %s', (user_id,))
+                user_info = cursor.fetchone()
+                username = user_info['username'] if user_info else f"ID {user_id}"
+                
+                cursor.execute("""
+                    INSERT INTO admin_notifications (type, title, message, related_id, related_type)
+                    VALUES (%s, %s, %s, %s, %s)
+                """, ('escrow_dispute', '⚠️ Открыт спор в сделке', f"Пользователь {username} открыл спор в сделке \"{deal_info['title'] if deal_info else 'Неизвестно'}\"", deal_id, 'escrow'))
                 
                 conn.commit()
                 cursor.close()

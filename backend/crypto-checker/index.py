@@ -135,14 +135,10 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 user_info = cur.fetchone()
                 username = user_info['username'] if user_info else f"ID {user_id}"
                 
-                cur.execute("SELECT id FROM users WHERE role = 'admin'")
-                admins = cur.fetchall()
-                
-                for admin in admins:
-                    cur.execute(
-                        "INSERT INTO notifications (user_id, type, title, message) VALUES (%s, %s, %s, %s)",
-                        (admin['id'], 'admin_alert', 'Пополнение баланса', f"Пользователь {username} пополнил баланс на {float(payment['amount']):.2f} USDT")
-                    )
+                cur.execute(
+                    "INSERT INTO admin_notifications (type, title, message, related_id, related_type) VALUES (%s, %s, %s, %s, %s)",
+                    ('balance_topup', '💰 Пополнение баланса', f"Пользователь {username} пополнил баланс на {float(payment['amount']):.2f} USDT", user_id, 'user')
+                )
                 
                 confirmed_count += 1
                 processed_count += 1

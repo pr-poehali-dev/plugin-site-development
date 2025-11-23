@@ -193,6 +193,15 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     VALUES (%s, %s, %s)
                 """, (user_id, withdrawal_id, f'Ваша заявка на вывод {amount} USDT находится в обработке. Пожалуйста, ожидайте.'))
                 
+                cursor.execute('SELECT username FROM users WHERE id = %s', (user_id,))
+                user_info = cursor.fetchone()
+                username = user_info['username'] if user_info else f"ID {user_id}"
+                
+                cursor.execute("""
+                    INSERT INTO admin_notifications (type, title, message, related_id, related_type)
+                    VALUES (%s, %s, %s, %s, %s)
+                """, ('withdrawal_request', '💸 Заявка на вывод', f"Пользователь {username} создал заявку на вывод {amount} USDT", withdrawal_id, 'withdrawal'))
+                
                 conn.commit()
                 cursor.close()
                 
