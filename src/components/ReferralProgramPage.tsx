@@ -391,7 +391,7 @@ const ReferralProgramPage = ({ user }: ReferralProgramPageProps) => {
               <Icon name="DollarSign" size={20} className="text-purple-400" />
             </div>
             <div>
-              <p className="text-2xl font-bold">{stats.total_earned.toFixed(2)}</p>
+              <p className="text-2xl font-bold">{Number(stats.total_earned).toFixed(2)}</p>
               <p className="text-xs text-muted-foreground">Заработано USDT</p>
             </div>
           </div>
