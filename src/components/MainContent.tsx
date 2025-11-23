@@ -10,6 +10,7 @@ import SupportPage from './SupportPage';
 import TermsPage from './TermsPage';
 import RulesPage from './RulesPage';
 import SmartContractsPage from './SmartContractsPage';
+import ReferralProgramPage from './ReferralProgramPage';
 
 interface MainContentProps {
   activeView: 'plugins' | 'forum';
@@ -63,6 +64,8 @@ const MainContent = ({
           <SupportPage user={user} onShowAuthDialog={onShowAuthDialog} />
         ) : activeCategory === 'terms' ? (
           <TermsPage />
+        ) : activeCategory === 'referral-program' ? (
+          user ? <ReferralProgramPage user={user} /> : <div className="text-center py-12"><p className="text-muted-foreground">Требуется авторизация</p></div>
         ) : activeCategory === 'smart-contracts' ? (
           <SmartContractsPage user={user} />
         ) : activeCategory === 'popular' ? (
