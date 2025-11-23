@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/card';
 import Icon from '@/components/ui/icon';
 import UserRankBadge from '@/components/UserRankBadge';
 import { getAvatarGradient } from '@/utils/avatarColors';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface UserProfileHeaderProps {
   user: User;
@@ -33,6 +34,7 @@ export const UserProfileHeader = ({
   onShowTopUpDialog,
   onShowWithdrawalDialog
 }: UserProfileHeaderProps) => {
+  const { t } = useLanguage();
   const getVipDaysLeft = () => {
     if (!user.vip_until) return 0;
     const now = new Date();
@@ -88,14 +90,14 @@ export const UserProfileHeader = ({
             {user.role === 'admin' && (
               <span className="px-2 sm:px-3 py-0.5 sm:py-1 bg-red-500/20 text-red-400 rounded-lg text-xs sm:text-sm font-medium inline-flex items-center gap-1">
                 <Icon name="Shield" size={14} />
-                Администратор
+                {t('admin')}
               </span>
             )}
             
             {hasActiveVip && (
               <span className="px-2 sm:px-3 py-0.5 sm:py-1 bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-400 rounded-lg text-xs sm:text-sm font-medium inline-flex items-center gap-1">
                 <Icon name="Crown" size={14} />
-                VIP {isOwnProfile && `(${vipDaysLeft} ${vipDaysLeft === 1 ? 'день' : vipDaysLeft < 5 ? 'дня' : 'дней'})`}
+                VIP {isOwnProfile && `(${vipDaysLeft} ${vipDaysLeft === 1 ? t('day') : vipDaysLeft < 5 ? t('daysGenitive') : t('days')})`}
               </span>
             )}
           </div>
@@ -114,7 +116,7 @@ export const UserProfileHeader = ({
                 <Icon name="Wallet" size={20} className="text-white sm:w-6 sm:h-6" />
               </div>
               <div>
-                <p className="text-xs sm:text-sm text-muted-foreground">Баланс</p>
+                <p className="text-xs sm:text-sm text-muted-foreground">{t('balance')}</p>
                 <p className={`text-xl sm:text-2xl md:text-3xl font-bold transition-all duration-300 ${isBalanceChanging ? 'scale-110 text-green-400' : 'scale-100'}`}>
                   {Number(animatedBalance).toFixed(2)} USDT
                 </p>
@@ -126,19 +128,19 @@ export const UserProfileHeader = ({
                 className="bg-gradient-to-r from-green-800 to-green-900 hover:from-green-700 hover:to-green-800 flex-1 sm:flex-none text-xs sm:text-sm"
               >
                 <Icon name="Plus" size={16} className="mr-1.5 sm:mr-2 sm:w-[18px] sm:h-[18px]" />
-                Пополнить
+                {t('topUp')}
               </Button>
               <Button 
                 onClick={onShowWithdrawalDialog}
                 className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-400 hover:to-orange-500 shadow-lg shadow-orange-500/20 flex-1 sm:flex-none text-xs sm:text-sm"
               >
                 <Icon name="ArrowDownToLine" size={16} className="mr-1.5 sm:mr-2 sm:w-[18px] sm:h-[18px]" />
-                Вывод
+                {t('withdraw')}
               </Button>
             </div>
           </div>
           <p className="text-xs sm:text-sm text-muted-foreground">
-            Используйте баланс в USDT для покупки товаров
+            {t('balanceDesc')}
           </p>
         </Card>
       )}
@@ -150,12 +152,12 @@ export const UserProfileHeader = ({
               <Icon name="Crown" size={20} className="text-white sm:w-6 sm:h-6" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-xs sm:text-sm font-semibold text-amber-400 mb-1">VIP Привилегия активна</p>
+              <p className="text-xs sm:text-sm font-semibold text-amber-400 mb-1">{t('vipActive')}</p>
               <p className="text-xs text-muted-foreground">
-                Осталось: <span className="font-semibold text-foreground">{vipDaysLeft} {vipDaysLeft === 1 ? 'день' : vipDaysLeft < 5 ? 'дня' : 'дней'}</span>
+                {t('remaining')} <span className="font-semibold text-foreground">{vipDaysLeft} {vipDaysLeft === 1 ? t('day') : vipDaysLeft < 5 ? t('daysGenitive') : t('days')}</span>
               </p>
               <p className="text-xs text-muted-foreground mt-1">
-                До: <span className="font-medium">{new Date(user.vip_until!).toLocaleDateString('ru-RU')}</span>
+                {t('until')} <span className="font-medium">{new Date(user.vip_until!).toLocaleDateString('ru-RU')}</span>
               </p>
             </div>
           </div>

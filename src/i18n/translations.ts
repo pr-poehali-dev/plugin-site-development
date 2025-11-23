@@ -94,6 +94,29 @@ export const translations = {
     loading: 'Загрузка...',
     error: 'Ошибка',
     success: 'Успешно',
+    noResults: 'Ничего не найдено',
+    notifications: 'Уведомления',
+    messages: 'Сообщения',
+    plugin_label: 'Плагин',
+    topic_label: 'Тема',
+    category_label: 'Категория',
+    day: 'день',
+    daysGenitive: 'дня',
+    
+    // Auth
+    loginTitle: 'Вход',
+    registerTitle: 'Регистрация',
+    email: 'Email',
+    username: 'Имя пользователя',
+    password: 'Пароль',
+    confirmPassword: 'Подтвердите пароль',
+    forgotPassword: 'Забыли пароль?',
+    haveAccount: 'Уже есть аккаунт?',
+    noAccount: 'Нет аккаунта?',
+    
+    // Buttons
+    loginButton: 'ВХОД',
+    registerButton: 'РЕГИСТРАЦИЯ',
   },
   en: {
     // Header
@@ -188,6 +211,29 @@ export const translations = {
     loading: 'Loading...',
     error: 'Error',
     success: 'Success',
+    noResults: 'No results found',
+    notifications: 'Notifications',
+    messages: 'Messages',
+    plugin_label: 'Plugin',
+    topic_label: 'Topic',
+    category_label: 'Category',
+    day: 'day',
+    daysGenitive: 'days',
+    
+    // Auth
+    loginTitle: 'Login',
+    registerTitle: 'Register',
+    email: 'Email',
+    username: 'Username',
+    password: 'Password',
+    confirmPassword: 'Confirm Password',
+    forgotPassword: 'Forgot Password?',
+    haveAccount: 'Already have an account?',
+    noAccount: "Don't have an account?",
+    
+    // Buttons
+    loginButton: 'LOGIN',
+    registerButton: 'REGISTER',
   }
 };
 

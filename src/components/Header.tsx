@@ -5,6 +5,7 @@ import Icon from '@/components/ui/icon';
 import { User, SearchResult } from '@/types';
 import { useState, useEffect } from 'react';
 import LanguageSwitcher from './LanguageSwitcher';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface HeaderProps {
   sidebarOpen: boolean;
@@ -39,6 +40,7 @@ const Header = ({
   onShowNotifications,
   onShowProfile,
 }: HeaderProps) => {
+  const { t } = useLanguage();
   const [animatedBalance, setAnimatedBalance] = useState(Number(user?.balance) || 0);
   const [isBalanceChanging, setIsBalanceChanging] = useState(false);
 
@@ -105,7 +107,7 @@ const Header = ({
           <div className="relative max-w-md w-full hidden sm:block" onClick={(e) => e.stopPropagation()}>
             <Icon name="Search" size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground z-10" />
             <Input
-              placeholder="Поиск по ключевым словам..."
+              placeholder={t('search')}
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
               onFocus={onSearchFocus}
@@ -136,7 +138,7 @@ const Header = ({
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
                           <Badge variant="outline" className="text-xs capitalize">
-                            {result.type === 'plugin' ? 'Плагин' : result.type === 'topic' ? 'Тема' : 'Категория'}
+                            {result.type === 'plugin' ? t('plugin_label') : result.type === 'topic' ? t('topic_label') : t('category_label')}
                           </Badge>
                           <span className="font-medium text-sm truncate">{highlightKeywords(result.title, searchQuery)}</span>
                         </div>
@@ -151,7 +153,7 @@ const Header = ({
             )}
             {showSearchResults && searchResults.length === 0 && searchQuery.trim() && (
               <div className="absolute top-full left-0 right-0 mt-2 bg-card border border-border rounded-lg shadow-lg p-4 z-50">
-                <p className="text-sm text-muted-foreground text-center">Ничего не найдено</p>
+                <p className="text-sm text-muted-foreground text-center">{t('noResults')}</p>
               </div>
             )}
           </div>
@@ -193,7 +195,7 @@ const Header = ({
                   size="icon" 
                   onClick={onLogout} 
                   className="text-white hover:bg-red-500/20 hover:text-red-400 transition-colors shrink-0"
-                  title="Выйти"
+                  title={t('logout')}
                 >
                   <Icon name="LogOut" size={18} />
                 </Button>
@@ -206,13 +208,13 @@ const Header = ({
                 variant="outline"
                 className="font-semibold px-3 sm:px-6 text-xs sm:text-sm"
               >
-                ВХОД
+                {t('loginButton')}
               </Button>
               <Button 
                 onClick={() => onAuthDialogOpen('register')}
                 className="bg-primary hover:bg-primary/90 font-semibold px-3 sm:px-6 text-xs sm:text-sm"
               >
-                РЕГИСТРАЦИЯ
+                {t('registerButton')}
               </Button>
             </div>
           )}

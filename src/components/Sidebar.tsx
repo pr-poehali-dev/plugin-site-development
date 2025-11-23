@@ -2,6 +2,7 @@ import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
 import { Category } from '@/types';
 import GitCryptoLogo from '@/components/GitCryptoLogo';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface SidebarProps {
   sidebarOpen: boolean;
@@ -30,6 +31,7 @@ const Sidebar = ({
   messagesUnread = 0,
   onToggleSidebar,
 }: SidebarProps) => {
+  const { t } = useLanguage();
   return (
     <>
       {/* Оверлей для мобильных */}
@@ -66,12 +68,12 @@ const Sidebar = ({
 
         <nav className="space-y-1">
           {[
-            { icon: 'Home', label: 'Главная', id: 'all', view: 'plugins' },
+            { icon: 'Home', label: t('all'), id: 'all', view: 'plugins' },
             { icon: 'Zap', label: 'Flash USDT', id: 'categories', view: 'plugins' },
-            { icon: 'Spade', label: 'Казино', id: 'new', view: 'plugins' },
-            { icon: 'TrendingUp', label: 'Гарант сервис', id: 'popular', view: 'plugins' },
-            { icon: 'FileCode', label: 'Смарт-контракты', id: 'smart-contracts', view: 'plugins' },
-            { icon: 'MessageSquare', label: 'Форум', id: 'forum', view: 'forum' },
+            { icon: 'Spade', label: t('new'), id: 'new', view: 'plugins' },
+            { icon: 'TrendingUp', label: t('popular'), id: 'popular', view: 'plugins' },
+            { icon: 'FileCode', label: t('smartContracts'), id: 'smart-contracts', view: 'plugins' },
+            { icon: 'MessageSquare', label: t('forum'), id: 'forum', view: 'forum' },
           ].map(item => (
             <button
               key={item.id}
@@ -102,7 +104,7 @@ const Sidebar = ({
                 className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all duration-200 tap-highlight hover:bg-sidebar-accent/50 active:bg-sidebar-accent/70 mt-4 relative"
               >
                 <Icon name="Mail" size={18} />
-                <span className="text-sm font-medium">Сообщения</span>
+                <span className="text-sm font-medium">{t('messages')}</span>
                 {messagesUnread > 0 && (
                   <span className="absolute right-4 px-1.5 py-0.5 text-xs bg-red-500 text-white rounded-full">
                     {messagesUnread}
@@ -119,7 +121,7 @@ const Sidebar = ({
                 className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all duration-200 tap-highlight hover:bg-sidebar-accent/50 active:bg-sidebar-accent/70"
               >
                 <Icon name="User" size={18} />
-                <span className="text-sm font-medium">Личный кабинет</span>
+                <span className="text-sm font-medium">{t('profile')}</span>
               </button>
               <button
                 onClick={() => {
@@ -133,12 +135,12 @@ const Sidebar = ({
                 }`}
               >
                 <Icon name="BookOpen" size={18} />
-                <span className="text-sm font-medium">Правила</span>
+                <span className="text-sm font-medium">{t('rules')}</span>
               </button>
               {user.role === 'admin' && (
                 <div className="mt-2 pt-2 border-t border-sidebar-border/50">
                   <div className="px-4 py-1 mb-1">
-                    <span className="text-xs font-semibold text-primary">АДМИНИСТРАТОР</span>
+                    <span className="text-xs font-semibold text-primary">{t('admin').toUpperCase()}</span>
                   </div>
                   <button
                     onClick={() => {

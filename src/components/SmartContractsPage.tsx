@@ -683,7 +683,7 @@ contract SimpleNFT {
                   disabled={contract.id === 'flash-usdt' && !canViewFullCode}
                 >
                   <Icon name={copiedCode === contract.id ? "Check" : contract.id === 'flash-usdt' && !canViewFullCode ? "Lock" : "Copy"} size={14} className="sm:w-4 sm:h-4" />
-                  {copiedCode === contract.id ? 'Скопировано' : contract.id === 'flash-usdt' && !canViewFullCode ? 'Ограничено' : 'Копировать'}
+                  {copiedCode === contract.id ? t('copied') : contract.id === 'flash-usdt' && !canViewFullCode ? t('limited') : t('copy')}
                 </Button>
               </div>
 
@@ -693,8 +693,8 @@ contract SimpleNFT {
                     <div className="flex items-start gap-2 sm:gap-3 mb-2 sm:mb-3">
                       <Icon name="Lock" size={20} className="text-orange-400 flex-shrink-0 mt-0.5 sm:w-6 sm:h-6" />
                       <div className="flex-1 min-w-0">
-                        <p className="font-bold text-orange-400 mb-1 text-sm sm:text-base">🔒 Ограниченный доступ</p>
-                        <p className="text-muted-foreground text-xs sm:text-sm">Некоторые критические части кода скрыты.</p>
+                        <p className="font-bold text-orange-400 mb-1 text-sm sm:text-base">🔒 {t('limitedAccess')}</p>
+                        <p className="text-muted-foreground text-xs sm:text-sm">{t('limitedAccessDesc')}</p>
                       </div>
                     </div>
                     <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 p-2.5 sm:p-3 bg-gradient-to-r from-primary/10 to-purple-500/10 border border-primary/30 rounded-lg">
@@ -703,8 +703,8 @@ contract SimpleNFT {
                           <Icon name="Crown" size={16} className="text-white sm:w-5 sm:h-5" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="font-semibold text-xs sm:text-sm text-foreground mb-0.5">Для полного просмотра кода</p>
-                          <p className="text-xs text-muted-foreground">Приобретите привилегию VIP</p>
+                          <p className="font-semibold text-xs sm:text-sm text-foreground mb-0.5">{t('fullCodeAccess')}</p>
+                          <p className="text-xs text-muted-foreground">{t('purchaseVip')}</p>
                         </div>
                       </div>
                       <Button 
@@ -733,7 +733,7 @@ contract SimpleNFT {
       <Card className="p-4 sm:p-5 md:p-6 bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
         <h2 className="text-lg sm:text-xl md:text-2xl font-bold mb-3 sm:mb-4 flex items-center gap-2 sm:gap-3">
           <Icon name="ExternalLink" size={20} className="text-primary sm:w-6 sm:h-6 md:w-7 md:h-7" />
-          Полезные ресурсы
+          {t('resources')}
         </h2>
         <div className="grid sm:grid-cols-2 gap-3 sm:gap-4">
           {[
@@ -770,7 +770,7 @@ contract SimpleNFT {
             </div>
             <DialogTitle className="text-center text-xl sm:text-2xl">
               <span className="bg-gradient-to-r from-amber-500 to-orange-500 bg-clip-text text-transparent font-bold">
-                VIP Привилегия
+                {t('vipPrivilege')}
               </span>
             </DialogTitle>
           </DialogHeader>
@@ -778,16 +778,16 @@ contract SimpleNFT {
           <div className="space-y-3 sm:space-y-4 py-3 sm:py-4">
             <div className="p-3 sm:p-4 bg-gradient-to-br from-amber-500/10 to-orange-500/10 border border-amber-500/30 rounded-lg sm:rounded-xl">
               <div className="flex items-center justify-between mb-2 sm:mb-3">
-                <span className="text-xs sm:text-sm text-muted-foreground">Стоимость:</span>
+                <span className="text-xs sm:text-sm text-muted-foreground">{t('cost')}</span>
                 <span className="text-xl sm:text-2xl font-bold text-foreground">300 USDT</span>
               </div>
               <div className="flex items-center justify-between mb-2 sm:mb-3">
-                <span className="text-xs sm:text-sm text-muted-foreground">Срок действия:</span>
-                <span className="text-xs sm:text-sm font-semibold text-foreground">30 дней</span>
+                <span className="text-xs sm:text-sm text-muted-foreground">{t('duration')}</span>
+                <span className="text-xs sm:text-sm font-semibold text-foreground">30 {t('days')}</span>
               </div>
               {user && (
                 <div className="flex items-center justify-between pt-2 sm:pt-3 border-t border-border/50">
-                  <span className="text-xs sm:text-sm text-muted-foreground">Ваш баланс:</span>
+                  <span className="text-xs sm:text-sm text-muted-foreground">{t('yourBalance')}</span>
                   <span className="text-xs sm:text-sm font-semibold">{Number(user.balance || 0).toFixed(2)} USDT</span>
                 </div>
               )}
@@ -796,14 +796,14 @@ contract SimpleNFT {
             <div className="space-y-2 sm:space-y-3">
               <h3 className="text-sm sm:text-base font-semibold flex items-center gap-2">
                 <Icon name="Sparkles" size={16} className="text-amber-500 sm:w-[18px] sm:h-[18px]" />
-                Преимущества VIP:
+                {t('vipBenefits')}
               </h3>
               <ul className="space-y-1.5 sm:space-y-2">
                 {[
-                  'Полный доступ к коду Flash USDT контракта',
-                  'Возможность копировать критические части',
-                  'Доступ к будущим премиум-контрактам',
-                  'Приоритетная поддержка'
+                  t('vipBenefit1'),
+                  t('vipBenefit2'),
+                  t('vipBenefit3'),
+                  t('vipBenefit4')
                 ].map((benefit, idx) => (
                   <li key={idx} className="flex items-start gap-1.5 sm:gap-2 text-xs sm:text-sm">
                     <Icon name="Check" size={14} className="text-green-500 mt-0.5 flex-shrink-0 sm:w-4 sm:h-4" />
@@ -822,18 +822,18 @@ contract SimpleNFT {
                 {isPurchasing ? (
                   <>
                     <div className="animate-spin rounded-full h-4 w-4 sm:h-5 sm:w-5 border-b-2 border-white mr-2"></div>
-                    Обработка...
+                    {t('processing')}
                   </>
                 ) : (
                   <>
                     <Icon name="Crown" size={18} className="mr-2 sm:w-5 sm:h-5" />
-                    Купить VIP за 300 USDT
+                    {t('buyVip')}
                   </>
                 )}
               </Button>
               {user && Number(user.balance || 0) < 300 && (
                 <p className="text-xs text-center text-muted-foreground">
-                  Недостаточно средств. Пополните баланс на {(300 - Number(user.balance || 0)).toFixed(2)} USDT
+                  {t('insufficientFunds')} {(300 - Number(user.balance || 0)).toFixed(2)} USDT
                 </p>
               )}
             </div>
