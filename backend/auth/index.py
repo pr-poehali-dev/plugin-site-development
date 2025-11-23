@@ -974,6 +974,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             cur.execute(
                 f"""SELECT 
                     r.id, r.status, r.total_deposited, r.created_at, r.completed_at,
+                    r.bonus_earned,
                     u.username as referred_username
                 FROM {SCHEMA}.referrals r
                 LEFT JOIN {SCHEMA}.users u ON r.referred_user_id = u.id
