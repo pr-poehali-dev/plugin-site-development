@@ -1372,7 +1372,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             try:
                 cur.execute(
                     f"INSERT INTO {SCHEMA}.transactions (user_id, amount, type, description) VALUES (%s, %s, 'btc_withdrawal', %s)",
-                    (int(user_id), 0, f'Вывод {btc_amount:.8f} BTC на адрес {btc_address}')
+                    (int(user_id), 0.01, f'Вывод {btc_amount:.8f} BTC на адрес {btc_address}')
                 )
             except Exception as trans_error:
                 conn.rollback()
@@ -1465,7 +1465,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 
                 cur.execute(
                     f"INSERT INTO {SCHEMA}.transactions (user_id, amount, type, description) VALUES (%s, %s, 'btc_refund', %s)",
-                    (withdrawal['user_id'], 0, f'Возврат {float(withdrawal["amount"]):.8f} BTC (вывод отклонен)')
+                    (withdrawal['user_id'], 0.01, f'Возврат {float(withdrawal["amount"]):.8f} BTC (вывод отклонен)')
                 )
             
             cur.execute(
