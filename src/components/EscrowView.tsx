@@ -579,10 +579,16 @@ interface DealDetailDialogProps {
 
 const DealDetailDialog = ({ deal, user, onClose, onUpdate, onRefreshUserBalance }: DealDetailDialogProps) => {
   const { toast } = useToast();
+  const [open, setOpen] = useState(true);
   const [currentDeal, setCurrentDeal] = useState<EscrowDeal>(deal);
   const [messages, setMessages] = useState<any[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(false);
+
+  const handleClose = () => {
+    setOpen(false);
+    setTimeout(() => onClose(), 150);
+  };
 
   useEffect(() => {
     fetchDealDetails();
@@ -847,7 +853,7 @@ const DealDetailDialog = ({ deal, user, onClose, onUpdate, onRefreshUserBalance 
   const isAdmin = user?.role === 'admin';
 
   return (
-    <Dialog open={true} onOpenChange={onClose}>
+    <Dialog open={open} onOpenChange={(isOpen) => !isOpen && handleClose()}>
       <DialogContent className="max-w-[95vw] sm:max-w-2xl max-h-[90vh] overflow-y-auto p-0 gap-0">
         {/* Красивый градиентный заголовок */}
         <div className="relative overflow-hidden bg-gradient-to-br from-green-800/20 via-green-900/10 to-background border-b border-green-800/30 p-4 sm:p-5">
