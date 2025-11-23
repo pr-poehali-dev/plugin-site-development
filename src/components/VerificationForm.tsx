@@ -165,12 +165,12 @@ const VerificationForm = ({ user, onVerified }: VerificationFormProps) => {
 
   if (status?.is_verified) {
     return (
-      <div className="border-2 border-primary/20 rounded-xl p-6 bg-primary/5">
-        <div className="flex items-center gap-3 mb-2">
-          <Icon name="CheckCircle" size={24} className="text-primary" />
-          <h3 className="text-lg font-bold">Аккаунт верифицирован</h3>
+      <div className="border-2 border-primary/20 rounded-xl p-4 sm:p-6 bg-primary/5">
+        <div className="flex items-center gap-2 sm:gap-3 mb-2">
+          <Icon name="CheckCircle" size={20} className="text-primary sm:w-6 sm:h-6" />
+          <h3 className="text-base sm:text-lg font-bold">Аккаунт верифицирован</h3>
         </div>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-xs sm:text-sm text-muted-foreground">
           Ваш аккаунт успешно прошел верификацию
         </p>
       </div>
@@ -179,12 +179,12 @@ const VerificationForm = ({ user, onVerified }: VerificationFormProps) => {
 
   if (status?.request?.status === 'pending') {
     return (
-      <div className="border-2 border-orange-500/20 rounded-xl p-6 bg-orange-500/5">
-        <div className="flex items-center gap-3 mb-2">
-          <Icon name="Clock" size={24} className="text-orange-500" />
-          <h3 className="text-lg font-bold">Заявка на проверке</h3>
+      <div className="border-2 border-orange-500/20 rounded-xl p-4 sm:p-6 bg-orange-500/5">
+        <div className="flex items-center gap-2 sm:gap-3 mb-2">
+          <Icon name="Clock" size={20} className="text-orange-500 sm:w-6 sm:h-6" />
+          <h3 className="text-base sm:text-lg font-bold">Заявка на проверке</h3>
         </div>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-xs sm:text-sm text-muted-foreground">
           Ваша заявка отправлена {new Date(status.request.created_at).toLocaleDateString()}. 
           Ожидайте проверки администратором.
         </p>
@@ -194,24 +194,24 @@ const VerificationForm = ({ user, onVerified }: VerificationFormProps) => {
 
   if (status?.request?.status === 'rejected') {
     return (
-      <div className="space-y-4">
-        <div className="border-2 border-destructive/20 rounded-xl p-6 bg-destructive/5">
-          <div className="flex items-center gap-3 mb-2">
-            <Icon name="XCircle" size={24} className="text-destructive" />
-            <h3 className="text-lg font-bold">Заявка отклонена</h3>
+      <div className="space-y-3 sm:space-y-4">
+        <div className="border-2 border-destructive/20 rounded-xl p-4 sm:p-6 bg-destructive/5">
+          <div className="flex items-center gap-2 sm:gap-3 mb-2">
+            <Icon name="XCircle" size={20} className="text-destructive sm:w-6 sm:h-6" />
+            <h3 className="text-base sm:text-lg font-bold">Заявка отклонена</h3>
           </div>
-          <p className="text-sm text-muted-foreground mb-2">
+          <p className="text-xs sm:text-sm text-muted-foreground mb-2">
             Ваша заявка была отклонена администратором.
           </p>
           {status.request.admin_comment && (
             <div className="mt-3 p-3 bg-background rounded-lg">
-              <p className="text-sm"><strong>Причина:</strong> {status.request.admin_comment}</p>
+              <p className="text-xs sm:text-sm"><strong>Причина:</strong> {status.request.admin_comment}</p>
             </div>
           )}
         </div>
         <Button 
           variant="outline" 
-          className="w-full"
+          className="w-full text-sm"
           onClick={() => setStatus({ ...status, request: null })}
         >
           Подать новую заявку
@@ -221,13 +221,13 @@ const VerificationForm = ({ user, onVerified }: VerificationFormProps) => {
   }
 
   return (
-    <div className="space-y-4">
-      <div className="border-2 border-primary/20 rounded-xl p-4 bg-primary/5">
-        <div className="flex items-start gap-3">
-          <Icon name="ShieldCheck" size={24} className="text-primary mt-1" />
+    <div className="space-y-3 sm:space-y-4">
+      <div className="border-2 border-primary/20 rounded-xl p-3 sm:p-4 bg-primary/5">
+        <div className="flex items-start gap-2 sm:gap-3">
+          <Icon name="ShieldCheck" size={20} className="text-primary mt-0.5 sm:w-6 sm:h-6 shrink-0" />
           <div>
-            <h3 className="font-bold mb-1">Верификация аккаунта</h3>
-            <p className="text-sm text-muted-foreground">
+            <h3 className="text-sm sm:text-base font-bold mb-1">Верификация аккаунта</h3>
+            <p className="text-xs sm:text-sm text-muted-foreground">
               Пройдите верификацию для повышения доверия и доступа к дополнительным возможностям
             </p>
           </div>
@@ -250,57 +250,59 @@ const VerificationForm = ({ user, onVerified }: VerificationFormProps) => {
       />
 
       <div>
-        <label className="text-sm font-medium mb-1 block">ФИО <span className="text-destructive">*</span></label>
+        <label className="text-xs sm:text-sm font-medium mb-1 block">ФИО <span className="text-destructive">*</span></label>
         <Input
           value={fullName}
           onChange={(e) => setFullName(e.target.value)}
           placeholder="Иванов Иван Иванович"
+          className="text-sm"
         />
       </div>
 
       <div>
-        <label className="text-sm font-medium mb-1 block">Дата рождения <span className="text-destructive">*</span></label>
+        <label className="text-xs sm:text-sm font-medium mb-1 block">Дата рождения <span className="text-destructive">*</span></label>
         <Input
           type="date"
           value={birthDate}
           onChange={(e) => setBirthDate(e.target.value)}
+          className="text-sm max-w-[200px]"
         />
       </div>
 
       <div>
-        <label className="text-sm font-medium mb-1 block">Фото паспорта <span className="text-destructive">*</span></label>
+        <label className="text-xs sm:text-sm font-medium mb-1 block">Фото паспорта <span className="text-destructive">*</span></label>
         <Button
           variant="outline"
-          className="w-full justify-start"
+          className="w-full justify-start text-sm"
           onClick={() => handleFileSelect('passport')}
         >
           <Icon name="Upload" size={16} className="mr-2" />
           {passportPhoto ? 'Фото загружено ✓' : 'Загрузить фото паспорта'}
         </Button>
         {passportPhoto && (
-          <img src={passportPhoto} alt="Passport" className="mt-2 max-h-40 rounded-lg" />
+          <img src={passportPhoto} alt="Passport" className="mt-2 max-h-32 sm:max-h-40 rounded-lg" />
         )}
       </div>
 
       <div>
-        <label className="text-sm font-medium mb-1 block">Селфи с паспортом (опционально)</label>
+        <label className="text-xs sm:text-sm font-medium mb-1 block">Селфи с паспортом (необязательно)</label>
         <Button
           variant="outline"
-          className="w-full justify-start"
+          className="w-full justify-start text-sm"
           onClick={() => handleFileSelect('selfie')}
         >
           <Icon name="Camera" size={16} className="mr-2" />
           {selfiePhoto ? 'Селфи загружено ✓' : 'Загрузить селфи'}
         </Button>
         {selfiePhoto && (
-          <img src={selfiePhoto} alt="Selfie" className="mt-2 max-h-40 rounded-lg" />
+          <img src={selfiePhoto} alt="Selfie" className="mt-2 max-h-32 sm:max-h-40 rounded-lg" />
         )}
       </div>
 
       <Button
         onClick={handleSubmit}
         disabled={loading}
-        className="w-full bg-primary"
+        className="w-full bg-primary text-sm sm:text-base"
       >
         {loading ? (
           <>
