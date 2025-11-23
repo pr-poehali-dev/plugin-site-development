@@ -717,9 +717,11 @@ contract SimpleNFT {
                   </div>
                 )}
                 <div className="bg-slate-950 rounded-lg sm:rounded-xl overflow-hidden border border-slate-800">
-                  <pre className="text-slate-100 p-3 sm:p-4 overflow-x-auto text-xs sm:text-sm">
-                    <code className="block">{processCode(contract.code, contract.id)}</code>
-                  </pre>
+                  <div className="overflow-x-auto">
+                    <pre className="text-slate-100 p-3 sm:p-4 text-[10px] leading-[1.4] sm:text-xs sm:leading-[1.5] md:text-sm md:leading-[1.6] min-w-max">
+                      <code className="font-mono">{processCode(contract.code, contract.id)}</code>
+                    </pre>
+                  </div>
                 </div>
               </div>
             </Card>
