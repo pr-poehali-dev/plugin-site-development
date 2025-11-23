@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Input } from '@/components/ui/input';
 import Icon from '@/components/ui/icon';
 import UserRankBadge from '@/components/UserRankBadge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -61,6 +62,7 @@ export const ForumTopicsList = ({
   onUserClick
 }: ForumTopicsListProps) => {
   const [forumSortBy, setForumSortBy] = useState<'newest' | 'hot' | 'views'>('newest');
+  const [searchQuery, setSearchQuery] = useState('');
 
   const sortForumTopics = (topics: ForumTopic[]) => {
     const sorted = [...topics];
@@ -85,6 +87,16 @@ export const ForumTopicsList = ({
     return sorted;
   };
 
+  const filterTopicsBySearch = (topics: ForumTopic[]) => {
+    if (!searchQuery.trim()) return topics;
+    const query = searchQuery.toLowerCase();
+    return topics.filter(topic => 
+      topic.title.toLowerCase().includes(query) ||
+      topic.content.toLowerCase().includes(query) ||
+      topic.author_name.toLowerCase().includes(query)
+    );
+  };
+
   return (
     <>
       <div className="mb-3 sm:mb-4 md:mb-6 animate-slide-up">
@@ -92,6 +104,28 @@ export const ForumTopicsList = ({
         <p className="text-xs sm:text-sm md:text-base text-muted-foreground">
           {forumTopics.length} {forumTopics.length === 1 ? 'тема' : 'тем'}
         </p>
+      </div>
+
+      {/* Поиск - только на мобильных */}
+      <div className="sm:hidden mb-3">
+        <div className="relative">
+          <Icon name="Search" size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            type="text"
+            placeholder="Поиск по темам..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-9 h-9 text-sm"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+            >
+              <Icon name="X" size={16} />
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-3 mb-3 sm:mb-4 md:mb-6">
@@ -112,7 +146,7 @@ export const ForumTopicsList = ({
       </div>
 
       <div className="space-y-2">
-        {sortForumTopics(forumTopics).map((topic, index) => (
+        {sortForumTopics(filterTopicsBySearch(forumTopics)).map((topic, index) => (
           <div
             key={topic.id}
             className="bg-card border border-border rounded-lg p-2.5 sm:p-3 md:p-4 hover:border-primary/50 transition-all duration-300 cursor-pointer group animate-slide-up hover:shadow-lg active:scale-[0.99] tap-highlight"
