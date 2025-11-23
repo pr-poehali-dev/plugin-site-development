@@ -20,6 +20,8 @@ const ExchangePage = ({ user, onRefreshUserBalance }: ExchangePageProps) => {
   const [usdtAmount, setUsdtAmount] = useState<string>('');
   const [btcAmount, setBtcAmount] = useState<string>('');
   const [btcPrice, setBtcPrice] = useState<number>(0);
+  const [prevBtcPrice, setPrevBtcPrice] = useState<number>(0);
+  const [priceChange, setPriceChange] = useState<'up' | 'down' | 'neutral'>('neutral');
   const [loading, setLoading] = useState(false);
   const [btcBalance, setBtcBalance] = useState<number>(0);
   const [priceLoading, setPriceLoading] = useState(true);
@@ -30,7 +32,7 @@ const ExchangePage = ({ user, onRefreshUserBalance }: ExchangePageProps) => {
   useEffect(() => {
     loadBtcBalance();
     loadBtcPrice();
-    const interval = setInterval(loadBtcPrice, 60000);
+    const interval = setInterval(loadBtcPrice, 10000);
     return () => clearInterval(interval);
   }, [user.id]);
 
@@ -38,10 +40,27 @@ const ExchangePage = ({ user, onRefreshUserBalance }: ExchangePageProps) => {
     try {
       const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd');
       const data = await response.json();
-      setBtcPrice(data.bitcoin.usd);
+      const newPrice = data.bitcoin.usd;
+      
+      if (btcPrice > 0) {
+        setPrevBtcPrice(btcPrice);
+        if (newPrice > btcPrice) {
+          setPriceChange('up');
+        } else if (newPrice < btcPrice) {
+          setPriceChange('down');
+        } else {
+          setPriceChange('neutral');
+        }
+        
+        setTimeout(() => setPriceChange('neutral'), 2000);
+      }
+      
+      setBtcPrice(newPrice);
     } catch (error) {
       console.error('Ошибка загрузки курса BTC:', error);
-      setBtcPrice(65000);
+      if (btcPrice === 0) {
+        setBtcPrice(65000);
+      }
     } finally {
       setPriceLoading(false);
     }
@@ -366,12 +385,37 @@ const ExchangePage = ({ user, onRefreshUserBalance }: ExchangePageProps) => {
 
         <Card className="p-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
-              <Icon name="TrendingUp" size={20} className="text-blue-400" />
+            <div className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all duration-500 ${
+              priceChange === 'up' ? 'bg-green-500/30 scale-110' : 
+              priceChange === 'down' ? 'bg-red-500/30 scale-110' : 
+              'bg-blue-500/20'
+            }`}>
+              <Icon 
+                name={priceChange === 'up' ? 'TrendingUp' : priceChange === 'down' ? 'TrendingDown' : 'TrendingUp'} 
+                size={20} 
+                className={`transition-colors duration-500 ${
+                  priceChange === 'up' ? 'text-green-400' : 
+                  priceChange === 'down' ? 'text-red-400' : 
+                  'text-blue-400'
+                }`}
+              />
             </div>
-            <div>
-              <p className="text-2xl font-bold">{priceLoading ? '...' : `$${btcPrice.toLocaleString()}`}</p>
-              <p className="text-xs text-muted-foreground">Курс BTC</p>
+            <div className="flex-1">
+              <p className={`text-2xl font-bold transition-all duration-500 ${
+                priceChange === 'up' ? 'text-green-400 scale-105' : 
+                priceChange === 'down' ? 'text-red-400 scale-105' : 
+                ''
+              }`}>
+                {priceLoading ? '...' : `$${btcPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+              </p>
+              <div className="flex items-center gap-1">
+                <p className="text-xs text-muted-foreground">Курс BTC</p>
+                {priceChange !== 'neutral' && (
+                  <span className={`text-xs font-medium ${priceChange === 'up' ? 'text-green-400' : 'text-red-400'}`}>
+                    {priceChange === 'up' ? '↑' : '↓'}
+                  </span>
+                )}
+              </div>
             </div>
           </div>
         </Card>
@@ -392,8 +436,12 @@ const ExchangePage = ({ user, onRefreshUserBalance }: ExchangePageProps) => {
                   <Icon name="ArrowRight" size={20} className="text-primary" />
                   Обмен USDT на BTC
                 </h3>
-                <div className="text-xs text-muted-foreground">
-                  1 BTC = ${btcPrice.toLocaleString()}
+                <div className={`text-xs font-medium transition-colors duration-500 ${
+                  priceChange === 'up' ? 'text-green-400' : 
+                  priceChange === 'down' ? 'text-red-400' : 
+                  'text-muted-foreground'
+                }`}>
+                  1 BTC = ${btcPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </div>
               </div>
 
@@ -481,8 +529,12 @@ const ExchangePage = ({ user, onRefreshUserBalance }: ExchangePageProps) => {
                   <Icon name="ArrowLeft" size={20} className="text-primary" />
                   Обмен BTC на USDT
                 </h3>
-                <div className="text-xs text-muted-foreground">
-                  1 BTC = ${btcPrice.toLocaleString()}
+                <div className={`text-xs font-medium transition-colors duration-500 ${
+                  priceChange === 'up' ? 'text-green-400' : 
+                  priceChange === 'down' ? 'text-red-400' : 
+                  'text-muted-foreground'
+                }`}>
+                  1 BTC = ${btcPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </div>
               </div>
 
@@ -643,7 +695,7 @@ const ExchangePage = ({ user, onRefreshUserBalance }: ExchangePageProps) => {
             <h3 className="text-lg font-semibold">Как это работает?</h3>
             <ul className="text-sm text-muted-foreground space-y-1">
               <li>• Обмен происходит мгновенно по текущему рыночному курсу</li>
-              <li>• Курс обновляется каждую минуту с биржи CoinGecko</li>
+              <li>• Курс обновляется каждые 10 секунд с биржи CoinGecko</li>
               <li>• Комиссия за обмен: 0%</li>
               <li>• Минимум для обмена: 10 USDT или 0.0001 BTC</li>
               <li>• Минимум для вывода BTC: 0.001 BTC</li>
