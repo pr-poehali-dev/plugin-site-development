@@ -173,13 +173,13 @@ export const PluginsView = ({
                     <div className="flex-1">
                       <h3 className="text-sm sm:text-base font-bold mb-1 text-teal-400">Баланс USDT</h3>
                       <p className="text-[11px] sm:text-xs text-muted-foreground leading-relaxed">
-                        Внутренний баланс для игр в казино, ставок и участия в лотереях с историей транзакций
+                        Внутренний баланс для проведения безопасных P2P транзакций и сделок с историей операций
                       </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-1.5 text-[10px] sm:text-xs text-teal-500/80">
-                    <Icon name="TrendingUp" size={12} />
-                    <span>Пополнение и вывод</span>
+                    <Icon name="ArrowLeftRight" size={12} />
+                    <span>P2P транзакции</span>
                   </div>
                 </div>
               </div>
