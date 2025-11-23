@@ -685,7 +685,7 @@ contract SimpleNFT {
                 </Button>
               </div>
 
-              <div className="relative">
+              <div className="relative w-full overflow-hidden">
                 {contract.id === 'flash-usdt' && !canViewFullCode && (
                   <div className="mb-3 p-3 sm:p-4 bg-gradient-to-r from-orange-500/10 to-amber-500/10 border border-orange-500/30 rounded-lg sm:rounded-xl">
                     <div className="flex items-start gap-2 sm:gap-3 mb-2 sm:mb-3">
@@ -716,11 +716,9 @@ contract SimpleNFT {
                     </div>
                   </div>
                 )}
-                <div className="bg-slate-950 rounded-lg sm:rounded-xl border border-slate-800 -mx-4 sm:mx-0">
-                  <div className="overflow-x-auto overflow-y-hidden max-w-full">
-                    <pre className="text-slate-100 px-4 py-3 sm:p-4 text-[10px] leading-[1.4] sm:text-xs sm:leading-[1.5] md:text-sm md:leading-[1.6] whitespace-pre">
-                      <code className="font-mono block">{processCode(contract.code, contract.id)}</code>
-                    </pre>
+                <div className="w-full bg-slate-950 rounded-lg sm:rounded-xl border border-slate-800 overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <pre className="m-0 p-3 sm:p-4 text-slate-100 text-[10px] leading-[1.4] sm:text-xs sm:leading-[1.5] md:text-sm md:leading-[1.6]"><code className="font-mono">{processCode(contract.code, contract.id)}</code></pre>
                   </div>
                 </div>
               </div>
