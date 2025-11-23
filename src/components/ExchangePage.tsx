@@ -737,7 +737,7 @@ const ExchangePage = ({ user, onRefreshUserBalance }: ExchangePageProps) => {
             <ul className="text-sm text-muted-foreground space-y-1">
               <li>• Обмен происходит мгновенно по текущему рыночному курсу</li>
               <li>• Курс обновляется каждые 10 секунд с биржи CoinGecko</li>
-              <li>• Комиссия за обмен: 0%</li>
+              <li>• Комиссия за обмен: 0.5%</li>
               <li>• Минимум для обмена: 10 USDT или 0.0001 BTC</li>
               <li>• Минимум для вывода BTC: 0.001 BTC</li>
               <li>• Вывод обрабатывается администратором в течение 24 часов</li>
