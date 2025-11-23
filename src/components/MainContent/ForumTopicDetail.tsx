@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import Icon from '@/components/ui/icon';
-import ForumRoleBadge from '@/components/ForumRoleBadge';
+import UserRankBadge from '@/components/UserRankBadge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ForumTopic, ForumComment, User } from '@/types';
 import { getAvatarGradient } from '@/utils/avatarColors';
@@ -55,6 +55,9 @@ export const ForumTopicDetail = ({
                   {selectedTopic.author_name[0].toUpperCase()}
                 </AvatarFallback>
               </Avatar>
+              <div className="absolute -top-1 -right-1">
+                <UserRankBadge forumRole={selectedTopic.author_forum_role} size="sm" />
+              </div>
               {isUserOnline(selectedTopic.author_last_seen) && (
                 <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-background"></div>
               )}
@@ -62,9 +65,8 @@ export const ForumTopicDetail = ({
             <div className="flex-1">
               <h1 className="text-2xl font-bold mb-2">{selectedTopic.title}</h1>
               <div className="flex items-center gap-3 text-sm text-muted-foreground flex-wrap">
-                <span className="flex items-center gap-2">
+                <span className="flex items-center gap-1">
                   Автор: <button onClick={() => selectedTopic.author_id && onUserClick(selectedTopic.author_id)} className="hover:text-primary transition-colors">{selectedTopic.author_name}</button>
-                  <ForumRoleBadge role={selectedTopic.author_forum_role} />
                 </span>
                 <span>•</span>
                 <span>{new Date(selectedTopic.created_at).toLocaleDateString('ru')}</span>
@@ -118,6 +120,9 @@ export const ForumTopicDetail = ({
                     {comment.author_name[0].toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
+                <div className="absolute -top-0.5 -right-0.5">
+                  <UserRankBadge forumRole={comment.author_forum_role} size="sm" />
+                </div>
                 {isUserOnline(comment.author_last_seen) && (
                   <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-background"></div>
                 )}
@@ -125,7 +130,6 @@ export const ForumTopicDetail = ({
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-2">
                   <button onClick={() => comment.author_id && onUserClick(comment.author_id)} className="font-semibold hover:text-primary transition-colors">{comment.author_name}</button>
-                  <ForumRoleBadge role={comment.author_forum_role} />
                   <span className="text-xs text-muted-foreground">
                     {new Date(comment.created_at).toLocaleDateString('ru', {
                       year: 'numeric',

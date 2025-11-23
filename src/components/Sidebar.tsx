@@ -14,6 +14,7 @@ interface SidebarProps {
   onShowAdminPanel?: () => void;
   onShowMessagesPanel?: () => void;
   messagesUnread?: number;
+  onToggleSidebar?: () => void;
 }
 
 const Sidebar = ({
@@ -27,15 +28,41 @@ const Sidebar = ({
   onShowAdminPanel,
   onShowMessagesPanel,
   messagesUnread = 0,
+  onToggleSidebar,
 }: SidebarProps) => {
   return (
-    <aside className={`fixed top-0 left-0 h-full bg-sidebar border-r border-sidebar-border transition-all duration-300 z-30 overflow-hidden ${sidebarOpen ? 'w-64' : 'w-0'} md:z-30`}>
-      <div className={`p-4 w-64 transition-opacity duration-300 overflow-y-auto ${sidebarOpen ? 'opacity-100' : 'opacity-0'}`}>
-        <div className="mb-8 flex justify-center">
-          <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-400 via-blue-600 to-cyan-500 bg-clip-text text-transparent tracking-wide animate-gradient-x bg-[length:200%_auto]">
-            Git Crypto
-          </h1>
-        </div>
+    <>
+      {/* Оверлей для мобильных */}
+      {sidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-20 md:hidden animate-fade-in"
+          onClick={onToggleSidebar}
+        />
+      )}
+      
+      <aside className={`fixed top-0 left-0 h-full bg-sidebar border-r border-sidebar-border transition-all duration-300 z-30 overflow-hidden ${sidebarOpen ? 'w-64' : 'w-0'} md:z-30`}>
+        <div className={`p-4 w-64 transition-opacity duration-300 overflow-y-auto h-full ${sidebarOpen ? 'opacity-100' : 'opacity-0'}`}>
+          {/* Кнопка закрытия для мобильных */}
+          <div className="flex items-center justify-between mb-6 md:hidden">
+            <h1 className="text-xl font-bold bg-gradient-to-r from-blue-400 via-blue-600 to-cyan-500 bg-clip-text text-transparent tracking-wide">
+              Git Crypto
+            </h1>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onToggleSidebar}
+              className="h-8 w-8"
+            >
+              <Icon name="X" size={20} />
+            </Button>
+          </div>
+          
+          {/* Заголовок для десктопа */}
+          <div className="mb-8 justify-center hidden md:flex">
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-400 via-blue-600 to-cyan-500 bg-clip-text text-transparent tracking-wide animate-gradient-x bg-[length:200%_auto]">
+              Git Crypto
+            </h1>
+          </div>
 
         <nav className="space-y-1">
           {[
@@ -47,7 +74,12 @@ const Sidebar = ({
           ].map(item => (
             <button
               key={item.id}
-              onClick={() => onCategoryChange(item.id, item.view as 'plugins' | 'forum')}
+              onClick={() => {
+                onCategoryChange(item.id, item.view as 'plugins' | 'forum');
+                if (window.innerWidth < 768 && onToggleSidebar) {
+                  onToggleSidebar();
+                }
+              }}
               className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg transition-colors ${
                 (activeView === item.view && (item.view === 'forum' || activeCategory === item.id)) ? 'bg-sidebar-accent text-sidebar-accent-foreground' : 'hover:bg-sidebar-accent/50'
               }`}
@@ -60,7 +92,12 @@ const Sidebar = ({
           {user && (
             <>
               <button
-                onClick={onShowMessagesPanel}
+                onClick={() => {
+                  onShowMessagesPanel?.();
+                  if (window.innerWidth < 768 && onToggleSidebar) {
+                    onToggleSidebar();
+                  }
+                }}
                 className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg transition-colors hover:bg-sidebar-accent/50 mt-4 relative"
               >
                 <Icon name="Mail" size={18} />
@@ -72,7 +109,12 @@ const Sidebar = ({
                 )}
               </button>
               <button
-                onClick={onShowProfileDialog}
+                onClick={() => {
+                  onShowProfileDialog();
+                  if (window.innerWidth < 768 && onToggleSidebar) {
+                    onToggleSidebar();
+                  }
+                }}
                 className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg transition-colors hover:bg-sidebar-accent/50"
               >
                 <Icon name="User" size={18} />
@@ -84,7 +126,12 @@ const Sidebar = ({
                     <span className="text-xs font-semibold text-primary">АДМИНИСТРАТОР</span>
                   </div>
                   <button
-                    onClick={onShowAdminPanel}
+                    onClick={() => {
+                      onShowAdminPanel?.();
+                      if (window.innerWidth < 768 && onToggleSidebar) {
+                        onToggleSidebar();
+                      }
+                    }}
                     className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg transition-colors hover:bg-sidebar-accent/50 bg-primary/10 border border-primary/30"
                   >
                     <Icon name="Shield" size={18} className="text-primary" />
@@ -105,7 +152,12 @@ const Sidebar = ({
           ].map(item => (
             <button
               key={item.slug}
-              onClick={() => onCategoryChange(item.slug, 'plugins')}
+              onClick={() => {
+                onCategoryChange(item.slug, 'plugins');
+                if (window.innerWidth < 768 && onToggleSidebar) {
+                  onToggleSidebar();
+                }
+              }}
               className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg transition-colors text-sm ${
                 activeCategory === item.slug ? 'bg-sidebar-accent' : 'hover:bg-sidebar-accent/50'
               }`}
@@ -118,6 +170,8 @@ const Sidebar = ({
         </div>
       </div>
     </aside>
+    </>
+  )
   );
 };
 

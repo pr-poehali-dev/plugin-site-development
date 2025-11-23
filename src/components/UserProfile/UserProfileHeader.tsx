@@ -3,7 +3,7 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import Icon from '@/components/ui/icon';
-import ForumRoleBadge from '@/components/ForumRoleBadge';
+import UserRankBadge from '@/components/UserRankBadge';
 import { getAvatarGradient } from '@/utils/avatarColors';
 
 interface UserProfileHeaderProps {
@@ -51,6 +51,9 @@ export const UserProfileHeader = ({
               {user.username[0].toUpperCase()}
             </AvatarFallback>
           </Avatar>
+          <div className="absolute -top-1 -right-1 sm:-top-2 sm:-right-2">
+            <UserRankBadge forumRole={user.forum_role} size="sm" />
+          </div>
           {isOwnProfile && (
             <div className="absolute inset-0 rounded-full bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
               {avatarUploading ? (
@@ -68,14 +71,12 @@ export const UserProfileHeader = ({
             <p className="text-xs sm:text-sm text-muted-foreground truncate">{user.email}</p>
           </div>
 
-          <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
-            <ForumRoleBadge role={user.forum_role} />
-            {user.role === 'admin' && (
-              <span className="px-2 sm:px-3 py-0.5 sm:py-1 bg-red-500/20 text-red-400 rounded-lg text-xs sm:text-sm font-medium">
-                Администратор
-              </span>
-            )}
-          </div>
+          {user.role === 'admin' && (
+            <span className="px-2 sm:px-3 py-0.5 sm:py-1 bg-red-500/20 text-red-400 rounded-lg text-xs sm:text-sm font-medium inline-flex items-center gap-1">
+              <Icon name="Shield" size={14} />
+              Администратор
+            </span>
+          )}
 
           {user.bio && (
             <p className="text-xs sm:text-sm text-foreground/80 mt-2 line-clamp-3">{user.bio}</p>

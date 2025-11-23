@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { getAvatarGradient } from '@/utils/avatarColors';
 import { useToast } from '@/hooks/use-toast';
+import UserRankBadge from '@/components/UserRankBadge';
 
 const ESCROW_URL = 'https://functions.poehali.dev/82c75fbc-83e4-4448-9ff8-1c8ef9bbec09';
 

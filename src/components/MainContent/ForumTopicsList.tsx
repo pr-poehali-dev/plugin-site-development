@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Icon from '@/components/ui/icon';
-import ForumRoleBadge from '@/components/ForumRoleBadge';
+import UserRankBadge from '@/components/UserRankBadge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ForumTopic, User } from '@/types';
 import { useState } from 'react';
@@ -133,6 +133,9 @@ export const ForumTopicsList = ({
                       {topic.author_name[0].toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
+                  <div className="absolute -top-0.5 -right-0.5">
+                    <UserRankBadge forumRole={topic.author_forum_role} size="sm" />
+                  </div>
                   {isUserOnline(topic.author_last_seen) && (
                     <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-background"></div>
                   )}
@@ -150,9 +153,8 @@ export const ForumTopicsList = ({
                     {topic.title}
                   </h3>
                   <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-muted-foreground flex-wrap">
-                    <span className="flex items-center gap-2">
+                    <span className="flex items-center gap-1">
                       Автор: <button onClick={(e) => { e.stopPropagation(); topic.author_id && onUserClick(topic.author_id); }} className="hover:text-primary transition-colors">{topic.author_name}</button>
-                      <ForumRoleBadge role={topic.author_forum_role} />
                     </span>
                     <span>•</span>
                     <span title={getFullDateTime(topic.created_at)}>Создана: {getTimeAgo(topic.created_at)}</span>
