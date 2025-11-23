@@ -69,21 +69,24 @@ export const useUserActivity = ({
 
             if (adminNotifRes && adminNotifRes.ok && setAdminNotificationsUnread) {
               const adminNotifData = await adminNotifRes.json();
-              const prevCount = parseInt(sessionStorage.getItem('prevAdminNotifCount') || '0');
+              const prevCountStr = sessionStorage.getItem('prevAdminNotifCount');
               const newCount = adminNotifData.unread_count || 0;
               
               setAdminNotificationsUnread(newCount);
               
-              if (newCount > prevCount && prevCount > 0 && showAdminToast) {
-                const diff = newCount - prevCount;
-                showAdminToast(
-                  '🔔 Новые уведомления администратора',
-                  `Появилось ${diff} ${diff === 1 ? 'новое уведомление' : 'новых уведомления'} требующих внимания`
-                );
-                
-                const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBTGH0fPTgjMGHm7A7+OZSA0PVajk7q5aFApBmeHyvWwhBTGG0fPTgjMGHW7A7+OZSA0OVajk7q5aFApBmeHyvWwhBTGG0fPTgjMGHW7A7+OZSA0OVajk7q5aFApBmeHyvWwhBTGG0fPTgjMGHW7A7+OZSA0OVajk7q5aFApBmeHyvWwhBTGG0fPTgjMGHW7A7+OZSA0OVajk7q5aFApBmeHyvWwhBTGG0fPTgjMGHW7A7+OZSA0OVajk7q5a');
-                audio.volume = 0.4;
-                audio.play().catch(() => {});
+              if (prevCountStr !== null) {
+                const prevCount = parseInt(prevCountStr);
+                if (newCount > prevCount && showAdminToast) {
+                  const diff = newCount - prevCount;
+                  showAdminToast(
+                    '🔔 Новые уведомления администратора',
+                    `Появилось ${diff} ${diff === 1 ? 'новое уведомление' : 'новых уведомления'} требующих внимания`
+                  );
+                  
+                  const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBTGH0fPTgjMGHm7A7+OZSA0PVajk7q5aFApBmeHyvWwhBTGG0fPTgjMGHW7A7+OZSA0OVajk7q5aFApBmeHyvWwhBTGG0fPTgjMGHW7A7+OZSA0OVajk7q5aFApBmeHyvWwhBTGG0fPTgjMGHW7A7+OZSA0OVajk7q5aFApBmeHyvWwhBTGG0fPTgjMGHW7A7+OZSA0OVajk7q5aFApBmeHyvWwhBTGG0fPTgjMGHW7A7+OZSA0OVajk7q5a');
+                  audio.volume = 0.4;
+                  audio.play().catch(() => {});
+                }
               }
               
               sessionStorage.setItem('prevAdminNotifCount', newCount.toString());

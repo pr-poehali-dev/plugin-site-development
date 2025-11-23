@@ -67,6 +67,40 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             params = event.get('queryStringParameters', {}) or {}
             action = params.get('action')
             
+            if action == 'admin_notifications_unread_count':
+                if not user_id:
+                    return {
+                        'statusCode': 401,
+                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({'error': 'Требуется авторизация'}),
+                        'isBase64Encoded': False
+                    }
+                
+                cur.execute(f"SELECT role FROM {SCHEMA}.users WHERE id = %s", (user_id,))
+                user_role = cur.fetchone()
+                
+                if not user_role or user_role['role'] != 'admin':
+                    return {
+                        'statusCode': 200,
+                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({'success': True, 'unread_count': 0}),
+                        'isBase64Encoded': False
+                    }
+                
+                cur.execute(f"""
+                    SELECT COUNT(*) as count
+                    FROM {SCHEMA}.admin_notifications
+                    WHERE is_read = FALSE
+                """)
+                result = cur.fetchone()
+                
+                return {
+                    'statusCode': 200,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'success': True, 'unread_count': result['count']}),
+                    'isBase64Encoded': False
+                }
+            
             if action == 'user_profile':
                 user_profile_id = params.get('user_id')
                 
@@ -204,21 +238,6 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'statusCode': 200,
                     'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
                     'body': json.dumps({'success': True, 'notifications': [dict(n) for n in notifications]}, default=serialize_datetime),
-                    'isBase64Encoded': False
-                }
-            
-            elif action == 'admin_notifications_unread_count':
-                cur.execute(f"""
-                    SELECT COUNT(*) as count
-                    FROM {SCHEMA}.admin_notifications
-                    WHERE is_read = FALSE
-                """)
-                result = cur.fetchone()
-                
-                return {
-                    'statusCode': 200,
-                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                    'body': json.dumps({'success': True, 'unread_count': result['count']}),
                     'isBase64Encoded': False
                 }
             
