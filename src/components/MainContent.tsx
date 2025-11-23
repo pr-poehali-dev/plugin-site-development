@@ -5,6 +5,9 @@ import { ForumTopicDetail } from './MainContent/ForumTopicDetail';
 import { EscrowView } from './EscrowView';
 import CasinoHub from './CasinoHub';
 import FlashUsdtShop from './FlashUsdtShop';
+import FAQPage from './FAQPage';
+import SupportPage from './SupportPage';
+import TermsPage from './TermsPage';
 
 interface MainContentProps {
   activeView: 'plugins' | 'forum';
@@ -50,7 +53,13 @@ const MainContent = ({
   return (
     <main className="p-6 animate-fade-in">
       {activeView === 'plugins' ? (
-        activeCategory === 'popular' ? (
+        activeCategory === 'all' ? (
+          <FAQPage />
+        ) : activeCategory === 'flash' ? (
+          <SupportPage user={user} onShowAuthDialog={onShowAuthDialog} />
+        ) : activeCategory === 'exchanges' ? (
+          <TermsPage />
+        ) : activeCategory === 'popular' ? (
           <EscrowView 
             user={user} 
             onShowAuthDialog={onShowAuthDialog} 

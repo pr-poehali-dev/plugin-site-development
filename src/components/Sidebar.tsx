@@ -109,6 +109,7 @@ const Sidebar = ({
               className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg transition-colors text-sm ${
                 activeCategory === item.slug ? 'bg-sidebar-accent' : 'hover:bg-sidebar-accent/50'
               }`}
+              data-support-link={item.slug === 'flash' ? 'true' : undefined}
             >
               <Icon name={item.icon as any} size={16} />
               {item.name}
