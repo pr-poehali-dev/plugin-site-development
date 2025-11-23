@@ -56,6 +56,18 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
     withdrawal_request: 0,
     escrow_dispute: 0
   });
+  const [sectionCounts, setSectionCounts] = useState({
+    users: 0,
+    topics: 0,
+    disputes: 0,
+    deposits: 0,
+    withdrawals: 0,
+    btcWithdrawals: 0,
+    escrow: 0,
+    flashUsdt: 0,
+    tickets: 0,
+    verification: 0
+  });
 
   useEffect(() => {
     if (activeTab === 'users') {
@@ -78,9 +90,11 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
       fetchBtcWithdrawals();
     }
     fetchAdminNotifications();
+    fetchAllCounts();
     
     const interval = setInterval(() => {
       fetchAdminNotifications();
+      fetchAllCounts();
     }, 15000);
     
     return () => clearInterval(interval);
@@ -239,6 +253,69 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
       }
     } catch (error) {
       console.error('Ошибка загрузки BTC заявок:', error);
+    }
+  };
+
+  const fetchAllCounts = async () => {
+    try {
+      // Параллельно загружаем данные всех разделов
+      const [
+        usersRes,
+        topicsRes,
+        disputesRes,
+        withdrawalsRes,
+        depositsRes,
+        escrowRes,
+        flashUsdtRes,
+        btcWithdrawalsRes
+      ] = await Promise.all([
+        fetch(`${ADMIN_URL}?action=users`, { headers: { 'X-User-Id': currentUser.id.toString() } }),
+        fetch(FORUM_URL),
+        fetch(`${ESCROW_URL}?action=list&status=dispute`),
+        fetch(`${WITHDRAWAL_URL}?action=all_withdrawals&status=processing`, { headers: { 'X-User-Id': currentUser.id.toString() } }),
+        fetch(`${CRYPTO_URL}?action=all_deposits&status=pending`, { headers: { 'X-User-Id': currentUser.id.toString() } }),
+        fetch(`${ESCROW_URL}?action=list&status=open`),
+        fetch(`${FLASH_USDT_URL}?action=admin_orders`, { headers: { 'X-User-Id': currentUser.id.toString() } }),
+        fetch(`${ADMIN_URL}?action=btc_withdrawals`, { headers: { 'X-User-Id': currentUser.id.toString() } })
+      ]);
+
+      const [usersData, topicsData, disputesData, withdrawalsData, depositsData, escrowData, flashUsdtData, btcWithdrawalsData] = await Promise.all([
+        usersRes.json(),
+        topicsRes.json(),
+        disputesRes.json(),
+        withdrawalsRes.json(),
+        depositsRes.json(),
+        escrowRes.json(),
+        flashUsdtRes.json(),
+        btcWithdrawalsRes.json()
+      ]);
+
+      // Подсчитываем новых пользователей (за последние 24 часа)
+      const newUsers = (usersData.users || []).filter((u: any) => {
+        const createdAt = new Date(u.created_at);
+        return (Date.now() - createdAt.getTime()) < 24 * 60 * 60 * 1000;
+      }).length;
+
+      // Подсчитываем новые темы (за последние 24 часа)
+      const newTopics = (topicsData.topics || []).filter((t: any) => {
+        const createdAt = new Date(t.created_at);
+        return (Date.now() - createdAt.getTime()) < 24 * 60 * 60 * 1000;
+      }).length;
+
+      setSectionCounts({
+        users: newUsers,
+        topics: newTopics,
+        disputes: (disputesData.deals || []).length,
+        deposits: (depositsData.deposits || []).filter((d: any) => d.status === 'pending').length,
+        withdrawals: (withdrawalsData.withdrawals || []).filter((w: any) => w.status === 'processing').length,
+        btcWithdrawals: (btcWithdrawalsData.withdrawals || []).filter((w: any) => w.status === 'pending').length,
+        escrow: (escrowData.deals || []).filter((d: any) => d.status === 'open' && !d.buyer_id).length,
+        flashUsdt: (flashUsdtData.orders || []).filter((o: any) => o.status === 'pending').length,
+        tickets: 2, // Mock данные - 2 открытых тикета
+        verification: notificationCounts.verification_request
+      });
+    } catch (error) {
+      console.error('Ошибка загрузки счётчиков:', error);
     }
   };
 
@@ -659,6 +736,11 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
               }`}
             >
               Пользователи
+              {sectionCounts.users > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 bg-red-500 text-white text-[9px] sm:text-[10px] rounded-full flex items-center justify-center font-semibold">
+                  {sectionCounts.users}
+                </span>
+              )}
             </button>
             <button
               onClick={() => setActiveTab('topics')}
@@ -669,6 +751,11 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
               }`}
             >
               Темы форума
+              {sectionCounts.topics > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 bg-red-500 text-white text-[9px] sm:text-[10px] rounded-full flex items-center justify-center font-semibold">
+                  {sectionCounts.topics}
+                </span>
+              )}
             </button>
             <button
               onClick={() => setActiveTab('disputes')}
@@ -679,9 +766,9 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
               }`}
             >
               Споры
-              {notificationCounts.escrow_dispute > 0 && (
+              {sectionCounts.disputes > 0 && (
                 <span className="absolute -top-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 bg-red-500 text-white text-[9px] sm:text-[10px] rounded-full flex items-center justify-center font-semibold">
-                  {notificationCounts.escrow_dispute}
+                  {sectionCounts.disputes}
                 </span>
               )}
             </button>
@@ -694,9 +781,9 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
               }`}
             >
               Ввод
-              {notificationCounts.balance_topup > 0 && (
+              {sectionCounts.deposits > 0 && (
                 <span className="absolute -top-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 bg-red-500 text-white text-[9px] sm:text-[10px] rounded-full flex items-center justify-center font-semibold">
-                  {notificationCounts.balance_topup}
+                  {sectionCounts.deposits}
                 </span>
               )}
             </button>
@@ -709,51 +796,71 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
               }`}
             >
               Вывод
-              {notificationCounts.withdrawal_request > 0 && (
+              {sectionCounts.withdrawals > 0 && (
                 <span className="absolute -top-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 bg-red-500 text-white text-[9px] sm:text-[10px] rounded-full flex items-center justify-center font-semibold">
-                  {notificationCounts.withdrawal_request}
+                  {sectionCounts.withdrawals}
                 </span>
               )}
             </button>
             <button
               onClick={() => setActiveTab('escrow')}
-              className={`px-3 sm:px-6 py-2 rounded-lg transition-all text-xs sm:text-sm whitespace-nowrap ${
+              className={`px-3 sm:px-6 py-2 rounded-lg transition-all text-xs sm:text-sm whitespace-nowrap relative ${
                 activeTab === 'escrow'
                   ? 'bg-primary text-primary-foreground'
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
               Гарант
+              {sectionCounts.escrow > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 bg-red-500 text-white text-[9px] sm:text-[10px] rounded-full flex items-center justify-center font-semibold">
+                  {sectionCounts.escrow}
+                </span>
+              )}
             </button>
             <button
               onClick={() => setActiveTab('flash-usdt')}
-              className={`px-3 sm:px-6 py-2 rounded-lg transition-all text-xs sm:text-sm whitespace-nowrap ${
+              className={`px-3 sm:px-6 py-2 rounded-lg transition-all text-xs sm:text-sm whitespace-nowrap relative ${
                 activeTab === 'flash-usdt'
                   ? 'bg-primary text-primary-foreground'
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
               Flash USDT
+              {sectionCounts.flashUsdt > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 bg-red-500 text-white text-[9px] sm:text-[10px] rounded-full flex items-center justify-center font-semibold">
+                  {sectionCounts.flashUsdt}
+                </span>
+              )}
             </button>
             <button
               onClick={() => setActiveTab('btc-withdrawals')}
-              className={`px-3 sm:px-6 py-2 rounded-lg transition-all text-xs sm:text-sm whitespace-nowrap ${
+              className={`px-3 sm:px-6 py-2 rounded-lg transition-all text-xs sm:text-sm whitespace-nowrap relative ${
                 activeTab === 'btc-withdrawals'
                   ? 'bg-primary text-primary-foreground'
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
               BTC Вывод
+              {sectionCounts.btcWithdrawals > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 bg-red-500 text-white text-[9px] sm:text-[10px] rounded-full flex items-center justify-center font-semibold">
+                  {sectionCounts.btcWithdrawals}
+                </span>
+              )}
             </button>
             <button
               onClick={() => setActiveTab('tickets')}
-              className={`px-3 sm:px-6 py-2 rounded-lg transition-all text-xs sm:text-sm whitespace-nowrap ${
+              className={`px-3 sm:px-6 py-2 rounded-lg transition-all text-xs sm:text-sm whitespace-nowrap relative ${
                 activeTab === 'tickets'
                   ? 'bg-primary text-primary-foreground'
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
               Тикеты
+              {sectionCounts.tickets > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 bg-red-500 text-white text-[9px] sm:text-[10px] rounded-full flex items-center justify-center font-semibold">
+                  {sectionCounts.tickets}
+                </span>
+              )}
             </button>
             <button
               onClick={() => setActiveTab('verification')}
@@ -764,9 +871,9 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
               }`}
             >
               Верификация
-              {notificationCounts.verification_request > 0 && (
+              {sectionCounts.verification > 0 && (
                 <span className="absolute -top-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 bg-red-500 text-white text-[9px] sm:text-[10px] rounded-full flex items-center justify-center font-semibold">
-                  {notificationCounts.verification_request}
+                  {sectionCounts.verification}
                 </span>
               )}
             </button>
