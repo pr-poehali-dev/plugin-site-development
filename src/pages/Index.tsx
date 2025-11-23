@@ -102,6 +102,8 @@ const Index = () => {
     const savedUser = localStorage.getItem('user');
     if (savedUser) {
       setUser(JSON.parse(savedUser));
+    } else {
+      setAuthDialogOpen(true);
     }
     
     if ('Notification' in window && Notification.permission === 'default') {
@@ -262,6 +264,17 @@ const Index = () => {
     setShowMessagesPanel(true);
   };
 
+  const handleAuthDialogAttemptClose = () => {
+    if (!user) {
+      toast({
+        title: 'Требуется авторизация',
+        description: 'Платформой могут пользоваться только зарегистрированные и авторизованные пользователи',
+        variant: 'destructive',
+        duration: 5000
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background text-foreground flex relative" onClick={() => setShowSearchResults(false)}>
       {showAdminPanel && user?.role === 'admin' ? (
@@ -352,6 +365,7 @@ const Index = () => {
         onCreateTopic={handleCreateTopic}
         onProfileDialogChange={setShowProfileDialog}
         onUpdateProfile={handleUpdateProfile}
+        onAuthDialogAttemptClose={handleAuthDialogAttemptClose}
       />
 
       {showUserProfile && selectedUserId && user && selectedUserId === user.id ? (

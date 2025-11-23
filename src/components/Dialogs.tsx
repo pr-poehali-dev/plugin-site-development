@@ -26,6 +26,7 @@ interface DialogsProps {
   onCreateTopic: () => void;
   onProfileDialogChange: (open: boolean) => void;
   onUpdateProfile: (profileData: Partial<User>) => void;
+  onAuthDialogAttemptClose?: () => void;
 }
 
 const AUTH_URL = 'https://functions.poehali.dev/2497448a-6aff-4df5-97ef-9181cf792f03';
@@ -48,8 +49,16 @@ const Dialogs = ({
   onCreateTopic,
   onProfileDialogChange,
   onUpdateProfile,
+  onAuthDialogAttemptClose,
 }: DialogsProps) => {
   const { toast } = useToast();
+  
+  const handleAuthDialogChange = (open: boolean) => {
+    if (!open && !user && onAuthDialogAttemptClose) {
+      onAuthDialogAttemptClose();
+    }
+    onAuthDialogChange(open);
+  };
   const [avatarUploading, setAvatarUploading] = useState(false);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -184,7 +193,7 @@ const Dialogs = ({
 
   return (
     <>
-      <Dialog open={authDialogOpen} onOpenChange={onAuthDialogChange}>
+      <Dialog open={authDialogOpen} onOpenChange={handleAuthDialogChange}>
         <DialogContent className="animate-scale-in border-0">
           <DialogHeader>
             <DialogTitle className="text-center text-2xl">{authMode === 'login' ? 'Добро пожаловать' : 'Регистрация'}</DialogTitle>
