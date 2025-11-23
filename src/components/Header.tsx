@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import Icon from '@/components/ui/icon';
 import { User, SearchResult } from '@/types';
 import { useState, useEffect } from 'react';
+import LanguageSwitcher from './LanguageSwitcher';
 
 interface HeaderProps {
   sidebarOpen: boolean;
@@ -156,7 +157,8 @@ const Header = ({
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <LanguageSwitcher />
           {user ? (
             <>
               <div className="flex items-center gap-1.5 sm:gap-2">

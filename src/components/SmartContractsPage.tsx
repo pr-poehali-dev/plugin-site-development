@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { User } from '@/types';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const VIP_PURCHASE_URL = 'https://functions.poehali.dev/d28b5823-1cfa-4ef4-9dd8-ac4a3c2ab44c';
 
@@ -14,6 +15,7 @@ interface SmartContractsPageProps {
 
 const SmartContractsPage = ({ user }: SmartContractsPageProps) => {
   const { toast } = useToast();
+  const { t } = useLanguage();
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const [showVipDialog, setShowVipDialog] = useState(false);
   const [isPurchasing, setIsPurchasing] = useState(false);
@@ -619,9 +621,9 @@ contract SimpleNFT {
               <Icon name="FileCode" size={24} className="text-white sm:w-7 sm:h-7 md:w-8 md:h-8" />
             </div>
             <div className="min-w-0">
-              <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold mb-1 sm:mb-2">Смарт-контракты Solidity</h1>
+              <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold mb-1 sm:mb-2">{t('smartContractsTitle')}</h1>
               <p className="text-muted-foreground text-xs sm:text-sm md:text-base lg:text-lg">
-                Полное руководство и готовые примеры для разработки
+                {t('smartContractsSubtitle')}
               </p>
             </div>
           </div>
@@ -632,7 +634,7 @@ contract SimpleNFT {
       <Card className="p-4 sm:p-5 md:p-6">
         <h2 className="text-lg sm:text-xl md:text-2xl font-bold mb-4 sm:mb-5 md:mb-6 flex items-center gap-2 sm:gap-3">
           <Icon name="BookOpen" size={20} className="text-primary sm:w-6 sm:h-6 md:w-7 md:h-7" />
-          Руководство по Solidity
+          {t('guide')}
         </h2>
         <div className="space-y-4 sm:space-y-5 md:space-y-6">
           {guide.map((section, index) => (
@@ -656,7 +658,7 @@ contract SimpleNFT {
       <div>
         <h2 className="text-lg sm:text-xl md:text-2xl font-bold mb-3 sm:mb-4 flex items-center gap-2 sm:gap-3">
           <Icon name="Code" size={20} className="text-primary sm:w-6 sm:h-6 md:w-7 md:h-7" />
-          Примеры контрактов
+          {t('examplesTitle')}
         </h2>
         <div className="grid gap-4 sm:gap-5 md:gap-6">
           {contracts.map((contract) => (
