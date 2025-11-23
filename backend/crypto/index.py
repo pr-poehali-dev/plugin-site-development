@@ -13,6 +13,8 @@ import psycopg2
 from psycopg2.extras import RealDictCursor
 import requests
 
+SCHEMA = 't_p32599880_plugin_site_developm'
+
 def get_db_connection():
     """Получить подключение к БД"""
     database_url = os.environ.get('DATABASE_URL')
@@ -112,7 +114,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 expires_at = datetime.utcnow() + timedelta(hours=1)
                 
                 cur.execute(
-                    """INSERT INTO crypto_payments 
+                    f"""INSERT INTO {SCHEMA}.crypto_payments 
                        (user_id, wallet_address, amount, currency, network, status, expires_at) 
                        VALUES (%s, %s, %s, %s, %s, %s, %s) 
                        RETURNING id""",
@@ -178,7 +180,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 
                 if not tron_tx:
                     cur.execute(
-                        "UPDATE crypto_payments SET status = 'pending' WHERE id = %s",
+                        f"UPDATE {SCHEMA}.crypto_payments SET status = 'pending' WHERE id = %s",
                         (int(payment_id),)
                     )
                     conn.commit()
@@ -195,40 +197,74 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     }
                 
                 cur.execute(
-                    """UPDATE crypto_payments 
+                    f"""UPDATE {SCHEMA}.crypto_payments 
                        SET status = %s, confirmed_at = CURRENT_TIMESTAMP, tx_hash = %s 
                        WHERE id = %s""",
                     ('confirmed', tron_tx['tx_hash'], int(payment_id))
                 )
                 
                 cur.execute(
-                    "UPDATE users SET balance = COALESCE(balance, 0) + %s WHERE id = %s RETURNING balance",
+                    f"UPDATE {SCHEMA}.users SET balance = COALESCE(balance, 0) + %s WHERE id = %s RETURNING balance",
                     (float(payment['amount']), int(user_id))
                 )
                 result = cur.fetchone()
                 
                 cur.execute(
-                    "INSERT INTO transactions (user_id, amount, type, description) VALUES (%s, %s, %s, %s)",
+                    f"INSERT INTO {SCHEMA}.transactions (user_id, amount, type, description) VALUES (%s, %s, %s, %s)",
                     (int(user_id), float(payment['amount']), 'crypto_deposit', f"Пополнение через {payment['network']}")
                 )
                 
+                # Начисление реферального бонуса (10% от пополнения)
                 cur.execute(
-                    "INSERT INTO notifications (user_id, type, title, message) VALUES (%s, %s, %s, %s)",
+                    f"""SELECT r.referrer_id, u.username 
+                       FROM {SCHEMA}.referrals r 
+                       JOIN {SCHEMA}.users u ON r.referrer_id = u.id 
+                       WHERE r.referred_user_id = %s AND r.status = 'pending'
+                       LIMIT 1""",
+                    (int(user_id),)
+                )
+                referrer = cur.fetchone()
+                
+                if referrer:
+                    referral_bonus = float(payment['amount']) * 0.10
+                    
+                    cur.execute(
+                        f"UPDATE {SCHEMA}.users SET balance = COALESCE(balance, 0) + %s WHERE id = %s",
+                        (referral_bonus, referrer['referrer_id'])
+                    )
+                    
+                    cur.execute(
+                        f"INSERT INTO {SCHEMA}.transactions (user_id, amount, type, description) VALUES (%s, %s, %s, %s)",
+                        (referrer['referrer_id'], referral_bonus, 'referral_bonus', f"Реферальный бонус 10% от пополнения реферала")
+                    )
+                    
+                    cur.execute(
+                        f"UPDATE {SCHEMA}.referrals SET status = 'active', bonus_earned = COALESCE(bonus_earned, 0) + %s WHERE referrer_id = %s AND referred_user_id = %s",
+                        (referral_bonus, referrer['referrer_id'], int(user_id))
+                    )
+                    
+                    cur.execute(
+                        f"INSERT INTO {SCHEMA}.notifications (user_id, type, title, message) VALUES (%s, %s, %s, %s)",
+                        (referrer['referrer_id'], 'success', 'Реферальный бонус', f"Вы получили +{referral_bonus:.2f} USDT (10%) от пополнения вашего реферала!")
+                    )
+                
+                cur.execute(
+                    f"INSERT INTO {SCHEMA}.notifications (user_id, type, title, message) VALUES (%s, %s, %s, %s)",
                     (int(user_id), 'success', 'Баланс пополнен', f"Ваш баланс успешно пополнен на {float(payment['amount']):.2f} USDT")
                 )
                 
-                cur.execute("SELECT username FROM users WHERE id = %s", (int(user_id),))
+                cur.execute(f"SELECT username FROM {SCHEMA}.users WHERE id = %s", (int(user_id),))
                 user_info = cur.fetchone()
                 username = user_info['username'] if user_info else f"ID {user_id}"
                 
                 cur.execute(
-                    "SELECT id FROM users WHERE role = 'admin'"
+                    f"SELECT id FROM {SCHEMA}.users WHERE role = 'admin'"
                 )
                 admins = cur.fetchall()
                 
                 for admin in admins:
                     cur.execute(
-                        "INSERT INTO notifications (user_id, type, title, message) VALUES (%s, %s, %s, %s)",
+                        f"INSERT INTO {SCHEMA}.notifications (user_id, type, title, message) VALUES (%s, %s, %s, %s)",
                         (admin['id'], 'admin_alert', 'Пополнение баланса', f"Пользователь {username} пополнил баланс на {float(payment['amount']):.2f} USDT")
                     )
                 
@@ -261,7 +297,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                         'isBase64Encoded': False
                     }
                 
-                cur.execute("SELECT role FROM users WHERE id = %s", (int(user_id),))
+                cur.execute(f"SELECT role FROM {SCHEMA}.users WHERE id = %s", (int(user_id),))
                 user_role = cur.fetchone()
                 
                 if not user_role or user_role['role'] != 'admin':
@@ -275,19 +311,19 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 status_filter = params.get('status', 'all')
                 
                 if status_filter == 'all':
-                    query = """
+                    query = f"""
                         SELECT cp.*, u.username, u.email
-                        FROM crypto_payments cp
-                        LEFT JOIN users u ON cp.user_id = u.id
+                        FROM {SCHEMA}.crypto_payments cp
+                        LEFT JOIN {SCHEMA}.users u ON cp.user_id = u.id
                         ORDER BY cp.created_at DESC
                         LIMIT 100
                     """
                     cur.execute(query)
                 else:
-                    query = """
+                    query = f"""
                         SELECT cp.*, u.username, u.email
-                        FROM crypto_payments cp
-                        LEFT JOIN users u ON cp.user_id = u.id
+                        FROM {SCHEMA}.crypto_payments cp
+                        LEFT JOIN {SCHEMA}.users u ON cp.user_id = u.id
                         WHERE cp.status = %s
                         ORDER BY cp.created_at DESC
                         LIMIT 100
@@ -313,7 +349,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     }
                 
                 cur.execute(
-                    """SELECT * FROM crypto_payments 
+                    f"""SELECT * FROM {SCHEMA}.crypto_payments 
                        WHERE user_id = %s AND status = 'pending' 
                        AND created_at > NOW() - INTERVAL '2 hours'
                        ORDER BY created_at DESC""",
