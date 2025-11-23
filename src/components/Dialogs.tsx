@@ -379,7 +379,7 @@ const Dialogs = ({
           </DialogHeader>
           {user && (
             <Tabs defaultValue="profile" className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
+              <TabsList className="grid w-full grid-cols-2 mb-4">
                 <TabsTrigger value="profile">Профиль</TabsTrigger>
                 <TabsTrigger value="verification">Верификация</TabsTrigger>
               </TabsList>
