@@ -81,12 +81,11 @@ const ReferralProgramPage = ({ user }: ReferralProgramPageProps) => {
     }
   };
 
-  const copyReferralLink = () => {
-    const referralLink = `${window.location.origin}/?ref=${referralCode}`;
-    navigator.clipboard.writeText(referralLink);
+  const copyReferralCode = () => {
+    navigator.clipboard.writeText(referralCode);
     toast({
       title: 'Скопировано',
-      description: 'Реферальная ссылка скопирована в буфер обмена'
+      description: 'Реферальный код скопирован в буфер обмена'
     });
   };
 
@@ -119,7 +118,7 @@ const ReferralProgramPage = ({ user }: ReferralProgramPageProps) => {
           <Icon name="Users" size={24} className="text-primary" />
         </div>
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold">Реферальная программа</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold">Реферальная система</h1>
           <p className="text-sm text-muted-foreground">Зарабатывайте с каждым приглашенным пользователем</p>
         </div>
       </div>
@@ -175,21 +174,21 @@ const ReferralProgramPage = ({ user }: ReferralProgramPageProps) => {
         </Card>
       </div>
 
-      {/* Реферальная ссылка */}
+      {/* Реферальный код */}
       <Card className="p-6">
         <div className="space-y-4">
           <div className="flex items-center gap-2">
-            <Icon name="Link" size={20} className="text-primary" />
-            <h3 className="text-lg font-semibold">Ваша реферальная ссылка</h3>
+            <Icon name="Hash" size={20} className="text-primary" />
+            <h3 className="text-lg font-semibold">Ваш реферальный код</h3>
           </div>
           
           <div className="flex gap-2">
             <Input 
-              value={`${window.location.origin}/?ref=${referralCode}`}
+              value={referralCode}
               readOnly
-              className="font-mono text-sm"
+              className="font-mono text-2xl font-bold text-center tracking-wider"
             />
-            <Button onClick={copyReferralLink} className="shrink-0">
+            <Button onClick={copyReferralCode} className="shrink-0">
               <Icon name="Copy" size={16} className="mr-2" />
               Копировать
             </Button>
@@ -201,7 +200,7 @@ const ReferralProgramPage = ({ user }: ReferralProgramPageProps) => {
               Как это работает:
             </p>
             <ul className="text-sm text-muted-foreground space-y-1 ml-6">
-              <li>• Пользователь регистрируется по вашей ссылке</li>
+              <li>• Пользователь вводит ваш реферальный код при регистрации</li>
               <li>• Когда он пополняет баланс, вы получаете <span className="text-primary font-semibold">10% бонус</span> от суммы пополнения</li>
               <li>• Бонус начисляется автоматически и сразу доступен на балансе</li>
               <li>• Реферал становится "активным" после первого пополнения</li>
@@ -226,7 +225,7 @@ const ReferralProgramPage = ({ user }: ReferralProgramPageProps) => {
             <div className="text-center py-12">
               <Icon name="UserPlus" size={48} className="mx-auto mb-4 text-muted-foreground" />
               <p className="text-muted-foreground mb-2">У вас пока нет рефералов</p>
-              <p className="text-sm text-muted-foreground">Поделитесь своей реферальной ссылкой, чтобы начать зарабатывать</p>
+              <p className="text-sm text-muted-foreground">Поделитесь своим реферальным кодом, чтобы начать зарабатывать</p>
             </div>
           ) : (
             <div className="space-y-3">
