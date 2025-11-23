@@ -261,6 +261,12 @@ const Index = () => {
         <AdminPanel currentUser={user} onClose={() => setShowAdminPanel(false)} />
       ) : (
         <>
+          {sidebarOpen && (
+            <div 
+              className="fixed inset-0 bg-black/50 z-20 md:hidden" 
+              onClick={() => setSidebarOpen(false)}
+            />
+          )}
           <Sidebar
             sidebarOpen={sidebarOpen}
             activeCategory={activeCategory}
@@ -279,7 +285,7 @@ const Index = () => {
             messagesUnread={messagesUnread}
           />
 
-      <div className={`flex-1 transition-all duration-300 ${sidebarOpen ? 'ml-64' : 'ml-0'}`}>
+      <div className={`flex-1 transition-all duration-300 ${sidebarOpen ? 'md:ml-64' : 'ml-0'}`}>
         <Header
           sidebarOpen={sidebarOpen}
           searchQuery={searchQuery}

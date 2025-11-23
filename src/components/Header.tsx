@@ -95,13 +95,13 @@ const Header = ({
   }, [user?.balance]);
   return (
     <header className="sticky top-0 z-20 bg-card border-b border-border backdrop-blur-sm bg-opacity-95">
-      <div className="flex items-center justify-between px-6 py-4">
-        <div className="flex items-center gap-4 flex-1">
-          <Button variant="ghost" size="icon" onClick={onToggleSidebar} className="text-white hover:bg-orange-500/10 transition-colors">
+      <div className="flex items-center justify-between px-3 sm:px-6 py-3 sm:py-4">
+        <div className="flex items-center gap-2 sm:gap-4 flex-1">
+          <Button variant="ghost" size="icon" onClick={onToggleSidebar} className="text-white hover:bg-orange-500/10 transition-colors shrink-0">
             <Icon name="Menu" size={20} />
           </Button>
 
-          <div className="relative max-w-md w-full" onClick={(e) => e.stopPropagation()}>
+          <div className="relative max-w-md w-full hidden sm:block" onClick={(e) => e.stopPropagation()}>
             <Icon name="Search" size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground z-10" />
             <Input
               placeholder="Поиск по ключевым словам..."
@@ -159,45 +159,50 @@ const Header = ({
         <div className="flex items-center gap-3">
           {user ? (
             <>
-              <Button variant="ghost" size="icon" className="relative text-white hover:bg-orange-500/10 transition-colors" onClick={onShowNotifications}>
-                <Icon name="Bell" size={20} />
+              <Button variant="ghost" size="icon" className="relative text-white hover:bg-orange-500/10 transition-colors shrink-0" onClick={onShowNotifications}>
+                <Icon name="Bell" className="w-5 h-5" />
                 {notificationsUnread > 0 && (
                   <span className="absolute -top-1 -right-1 px-1.5 py-0.5 text-xs bg-red-500 text-white rounded-full min-w-[20px] text-center">
                     {notificationsUnread}
                   </span>
                 )}
               </Button>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-1.5 sm:gap-3">
                 <Button 
                   variant="ghost" 
-                  className="text-left flex items-center gap-3 text-white hover:bg-orange-500/10 transition-colors"
+                  className="text-left flex items-center gap-1.5 sm:gap-3 text-white hover:bg-orange-500/10 transition-colors px-2 sm:px-4"
                   onClick={onShowProfile}
                 >
-                  <div className="text-right">
+                  <div className="text-right hidden sm:block">
                     <p className="text-sm font-medium text-white">{user.username}</p>
                     <p className={`text-xs text-green-700 transition-all duration-300 ${isBalanceChanging ? 'scale-110 font-bold' : 'scale-100'}`}>
                       {Number(animatedBalance).toFixed(2)} USDT
                     </p>
                   </div>
-                  <Icon name="User" size={20} />
+                  <div className="text-right sm:hidden">
+                    <p className={`text-xs text-green-700 font-semibold`}>
+                      {Number(animatedBalance).toFixed(1)}
+                    </p>
+                  </div>
+                  <Icon name="User" className="w-5 h-5" />
                 </Button>
-                <Button variant="ghost" size="sm" onClick={onLogout} className="text-white hover:bg-orange-500/10 transition-colors">
+                <Button variant="ghost" size="sm" onClick={onLogout} className="text-white hover:bg-orange-500/10 transition-colors hidden sm:flex">
                   Выход
                 </Button>
               </div>
             </>
           ) : (
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1.5 sm:gap-3">
               <Button 
                 onClick={() => onAuthDialogOpen('login')}
                 variant="outline"
-                className="font-semibold px-6"
+                className="font-semibold px-3 sm:px-6 text-xs sm:text-sm"
               >
                 ВХОД
               </Button>
               <Button 
                 onClick={() => onAuthDialogOpen('register')}
-                className="bg-primary hover:bg-primary/90 font-semibold px-6"
+                className="bg-primary hover:bg-primary/90 font-semibold px-3 sm:px-6 text-xs sm:text-sm"
               >
                 РЕГИСТРАЦИЯ
               </Button>

@@ -466,7 +466,7 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
 
   return (
     <div className="fixed inset-0 bg-background/95 z-50 overflow-auto animate-fade-in">
-      <div className="container max-w-7xl mx-auto p-6 animate-slide-up">
+      <div className="container max-w-7xl mx-auto p-3 sm:p-6 animate-slide-up">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
             <Icon name="Shield" size={28} className="text-primary" />
@@ -514,11 +514,11 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
           </div>
         </div>
 
-        <div className="flex items-center justify-between mb-6">
-          <div className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-xl p-1 inline-flex">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-3">
+          <div className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-xl p-1 inline-flex overflow-x-auto w-full sm:w-auto">
             <button
               onClick={() => setActiveTab('users')}
-              className={`px-6 py-2 rounded-lg transition-all ${
+              className={`px-3 sm:px-6 py-2 rounded-lg transition-all text-xs sm:text-sm whitespace-nowrap ${
                 activeTab === 'users'
                   ? 'bg-primary text-primary-foreground'
                   : 'text-muted-foreground hover:text-foreground'
@@ -528,7 +528,7 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
             </button>
             <button
               onClick={() => setActiveTab('topics')}
-              className={`px-6 py-2 rounded-lg transition-all ${
+              className={`px-3 sm:px-6 py-2 rounded-lg transition-all text-xs sm:text-sm whitespace-nowrap ${
                 activeTab === 'topics'
                   ? 'bg-primary text-primary-foreground'
                   : 'text-muted-foreground hover:text-foreground'
@@ -538,17 +538,17 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
             </button>
             <button
               onClick={() => setActiveTab('disputes')}
-              className={`px-6 py-2 rounded-lg transition-all ${
+              className={`px-3 sm:px-6 py-2 rounded-lg transition-all text-xs sm:text-sm whitespace-nowrap ${
                 activeTab === 'disputes'
                   ? 'bg-primary text-primary-foreground'
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
-              Споры гаранта
+              Споры
             </button>
             <button
               onClick={() => setActiveTab('deposits')}
-              className={`px-6 py-2 rounded-lg transition-all ${
+              className={`px-3 sm:px-6 py-2 rounded-lg transition-all text-xs sm:text-sm whitespace-nowrap ${
                 activeTab === 'deposits'
                   ? 'bg-primary text-primary-foreground'
                   : 'text-muted-foreground hover:text-foreground'
@@ -558,7 +558,7 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
             </button>
             <button
               onClick={() => setActiveTab('withdrawals')}
-              className={`px-6 py-2 rounded-lg transition-all ${
+              className={`px-3 sm:px-6 py-2 rounded-lg transition-all text-xs sm:text-sm whitespace-nowrap ${
                 activeTab === 'withdrawals'
                   ? 'bg-primary text-primary-foreground'
                   : 'text-muted-foreground hover:text-foreground'
@@ -568,17 +568,17 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
             </button>
             <button
               onClick={() => setActiveTab('escrow')}
-              className={`px-6 py-2 rounded-lg transition-all ${
+              className={`px-3 sm:px-6 py-2 rounded-lg transition-all text-xs sm:text-sm whitespace-nowrap ${
                 activeTab === 'escrow'
                   ? 'bg-primary text-primary-foreground'
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
-              Гарант сервис
+              Гарант
             </button>
             <button
               onClick={() => setActiveTab('flash-usdt')}
-              className={`px-6 py-2 rounded-lg transition-all ${
+              className={`px-3 sm:px-6 py-2 rounded-lg transition-all text-xs sm:text-sm whitespace-nowrap ${
                 activeTab === 'flash-usdt'
                   ? 'bg-primary text-primary-foreground'
                   : 'text-muted-foreground hover:text-foreground'
@@ -588,7 +588,7 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
             </button>
             <button
               onClick={() => setActiveTab('tickets')}
-              className={`px-6 py-2 rounded-lg transition-all ${
+              className={`px-3 sm:px-6 py-2 rounded-lg transition-all text-xs sm:text-sm whitespace-nowrap ${
                 activeTab === 'tickets'
                   ? 'bg-primary text-primary-foreground'
                   : 'text-muted-foreground hover:text-foreground'

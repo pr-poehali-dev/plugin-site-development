@@ -146,12 +146,12 @@ const FAQPage = () => {
               {categoryItems.map(item => (
                 <Card
                   key={item.id}
-                  className="p-4 cursor-pointer hover:bg-card/80 transition-colors"
+                  className="p-3 sm:p-4 cursor-pointer hover:bg-card/80 transition-colors"
                   onClick={() => setExpandedId(expandedId === item.id ? null : item.id)}
                 >
-                  <div className="flex items-start justify-between gap-4">
+                  <div className="flex items-start justify-between gap-2 sm:gap-4">
                     <div className="flex-1">
-                      <h3 className="font-semibold mb-2 flex items-start gap-2">
+                      <h3 className="font-semibold mb-2 flex items-start gap-2 text-sm sm:text-base">
                         <Icon 
                           name="ChevronRight" 
                           size={20} 
@@ -160,7 +160,7 @@ const FAQPage = () => {
                         {item.question}
                       </h3>
                       {expandedId === item.id && (
-                        <p className="text-muted-foreground ml-7 animate-fade-in">
+                        <p className="text-muted-foreground ml-7 animate-fade-in text-sm">
                           {item.answer}
                         </p>
                       )}
