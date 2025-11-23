@@ -70,6 +70,7 @@ const Sidebar = ({
             { icon: 'Zap', label: 'Flash USDT', id: 'categories', view: 'plugins' },
             { icon: 'Spade', label: 'Казино', id: 'new', view: 'plugins' },
             { icon: 'TrendingUp', label: 'Гарант сервис', id: 'popular', view: 'plugins' },
+            { icon: 'FileCode', label: 'Смарт-контракты', id: 'smart-contracts', view: 'plugins' },
             { icon: 'MessageSquare', label: 'Форум', id: 'forum', view: 'forum' },
           ].map(item => (
             <button

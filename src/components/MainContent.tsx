@@ -9,6 +9,7 @@ import FAQPage from './FAQPage';
 import SupportPage from './SupportPage';
 import TermsPage from './TermsPage';
 import RulesPage from './RulesPage';
+import SmartContractsPage from './SmartContractsPage';
 
 interface MainContentProps {
   activeView: 'plugins' | 'forum';
@@ -62,6 +63,8 @@ const MainContent = ({
           <SupportPage user={user} onShowAuthDialog={onShowAuthDialog} />
         ) : activeCategory === 'terms' ? (
           <TermsPage />
+        ) : activeCategory === 'smart-contracts' ? (
+          <SmartContractsPage />
         ) : activeCategory === 'popular' ? (
           <EscrowView 
             user={user} 
