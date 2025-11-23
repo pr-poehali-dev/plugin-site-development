@@ -97,17 +97,21 @@ const Sidebar = ({
         </nav>
 
         <div className="mt-8 pt-8 border-t border-sidebar-border">
-          <p className="text-xs text-muted-foreground px-4 mb-3">КАТЕГОРИИ</p>
-          {categories.slice(0, 5).map(cat => (
+          <p className="text-xs text-muted-foreground px-4 mb-3">ДРУГОЕ</p>
+          {[
+            { slug: 'all', name: 'FAQ', icon: 'HelpCircle' },
+            { slug: 'flash', name: 'Поддержка', icon: 'MessageCircle' },
+            { slug: 'exchanges', name: 'Условия пользования', icon: 'FileText' }
+          ].map(item => (
             <button
-              key={cat.slug}
-              onClick={() => onCategoryChange(cat.slug, 'plugins')}
+              key={item.slug}
+              onClick={() => onCategoryChange(item.slug, 'plugins')}
               className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg transition-colors text-sm ${
-                activeCategory === cat.slug ? 'bg-sidebar-accent' : 'hover:bg-sidebar-accent/50'
+                activeCategory === item.slug ? 'bg-sidebar-accent' : 'hover:bg-sidebar-accent/50'
               }`}
             >
-              <div className={`w-2 h-2 rounded-full bg-gradient-to-r ${cat.color}`} />
-              {cat.name}
+              <Icon name={item.icon as any} size={16} />
+              {item.name}
             </button>
           ))}
         </div>
