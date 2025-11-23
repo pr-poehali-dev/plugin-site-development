@@ -14,6 +14,7 @@ interface SidebarProps {
   onShowAdminPanel?: () => void;
   onShowMessagesPanel?: () => void;
   messagesUnread?: number;
+  adminNotificationsUnread?: number;
   onToggleSidebar?: () => void;
 }
 
@@ -28,6 +29,7 @@ const Sidebar = ({
   onShowAdminPanel,
   onShowMessagesPanel,
   messagesUnread = 0,
+  adminNotificationsUnread = 0,
   onToggleSidebar,
 }: SidebarProps) => {
   return (
@@ -148,10 +150,15 @@ const Sidebar = ({
                         onToggleSidebar();
                       }
                     }}
-                    className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all duration-200 tap-highlight hover:bg-sidebar-accent/50 active:bg-sidebar-accent/70 bg-primary/10 border border-primary/30"
+                    className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all duration-200 tap-highlight hover:bg-sidebar-accent/50 active:bg-sidebar-accent/70 bg-primary/10 border border-primary/30 relative"
                   >
                     <Icon name="Shield" size={18} className="text-primary" />
                     <span className="text-sm font-medium text-primary">Админ-панель</span>
+                    {adminNotificationsUnread > 0 && (
+                      <span className="absolute right-4 px-1.5 py-0.5 text-xs bg-red-500 text-white rounded-full">
+                        {adminNotificationsUnread}
+                      </span>
+                    )}
                   </button>
                 </div>
               )}

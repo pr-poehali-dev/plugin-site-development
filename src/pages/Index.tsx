@@ -50,6 +50,7 @@ const Index = () => {
   const [showNotificationsPanel, setShowNotificationsPanel] = useState(false);
   const [notificationsUnread, setNotificationsUnread] = useState(0);
   const [messagesUnread, setMessagesUnread] = useState(0);
+  const [adminNotificationsUnread, setAdminNotificationsUnread] = useState(0);
   const [messageRecipientId, setMessageRecipientId] = useState<number | null>(null);
 
   const { fetchPlugins, fetchForumTopics } = useDataFetching({
@@ -65,7 +66,8 @@ const Index = () => {
     user,
     setUser,
     setNotificationsUnread,
-    setMessagesUnread
+    setMessagesUnread,
+    setAdminNotificationsUnread
   });
 
   const { handleCreateTopic, handleCreateComment, handleTopicSelect } = useForumHandlers({
@@ -342,6 +344,7 @@ const Index = () => {
             onShowAdminPanel={() => setShowAdminPanel(true)}
             onShowMessagesPanel={() => setShowMessagesPanel(true)}
             messagesUnread={messagesUnread}
+            adminNotificationsUnread={adminNotificationsUnread}
             onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
           />
 

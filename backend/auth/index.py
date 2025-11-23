@@ -1385,9 +1385,10 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             
             try:
                 cur.execute(
-                    f"INSERT INTO {SCHEMA}.withdrawals (user_id, amount, currency, address, status) VALUES (%s, %s, 'BTC', %s, 'pending')",
+                    f"INSERT INTO {SCHEMA}.withdrawals (user_id, amount, currency, address, status) VALUES (%s, %s, 'BTC', %s, 'pending') RETURNING id",
                     (int(user_id), btc_amount, btc_address)
                 )
+                withdrawal_id = cur.fetchone()['id']
             except Exception as withdraw_error:
                 conn.rollback()
                 return {
@@ -1396,6 +1397,17 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'body': json.dumps({'error': f'Ошибка INSERT withdrawals: {str(withdraw_error)}'}),
                     'isBase64Encoded': False
                 }
+            
+            cur.execute(
+                f"SELECT username FROM {SCHEMA}.users WHERE id = %s",
+                (int(user_id),)
+            )
+            username = cur.fetchone()['username']
+            
+            cur.execute(
+                f"INSERT INTO {SCHEMA}.admin_notifications (type, title, message, related_id, related_type) VALUES (%s, %s, %s, %s, %s)",
+                ('btc_withdrawal', 'Новая заявка на вывод BTC', f'Пользователь {username} запросил вывод {btc_amount:.8f} BTC', withdrawal_id, 'withdrawal')
+            )
             
             conn.commit()
             

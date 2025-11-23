@@ -4,19 +4,22 @@ import { User } from '@/types';
 const AUTH_URL = 'https://functions.poehali.dev/2497448a-6aff-4df5-97ef-9181cf792f03';
 const NOTIFICATIONS_URL = 'https://functions.poehali.dev/6c968792-7d48-41a9-af0a-c92adb047acb';
 const CRYPTO_URL = 'https://functions.poehali.dev/8caa3b76-72e5-42b5-9415-91d1f9b05210';
+const ADMIN_URL = 'https://functions.poehali.dev/d4678b1c-2acd-40bb-b8c5-cefe8d14fad4';
 
 interface UseUserActivityProps {
   user: User | null;
   setUser: (user: User) => void;
   setNotificationsUnread: (count: number) => void;
   setMessagesUnread: (count: number) => void;
+  setAdminNotificationsUnread?: (count: number) => void;
 }
 
 export const useUserActivity = ({
   user,
   setUser,
   setNotificationsUnread,
-  setMessagesUnread
+  setMessagesUnread,
+  setAdminNotificationsUnread
 }: UseUserActivityProps) => {
   useEffect(() => {
     if (user) {
@@ -33,20 +36,36 @@ export const useUserActivity = ({
 
       const fetchUnreadCount = async () => {
         try {
-          const [notifRes, msgRes] = await Promise.all([
+          const requests = [
             fetch(`${NOTIFICATIONS_URL}?action=notifications`, {
               headers: { 'X-User-Id': user.id.toString() }
             }),
             fetch(`${NOTIFICATIONS_URL}?action=messages`, {
               headers: { 'X-User-Id': user.id.toString() }
             })
-          ]);
+          ];
+
+          if (user.role === 'admin' && setAdminNotificationsUnread) {
+            requests.push(
+              fetch(`${ADMIN_URL}?action=admin_notifications_unread_count`, {
+                headers: { 'X-User-Id': user.id.toString() }
+              })
+            );
+          }
+
+          const responses = await Promise.all(requests);
+          const [notifRes, msgRes, adminNotifRes] = responses;
 
           if (notifRes.ok && msgRes.ok) {
             const notifData = await notifRes.json();
             const msgData = await msgRes.json();
             setNotificationsUnread(notifData.unread_count || 0);
             setMessagesUnread(msgData.unread_count || 0);
+
+            if (adminNotifRes && adminNotifRes.ok && setAdminNotificationsUnread) {
+              const adminNotifData = await adminNotifRes.json();
+              setAdminNotificationsUnread(adminNotifData.unread_count || 0);
+            }
           }
         } catch (error) {
           // Silently handle connection errors for background task

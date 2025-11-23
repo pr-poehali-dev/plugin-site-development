@@ -191,6 +191,37 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'isBase64Encoded': False
                 }
             
+            elif action == 'admin_notifications':
+                cur.execute(f"""
+                    SELECT *
+                    FROM {SCHEMA}.admin_notifications
+                    ORDER BY created_at DESC
+                    LIMIT 50
+                """)
+                notifications = cur.fetchall()
+                
+                return {
+                    'statusCode': 200,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'success': True, 'notifications': [dict(n) for n in notifications]}, default=serialize_datetime),
+                    'isBase64Encoded': False
+                }
+            
+            elif action == 'admin_notifications_unread_count':
+                cur.execute(f"""
+                    SELECT COUNT(*) as count
+                    FROM {SCHEMA}.admin_notifications
+                    WHERE is_read = FALSE
+                """)
+                result = cur.fetchone()
+                
+                return {
+                    'statusCode': 200,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'success': True, 'unread_count': result['count']}),
+                    'isBase64Encoded': False
+                }
+            
             else:
                 return {
                     'statusCode': 400,
@@ -483,6 +514,17 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 )
                 
                 log_admin_action(user_id, 'update_views', 'topic', topic_id, f'Views: {views}', cur)
+                conn.commit()
+                
+                return {
+                    'statusCode': 200,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'success': True}),
+                    'isBase64Encoded': False
+                }
+            
+            elif action == 'mark_admin_notifications_read':
+                cur.execute(f"UPDATE {SCHEMA}.admin_notifications SET is_read = TRUE WHERE is_read = FALSE")
                 conn.commit()
                 
                 return {

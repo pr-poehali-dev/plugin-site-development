@@ -81,6 +81,10 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
   }, [activeTab]);
 
   useEffect(() => {
+    markNotificationsRead();
+  }, []);
+
+  useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (notificationsRef.current && !notificationsRef.current.contains(event.target as Node)) {
         setShowNotifications(false);
@@ -234,35 +238,37 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
 
   const fetchAdminNotifications = async () => {
     try {
-      const response = await fetch(`${NOTIFICATIONS_URL}?action=notifications`, {
+      const response = await fetch(`${ADMIN_URL}?action=admin_notifications`, {
         headers: { 'X-User-Id': currentUser.id.toString() }
       });
       const data = await response.json();
-      const adminAlerts = (data.notifications || []).filter(
-        (notif: any) => notif.type === 'admin_alert' && !notif.is_read
-      );
-      setAdminNotifications(adminAlerts);
+      if (data.success) {
+        const unreadNotifications = (data.notifications || []).filter(
+          (notif: any) => !notif.is_read
+        );
+        setAdminNotifications(unreadNotifications);
+      }
     } catch (error) {
-      console.error('Ошибка загрузки уведомлений:', error);
+      console.error('Ошибка загрузки админ-уведомлений:', error);
     }
   };
 
   const markNotificationsRead = async () => {
     try {
-      await fetch(NOTIFICATIONS_URL, {
+      await fetch(ADMIN_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'X-User-Id': currentUser.id.toString()
         },
         body: JSON.stringify({
-          action: 'mark_read',
-          notification_ids: adminNotifications.map(n => n.id)
+          action: 'mark_admin_notifications_read'
         })
       });
       setAdminNotifications([]);
+      fetchAdminNotifications();
     } catch (error) {
-      console.error('Ошибка отметки уведомлений:', error);
+      console.error('Ошибка отметки админ-уведомлений:', error);
     }
   };
 
