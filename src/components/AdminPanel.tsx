@@ -10,6 +10,7 @@ import AdminDisputesTab from '@/components/admin/AdminDisputesTab';
 import AdminWithdrawalsTab from '@/components/admin/AdminWithdrawalsTab';
 import AdminDepositsTab from '@/components/admin/AdminDepositsTab';
 import AdminEscrowTab from '@/components/admin/AdminEscrowTab';
+import AdminTicketsTab from '@/components/admin/AdminTicketsTab';
 import { useToast } from '@/hooks/use-toast';
 
 interface AdminPanelProps {
@@ -33,8 +34,9 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
   const [escrowDeals, setEscrowDeals] = useState<EscrowDeal[]>([]);
   const [withdrawals, setWithdrawals] = useState<any[]>([]);
   const [deposits, setDeposits] = useState<any[]>([]);
-  const [activeTab, setActiveTab] = useState<'users' | 'topics' | 'disputes' | 'deposits' | 'withdrawals' | 'escrow' | 'flash-usdt'>('users');
+  const [activeTab, setActiveTab] = useState<'users' | 'topics' | 'disputes' | 'deposits' | 'withdrawals' | 'escrow' | 'flash-usdt' | 'tickets'>('users');
   const [flashUsdtOrders, setFlashUsdtOrders] = useState<any[]>([]);
+  const [tickets, setTickets] = useState<any[]>([]);
   const [editingTopic, setEditingTopic] = useState<ForumTopic | null>(null);
   const [editTitle, setEditTitle] = useState('');
   const [editContent, setEditContent] = useState('');
@@ -61,6 +63,8 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
       fetchAllEscrowDeals();
     } else if (activeTab === 'flash-usdt') {
       fetchFlashUsdtOrders();
+    } else if (activeTab === 'tickets') {
+      fetchTickets();
     }
     fetchAdminNotifications();
     
@@ -168,6 +172,45 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
     } catch (error) {
       console.error('Ошибка загрузки заказов Flash USDT:', error);
     }
+  };
+
+  const fetchTickets = async () => {
+    const mockTickets = [
+      {
+        id: 1,
+        user_id: 2,
+        username: 'user123',
+        category: 'payment',
+        subject: 'Проблема с выводом средств',
+        message: 'Здравствуйте, не могу вывести средства на свой кошелек. Заявка висит в статусе "обработка" уже 2 дня.',
+        status: 'open',
+        created_at: new Date(Date.now() - 86400000).toISOString()
+      },
+      {
+        id: 2,
+        user_id: 3,
+        username: 'trader777',
+        category: 'casino',
+        subject: 'Не зачислен выигрыш',
+        message: 'Выиграл в казино 500 USDT, но деньги не пришли на баланс.',
+        status: 'open',
+        created_at: new Date(Date.now() - 172800000).toISOString()
+      },
+      {
+        id: 3,
+        user_id: 4,
+        username: 'crypto_fan',
+        category: 'flash',
+        subject: 'Вопрос по Flash USDT',
+        message: 'Как работает Flash USDT? Можно ли использовать на биржах?',
+        status: 'answered',
+        created_at: new Date(Date.now() - 259200000).toISOString(),
+        admin_response: 'Flash USDT - это временные токены для тестирования. Они не работают на биржах и исчезают через 24 часа.',
+        answered_at: new Date(Date.now() - 172800000).toISOString(),
+        answered_by: currentUser.username
+      }
+    ];
+    setTickets(mockTickets);
   };
 
   const fetchAdminNotifications = async () => {
@@ -543,6 +586,16 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
             >
               Flash USDT
             </button>
+            <button
+              onClick={() => setActiveTab('tickets')}
+              className={`px-6 py-2 rounded-lg transition-all ${
+                activeTab === 'tickets'
+                  ? 'bg-primary text-primary-foreground'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              Тикеты
+            </button>
           </div>
           {activeTab === 'users' && (
             <Button
@@ -602,6 +655,14 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
             deals={escrowDeals}
             currentUser={currentUser}
             onUpdate={fetchAllEscrowDeals}
+          />
+        )}
+
+        {activeTab === 'tickets' && (
+          <AdminTicketsTab
+            tickets={tickets}
+            currentUser={currentUser}
+            onRefresh={fetchTickets}
           />
         )}
 
