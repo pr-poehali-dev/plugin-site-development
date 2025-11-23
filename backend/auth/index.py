@@ -371,7 +371,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             )
             referral_data = cur.fetchone()
             
-            if referral_data and transaction_type == 'topup':
+            if referral_data and float(amount) > 0 and transaction_type in ('topup', 'admin_topup', 'win', 'lottery_win', 'referral_reward', 'referral_bonus'):
                 new_total = float(referral_data['total_deposited']) + float(amount)
                 cur.execute(
                     f"UPDATE {SCHEMA}.referrals SET total_deposited = %s WHERE id = %s",
