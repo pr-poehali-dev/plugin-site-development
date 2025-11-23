@@ -101,7 +101,30 @@ const Index = () => {
   useEffect(() => {
     const savedUser = localStorage.getItem('user');
     if (savedUser) {
-      setUser(JSON.parse(savedUser));
+      const parsedUser = JSON.parse(savedUser);
+      setUser(parsedUser);
+      
+      const syncUserData = async () => {
+        try {
+          const response = await fetch(AUTH_URL, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-User-Id': parsedUser.id.toString()
+            },
+            body: JSON.stringify({ action: 'get_user' })
+          });
+          const data = await response.json();
+          if (data.success && data.user) {
+            setUser(data.user);
+            localStorage.setItem('user', JSON.stringify(data.user));
+          }
+        } catch (error) {
+          console.error('Ошибка синхронизации данных пользователя:', error);
+        }
+      };
+      
+      syncUserData();
     } else {
       setAuthDialogOpen(true);
     }
