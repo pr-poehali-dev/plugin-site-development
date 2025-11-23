@@ -159,14 +159,6 @@ const Header = ({
         <div className="flex items-center gap-3">
           {user ? (
             <>
-              <Button variant="ghost" size="icon" className="relative text-white hover:bg-orange-500/10 transition-colors shrink-0" onClick={onShowNotifications}>
-                <Icon name="Bell" className="w-5 h-5" />
-                {notificationsUnread > 0 && (
-                  <span className="absolute -top-1 -right-1 px-1.5 py-0.5 text-xs bg-red-500 text-white rounded-full min-w-[20px] text-center">
-                    {notificationsUnread}
-                  </span>
-                )}
-              </Button>
               <div className="flex items-center gap-1.5 sm:gap-2">
                 <Button 
                   variant="ghost" 
@@ -185,6 +177,14 @@ const Header = ({
                     </span>
                   </div>
                   <Icon name="User" className="w-5 h-5" />
+                </Button>
+                <Button variant="ghost" size="icon" className="relative text-white hover:bg-orange-500/10 transition-colors shrink-0" onClick={onShowNotifications}>
+                  <Icon name="Bell" className="w-5 h-5" />
+                  {notificationsUnread > 0 && (
+                    <span className="absolute -top-1 -right-1 px-1.5 py-0.5 text-xs bg-red-500 text-white rounded-full min-w-[20px] text-center">
+                      {notificationsUnread}
+                    </span>
+                  )}
                 </Button>
                 <Button 
                   variant="ghost" 
