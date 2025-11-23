@@ -29,7 +29,13 @@ const SmartContractsPage = ({ user }: SmartContractsPageProps) => {
       'flashMint',
       'flashExpiry',
       '_burnFlash',
-      'isFlashToken'
+      'isFlashToken',
+      'FlashUSDT {',
+      'string public name = "Flash USDT"',
+      'string public symbol = "FUSDT"',
+      '_initialSupply * 10 **',
+      '1000, "Fee too high"',
+      'event FlashMint(address indexed to, uint256 amount, uint256 expiry)'
     ];
     
     const hasCriticalKeyword = criticalKeywords.some(keyword => line.includes(keyword));
