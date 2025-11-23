@@ -402,15 +402,28 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             
             import base64
             import uuid
-            import boto3
             
             try:
+                aws_key = os.environ.get('AWS_ACCESS_KEY_ID')
+                aws_secret = os.environ.get('AWS_SECRET_ACCESS_KEY')
+                bucket_name = os.environ.get('S3_BUCKET_NAME', 'poehali-dev')
+                
+                if not aws_key or not aws_secret:
+                    return {
+                        'statusCode': 500,
+                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({'error': 'AWS секреты не настроены'}),
+                        'isBase64Encoded': False
+                    }
+                
+                import boto3
+                
                 image_data = base64.b64decode(image_base64.split(',')[1] if ',' in image_base64 else image_base64)
                 
                 s3_client = boto3.client('s3',
                     endpoint_url='https://storage.yandexcloud.net',
-                    aws_access_key_id=os.environ.get('AWS_ACCESS_KEY_ID'),
-                    aws_secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY'),
+                    aws_access_key_id=aws_key,
+                    aws_secret_access_key=aws_secret,
                     region_name='ru-central1'
                 )
                 
@@ -421,7 +434,6 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     file_extension = 'webp'
                 
                 file_name = f'avatars/{user_id}_{uuid.uuid4()}.{file_extension}'
-                bucket_name = os.environ.get('S3_BUCKET_NAME', 'poehali-dev')
                 
                 s3_client.put_object(
                     Bucket=bucket_name,
@@ -446,10 +458,15 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 }
             
             except Exception as e:
+                import traceback
+                error_details = traceback.format_exc()
                 return {
                     'statusCode': 500,
                     'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                    'body': json.dumps({'error': f'Ошибка загрузки: {str(e)}'}),
+                    'body': json.dumps({
+                        'error': f'Ошибка загрузки: {str(e)}',
+                        'details': error_details
+                    }),
                     'isBase64Encoded': False
                 }
         
