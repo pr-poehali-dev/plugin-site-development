@@ -87,49 +87,49 @@ export const ForumTopicsList = ({
 
   return (
     <>
-      <div className="mb-6 animate-slide-up">
-        <h1 className="text-3xl font-bold mb-2">Форум</h1>
-        <p className="text-muted-foreground">
+      <div className="mb-4 sm:mb-6 animate-slide-up">
+        <h1 className="text-2xl sm:text-3xl font-bold mb-2">Форум</h1>
+        <p className="text-sm sm:text-base text-muted-foreground">
           {forumTopics.length} {forumTopics.length === 1 ? 'тема' : 'тем'}
         </p>
       </div>
 
-      <div className="flex items-center justify-between mb-6">
-        <Tabs value={forumSortBy} onValueChange={(v) => setForumSortBy(v as any)}>
-          <TabsList>
-            <TabsTrigger value="newest">Последние посты</TabsTrigger>
-            <TabsTrigger value="hot">Горячие темы</TabsTrigger>
-            <TabsTrigger value="views">Наиболее просматриваемые</TabsTrigger>
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0 mb-4 sm:mb-6">
+        <Tabs value={forumSortBy} onValueChange={(v) => setForumSortBy(v as any)} className="w-full sm:w-auto">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="newest" className="text-xs sm:text-sm">Последние</TabsTrigger>
+            <TabsTrigger value="hot" className="text-xs sm:text-sm">Горячие</TabsTrigger>
+            <TabsTrigger value="views" className="text-xs sm:text-sm">Популярные</TabsTrigger>
           </TabsList>
         </Tabs>
         
         {user && (
-          <Button onClick={onShowTopicDialog} className="bg-primary">
+          <Button onClick={onShowTopicDialog} className="bg-primary w-full sm:w-auto text-sm sm:text-base">
             <Icon name="Plus" size={18} className="mr-2" />
             Создать тему
           </Button>
         )}
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-2 sm:space-y-3">
         {sortForumTopics(forumTopics).map((topic, index) => (
           <div
             key={topic.id}
-            className="bg-card border border-border rounded-xl p-4 hover:border-primary/50 transition-all cursor-pointer group animate-slide-up"
+            className="bg-card border border-border rounded-lg sm:rounded-xl p-3 sm:p-4 hover:border-primary/50 transition-all cursor-pointer group animate-slide-up"
             style={{ animationDelay: `${index * 0.05}s` }}
           >
-            <div className="flex items-start justify-between gap-4">
-              <div className="flex items-start gap-3 flex-1" onClick={() => onTopicSelect(topic)}>
+            <div className="flex flex-col sm:flex-row items-start justify-between gap-3 sm:gap-4">
+              <div className="flex items-start gap-2 sm:gap-3 flex-1 w-full sm:w-auto" onClick={() => onTopicSelect(topic)}>
                 <div className="relative">
                   <Avatar 
-                    className="w-10 h-10 hover:scale-110 transition-transform"
+                    className="w-8 h-8 sm:w-10 sm:h-10 hover:scale-110 transition-transform"
                     onClick={(e) => {
                       e.stopPropagation();
                       topic.author_id && onUserClick(topic.author_id);
                     }}
                   >
                     <AvatarImage src={topic.author_avatar} />
-                    <AvatarFallback className={`bg-gradient-to-br ${getAvatarGradient(topic.author_name)} text-white text-sm font-bold`}>
+                    <AvatarFallback className={`bg-gradient-to-br ${getAvatarGradient(topic.author_name)} text-white text-xs sm:text-sm font-bold`}>
                       {topic.author_name[0].toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
@@ -146,10 +146,10 @@ export const ForumTopicsList = ({
                       </Badge>
                     )}
                   </div>
-                  <h3 className="font-semibold text-lg group-hover:text-primary transition-colors truncate mb-1">
+                  <h3 className="font-semibold text-base sm:text-lg group-hover:text-primary transition-colors truncate mb-1">
                     {topic.title}
                   </h3>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground flex-wrap">
+                  <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-muted-foreground flex-wrap">
                     <span className="flex items-center gap-2">
                       Автор: <button onClick={(e) => { e.stopPropagation(); topic.author_id && onUserClick(topic.author_id); }} className="hover:text-primary transition-colors">{topic.author_name}</button>
                       <ForumRoleBadge role={topic.author_forum_role} />
@@ -169,7 +169,7 @@ export const ForumTopicsList = ({
                 </div>
               </div>
 
-              <div className="flex items-center gap-6 text-sm text-muted-foreground flex-shrink-0">
+              <div className="flex items-center gap-3 sm:gap-6 text-xs sm:text-sm text-muted-foreground flex-shrink-0 ml-10 sm:ml-0">
                 <div className="flex items-center gap-1">
                   <Icon name="MessageCircle" size={14} />
                   <span>{topic.comments_count}</span>

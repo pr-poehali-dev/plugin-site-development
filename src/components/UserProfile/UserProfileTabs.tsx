@@ -179,9 +179,9 @@ export const UserProfileTabs = ({
               />
             </div>
             
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               <Label className="text-sm font-medium">Социальные сети</Label>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
                   <Label className="text-xs text-muted-foreground mb-1 flex items-center gap-2">
                     <Icon name="Send" size={14} />
@@ -208,14 +208,14 @@ export const UserProfileTabs = ({
               </div>
             </div>
 
-            <Card className="p-4 bg-orange-500/5 border-orange-500/20">
-              <div className="flex items-start justify-between gap-4">
+            <Card className="p-3 sm:p-4 bg-orange-500/5 border-orange-500/20">
+              <div className="flex flex-col sm:flex-row items-start justify-between gap-3 sm:gap-4">
                 <div className="flex-1">
-                  <h4 className="font-semibold mb-1 flex items-center gap-2">
-                    <Icon name="Key" size={18} className="text-orange-400" />
+                  <h4 className="text-sm sm:text-base font-semibold mb-1 flex items-center gap-2">
+                    <Icon name="Key" size={16} className="text-orange-400 sm:w-[18px] sm:h-[18px]" />
                     Сброс пароля
                   </h4>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-xs sm:text-sm text-muted-foreground break-all">
                     Новый пароль будет отправлен на email: {user.email}
                   </p>
                 </div>
@@ -224,12 +224,12 @@ export const UserProfileTabs = ({
                   size="sm"
                   onClick={handleResetPassword}
                   disabled={resetLoading}
-                  className="flex-shrink-0"
+                  className="flex-shrink-0 w-full sm:w-auto text-xs sm:text-sm"
                 >
                   {resetLoading ? (
-                    <Icon name="Loader2" size={16} className="animate-spin mr-2" />
+                    <Icon name="Loader2" size={14} className="animate-spin mr-1.5 sm:mr-2 sm:w-4 sm:h-4" />
                   ) : (
-                    <Icon name="RefreshCw" size={16} className="mr-2" />
+                    <Icon name="RefreshCw" size={14} className="mr-1.5 sm:mr-2 sm:w-4 sm:h-4" />
                   )}
                   Сбросить пароль
                 </Button>

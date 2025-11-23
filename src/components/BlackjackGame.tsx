@@ -242,17 +242,17 @@ export const BlackjackGame = ({ user, onShowAuthDialog, onRefreshUserBalance }: 
         </p>
       </div>
 
-      <Card className="p-8 bg-gradient-to-b from-green-950/40 via-green-900/30 to-green-950/40 border-green-800/30 relative overflow-hidden">
+      <Card className="p-4 sm:p-6 md:p-8 bg-gradient-to-b from-green-950/40 via-green-900/30 to-green-950/40 border-green-800/30 relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-green-800/5 via-transparent to-transparent"></div>
         
-        <div className="relative space-y-8">
-          <div className="space-y-6 pb-6 border-b border-green-800/20">
+        <div className="relative space-y-4 sm:space-y-6 md:space-y-8">
+          <div className="space-y-4 sm:space-y-6 pb-4 sm:pb-6 border-b border-green-800/20 min-h-[200px]">
             <div className="flex items-center justify-center gap-4">
-              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-green-800/30 to-green-900/20 border-2 border-green-800/40 flex items-center justify-center">
-                <Icon name="User" size={28} className="text-green-400" />
+              <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full bg-gradient-to-br from-green-800/30 to-green-900/20 border-2 border-green-800/40 flex items-center justify-center">
+                <Icon name="User" size={20} className="text-green-400 sm:w-6 sm:h-6 md:w-7 md:h-7" />
               </div>
               <div className="text-center">
-                <h3 className="text-xl font-bold text-green-400">Дилер</h3>
+                <h3 className="text-base sm:text-lg md:text-xl font-bold text-green-400">Дилер</h3>
                 <p className="text-sm text-muted-foreground">
                   {gameState === 'betting' || gameState === 'playing' ? 'Очки: ?' : `Очки: ${dealerValue}`}
                 </p>
@@ -263,7 +263,7 @@ export const BlackjackGame = ({ user, onShowAuthDialog, onRefreshUserBalance }: 
                 {dealerHand.map((card, i) => (
                   <div
                     key={i}
-                    className={`w-20 h-28 bg-white rounded-xl flex flex-col items-center justify-center text-3xl font-bold shadow-2xl transform transition-all duration-300 hover:scale-105 ${
+                    className={`w-16 h-24 sm:w-20 sm:h-28 bg-white rounded-lg sm:rounded-xl flex flex-col items-center justify-center text-2xl sm:text-3xl font-bold shadow-2xl transform transition-all duration-300 hover:scale-105 ${
                       gameState === 'playing' && i === 1 ? 'bg-gradient-to-br from-blue-600 to-blue-800 text-white' : card.suit === '♥' || card.suit === '♦' ? 'text-red-600' : 'text-black'
                     }`}
                     style={{ 
@@ -285,17 +285,17 @@ export const BlackjackGame = ({ user, onShowAuthDialog, onRefreshUserBalance }: 
             )}
           </div>
 
-          <div className="py-8 relative">
+          <div className="py-4 sm:py-6 md:py-8 relative">
             <div className="absolute inset-0 bg-gradient-to-b from-transparent via-green-800/10 to-transparent rounded-2xl"></div>
-            <div className="relative h-32 bg-green-800/20 rounded-2xl border-4 border-green-800/30 flex items-center justify-center shadow-inner">
+            <div className="relative h-20 sm:h-24 md:h-32 bg-green-800/20 rounded-xl sm:rounded-2xl border-2 sm:border-4 border-green-800/30 flex items-center justify-center shadow-inner">
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-green-700/5 to-transparent"></div>
-              <Icon name="Spade" size={64} className="text-green-800/30 relative z-10" />
+              <Icon name="Spade" size={40} className="text-green-800/30 relative z-10 sm:w-14 sm:h-14 md:w-16 md:h-16" />
               <div className="absolute top-4 left-4 text-xs font-bold text-green-800/40">BLACKJACK</div>
               <div className="absolute bottom-4 right-4 text-xs font-bold text-green-800/40">21</div>
             </div>
           </div>
 
-          <div className="space-y-6 pt-6 border-t border-green-800/20">
+          <div className="space-y-4 sm:space-y-6 pt-4 sm:pt-6 border-t border-green-800/20 min-h-[200px]">
             {playerHand.length > 0 && (
               <div className="flex gap-3 justify-center perspective-1000">
                 {playerHand.map((card, i) => (

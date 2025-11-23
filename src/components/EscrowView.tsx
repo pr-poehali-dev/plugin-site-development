@@ -199,7 +199,7 @@ export const EscrowView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Esc
       </div>
 
       <Card className="p-6 bg-gradient-to-br from-green-800/10 to-green-900/5 border-green-800/20">
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
           <div className="flex items-start gap-4">
             <div className="w-12 h-12 bg-green-800/20 rounded-xl flex items-center justify-center flex-shrink-0">
               <Icon name="ShieldCheck" size={24} className="text-green-400" />
@@ -212,7 +212,7 @@ export const EscrowView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Esc
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 md:gap-6">
             <div className="space-y-4">
               <h4 className="font-semibold text-green-400 flex items-center gap-2">
                 <Icon name="Store" size={18} />
@@ -320,9 +320,9 @@ export const EscrowView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Esc
             </div>
           </div>
 
-          <div className="flex items-start gap-3 p-4 bg-orange-500/10 border border-orange-500/20 rounded-lg">
-            <Icon name="AlertCircle" size={20} className="text-orange-400 flex-shrink-0 mt-0.5" />
-            <div className="space-y-1 text-sm">
+          <div className="flex items-start gap-2 sm:gap-3 p-3 sm:p-4 bg-orange-500/10 border border-orange-500/20 rounded-lg">
+            <Icon name="AlertCircle" size={18} className="text-orange-400 flex-shrink-0 mt-0.5 sm:w-5 sm:h-5" />
+            <div className="space-y-1 text-xs sm:text-sm">
               <p className="font-semibold text-orange-400">Что делать при проблеме?</p>
               <p className="text-muted-foreground">
                 Если что-то пошло не так - открывайте спор. Мы разберёмся в ситуации и решим кому отдать деньги.
@@ -332,7 +332,7 @@ export const EscrowView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Esc
         </div>
       </Card>
 
-      <div className="flex items-center gap-2 overflow-x-auto pb-2">
+      <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto pb-2 -mx-1 px-1">
         {[
           { id: 'open', label: 'Открытые', icon: 'Clock' },
           { id: 'completed', label: 'Завершенные', icon: 'Check' },
@@ -342,6 +342,7 @@ export const EscrowView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Esc
             key={filter.id}
             variant={statusFilter === filter.id ? 'default' : 'outline'}
             size="sm"
+            className="text-xs sm:text-sm whitespace-nowrap"
             onClick={() => setStatusFilter(filter.id as any)}
             className={statusFilter === filter.id ? 'bg-green-800 hover:bg-green-700' : ''}
           >
@@ -356,22 +357,22 @@ export const EscrowView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Esc
           <Icon name="Loader2" size={32} className="animate-spin text-muted-foreground" />
         </div>
       ) : deals.length === 0 ? (
-        <Card className="p-12 text-center">
-          <Icon name="Package" size={48} className="mx-auto mb-4 text-muted-foreground" />
+        <Card className="p-6 sm:p-8 md:p-12 text-center">
+          <Icon name="Package" size={36} className="mx-auto mb-4 text-muted-foreground sm:w-12 sm:h-12" />
           <p className="text-muted-foreground">Сделок не найдено</p>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
           {deals.map((deal) => (
             <Card
               key={deal.id}
-              className={`p-4 transition-all cursor-pointer ${getStatusColor(deal.status)}`}
+              className={`p-3 sm:p-4 transition-all cursor-pointer ${getStatusColor(deal.status)}`}
               onClick={() => setSelectedDeal(deal)}
             >
               <div className="space-y-3">
-                <div className="flex items-start justify-between gap-3">
+                <div className="flex items-start justify-between gap-2 sm:gap-3">
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-lg truncate">{deal.title}</h3>
+                    <h3 className="font-semibold text-base sm:text-lg truncate">{deal.title}</h3>
                     <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
                       {deal.description}
                     </p>
@@ -381,7 +382,7 @@ export const EscrowView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Esc
 
                 <div className="flex items-center justify-between pt-3 border-t border-border/50">
                   <div className="flex items-center gap-2">
-                    <Avatar className="w-8 h-8">
+                    <Avatar className="w-7 h-7 sm:w-8 sm:h-8">
                       <AvatarImage src={deal.seller_avatar} />
                       <AvatarFallback className={`bg-gradient-to-br ${getAvatarGradient(deal.seller_name || '')} text-white text-xs`}>
                         {deal.seller_name?.[0].toUpperCase()}
@@ -393,7 +394,7 @@ export const EscrowView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Esc
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-lg font-bold text-green-400">{deal.price} USDT</p>
+                    <p className="text-base sm:text-lg font-bold text-green-400">{deal.price} USDT</p>
                     <p className="text-xs text-muted-foreground">
                       {new Date(deal.created_at).toLocaleDateString('ru-RU')}
                     </p>

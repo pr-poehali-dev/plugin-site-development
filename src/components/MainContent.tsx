@@ -53,11 +53,11 @@ const MainContent = ({
   return (
     <main className="p-3 sm:p-6 animate-fade-in">
       {activeView === 'plugins' ? (
-        activeCategory === 'all' ? (
+        activeCategory === 'faq' ? (
           <FAQPage />
-        ) : activeCategory === 'flash' ? (
+        ) : activeCategory === 'support' ? (
           <SupportPage user={user} onShowAuthDialog={onShowAuthDialog} />
-        ) : activeCategory === 'exchanges' ? (
+        ) : activeCategory === 'terms' ? (
           <TermsPage />
         ) : activeCategory === 'popular' ? (
           <EscrowView 

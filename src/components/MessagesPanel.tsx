@@ -202,10 +202,10 @@ const MessagesPanel = ({ open, onOpenChange, userId, initialRecipientId }: Messa
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-5xl h-[80vh] p-0 animate-scale-in">
-        <div className="flex h-full">
+      <DialogContent className="max-w-5xl h-[90vh] sm:h-[85vh] md:h-[80vh] p-0 animate-scale-in">
+        <div className="flex flex-col sm:flex-row h-full">
           {/* Левая панель - список чатов */}
-          <div className="w-80 border-r border-border flex flex-col">
+          <div className="w-full sm:w-64 md:w-80 border-b sm:border-b-0 sm:border-r border-border flex flex-col max-h-[40vh] sm:max-h-full">
             <div className="p-4 border-b border-border">
               <div className="flex items-center justify-between mb-3">
                 <h2 className="text-lg font-bold">Сообщения</h2>

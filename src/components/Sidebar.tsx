@@ -99,9 +99,9 @@ const Sidebar = ({
         <div className="mt-8 pt-8 border-t border-sidebar-border">
           <p className="text-xs text-muted-foreground px-4 mb-3">ДРУГОЕ</p>
           {[
-            { slug: 'all', name: 'FAQ', icon: 'HelpCircle' },
-            { slug: 'flash', name: 'Поддержка', icon: 'MessageCircle' },
-            { slug: 'exchanges', name: 'Условия пользования', icon: 'FileText' }
+            { slug: 'faq', name: 'FAQ', icon: 'HelpCircle' },
+            { slug: 'support', name: 'Поддержка', icon: 'MessageCircle' },
+            { slug: 'terms', name: 'Условия пользования', icon: 'FileText' }
           ].map(item => (
             <button
               key={item.slug}
