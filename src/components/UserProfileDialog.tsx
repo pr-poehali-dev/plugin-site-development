@@ -123,7 +123,7 @@ const UserProfileDialog = ({ open, onOpenChange, userId, currentUserId, onSendMe
         ) : profile ? (
           <div className="flex flex-col">
             {/* Шапка профиля с аватаром и именем */}
-            <div className="relative bg-gradient-to-br from-primary/20 via-primary/10 to-background pt-8 pb-20 px-4">
+            <div className="relative bg-gradient-to-br from-accent/30 via-accent/10 to-background pt-8 pb-20 px-4">
               <div className="flex flex-col items-center">
                 <div className="relative">
                   <Avatar className="w-24 h-24 sm:w-28 sm:h-28 border-4 border-background shadow-lg">
