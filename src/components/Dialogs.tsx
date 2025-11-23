@@ -198,30 +198,43 @@ const Dialogs = ({
   return (
     <>
       <Dialog open={authDialogOpen} onOpenChange={handleAuthDialogChange}>
-        <DialogContent className="animate-scale-in border-0">
-          <DialogHeader>
-            <DialogTitle className="text-center text-2xl">{authMode === 'login' ? 'Добро пожаловать' : 'Регистрация'}</DialogTitle>
+        <DialogContent className="animate-scale-in border-0 rounded-3xl shadow-2xl bg-card/95 backdrop-blur-xl max-w-md">
+          <DialogHeader className="space-y-3 pb-2">
+            <div className="mx-auto w-16 h-16 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
+              <Icon name="Rocket" size={32} className="text-primary" />
+            </div>
+            <DialogTitle className="text-center text-3xl font-bold bg-gradient-to-r from-primary via-primary/80 to-primary/60 bg-clip-text text-transparent">
+              {authMode === 'login' ? 'Добро пожаловать' : 'Регистрация'}
+            </DialogTitle>
+            <p className="text-center text-sm text-muted-foreground">
+              {authMode === 'login' ? 'Войдите, чтобы продолжить' : 'Создайте аккаунт за несколько секунд'}
+            </p>
           </DialogHeader>
 
           {showResetPassword ? (
-            <div className="space-y-4">
-              <p className="text-sm text-muted-foreground">Введите email, указанный при регистрации. Мы отправим вам ссылку для сброса пароля.</p>
-              <div>
-                <label className="text-sm font-medium mb-1 block">Email</label>
+            <div className="space-y-5 pt-2">
+              <div className="p-4 rounded-xl bg-primary/5 border border-primary/20">
+                <p className="text-sm text-foreground/80">
+                  Введите email, указанный при регистрации. Мы отправим вам ссылку для сброса пароля.
+                </p>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground/90">Email</label>
                 <Input 
                   type="email" 
                   value={resetEmail}
                   onChange={(e) => setResetEmail(e.target.value)}
                   placeholder="your@email.com"
+                  className="h-11 rounded-xl border-border/50 focus:border-primary transition-all"
                   required 
                 />
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-3">
                 <Button 
                   onClick={handleResetPassword}
-                  className="flex-1 bg-primary hover:bg-primary/90"
+                  className="flex-1 h-11 rounded-xl bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-white font-semibold shadow-lg shadow-primary/25"
                 >
-                  <Icon name="Mail" size={16} className="mr-2" />
+                  <Icon name="Mail" size={18} className="mr-2" />
                   Отправить ссылку
                 </Button>
                 <Button 
@@ -230,32 +243,44 @@ const Dialogs = ({
                     setShowResetPassword(false);
                     setResetEmail('');
                   }}
+                  className="h-11 rounded-xl border-border/50 hover:bg-accent"
                 >
                   Отмена
                 </Button>
               </div>
             </div>
           ) : (
-            <form onSubmit={onAuthSubmit} className="space-y-4">
-              <div>
-                <label className="text-sm font-medium mb-1 block">Имя пользователя</label>
-                <Input name="username" required />
+            <form onSubmit={onAuthSubmit} className="space-y-5 pt-2">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground/90">Имя пользователя</label>
+                <Input 
+                  name="username" 
+                  required 
+                  className="h-11 rounded-xl border-border/50 focus:border-primary transition-all"
+                  placeholder="Введите имя пользователя"
+                />
               </div>
 
               {authMode === 'register' && (
                 <>
-                  <div>
-                    <label className="text-sm font-medium mb-1 block">Email</label>
-                    <Input name="email" type="email" required />
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-foreground/90">Email</label>
+                    <Input 
+                      name="email" 
+                      type="email" 
+                      required 
+                      className="h-11 rounded-xl border-border/50 focus:border-primary transition-all"
+                      placeholder="your@email.com"
+                    />
                   </div>
-                  <div>
-                    <label className="text-sm font-medium mb-1 block">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-foreground/90">
                       Реферальный код <span className="text-muted-foreground font-normal">(необязательно)</span>
                     </label>
                     <Input 
                       name="referral_code" 
                       placeholder="Введите код, если есть"
-                      className="uppercase"
+                      className="h-11 rounded-xl border-border/50 focus:border-primary transition-all uppercase"
                       maxLength={8}
                       defaultValue={savedRefCode}
                     />
@@ -263,20 +288,38 @@ const Dialogs = ({
                 </>
               )}
 
-              <div>
-                <label className="text-sm font-medium mb-1 block">Пароль</label>
-                <Input name="password" type="password" required />
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground/90">Пароль</label>
+                <Input 
+                  name="password" 
+                  type="password" 
+                  required 
+                  className="h-11 rounded-xl border-border/50 focus:border-primary transition-all"
+                  placeholder="Введите пароль"
+                />
               </div>
 
-              <Button type="submit" className="w-full bg-primary hover:bg-primary/90">
+              <Button 
+                type="submit" 
+                className="w-full h-12 rounded-xl bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-white font-semibold shadow-lg shadow-primary/25 transition-all hover:shadow-xl hover:shadow-primary/30 hover:scale-[1.02]"
+              >
                 {authMode === 'login' ? 'Войти' : 'Зарегистрироваться'}
               </Button>
 
-              <div className="space-y-2">
+              <div className="space-y-3 pt-2">
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-border/50"></div>
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-card px-2 text-muted-foreground">или</span>
+                  </div>
+                </div>
+                
                 <button
                   type="button"
                   onClick={() => onAuthModeChange(authMode === 'login' ? 'register' : 'login')}
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors w-full text-center"
+                  className="text-sm text-muted-foreground hover:text-primary transition-colors w-full text-center font-medium"
                 >
                   {authMode === 'login' ? 'Нет аккаунта? Зарегистрироваться' : 'Уже есть аккаунт? Войти'}
                 </button>
@@ -285,7 +328,7 @@ const Dialogs = ({
                   <button
                     type="button"
                     onClick={() => setShowResetPassword(true)}
-                    className="text-sm text-muted-foreground hover:text-foreground transition-colors w-full text-center"
+                    className="text-sm text-muted-foreground hover:text-primary transition-colors w-full text-center font-medium"
                   >
                     Забыли пароль?
                   </button>
