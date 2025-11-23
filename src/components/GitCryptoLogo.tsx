@@ -4,13 +4,6 @@ const GitCryptoLogo = () => {
       <div className="relative flex items-center justify-center">
         <div className="git-crypto-fragments">
           <svg width="42" height="42" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="git-crypto-icon">
-            <path 
-              d="M12 2L21 7V17L12 22L3 17V7L12 2Z" 
-              fill="white" 
-              fillOpacity="0.95" 
-              className="fragment-hex"
-            />
-            
             <defs>
               <linearGradient id="gitGradient" x1="0%" y1="0%" x2="100%" y2="100%">
                 <stop offset="0%" stopColor="#10b981" />
