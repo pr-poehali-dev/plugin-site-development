@@ -519,26 +519,28 @@ const ReferralProgramPage = ({ user }: ReferralProgramPageProps) => {
                     </div>
 
                     <div className="flex items-center gap-4 shrink-0">
-                      {referral.status === 'active' && (
-                        <div className="text-right hidden sm:block">
-                          <p className="text-sm font-semibold text-green-400">
-                            +{(referral.bonus_earned || 0).toFixed(2)} USDT
-                          </p>
-                          <p className="text-xs text-muted-foreground">Бонус</p>
-                        </div>
-                      )}
+                      <div className="text-right hidden sm:block">
+                        <p className={`text-sm font-semibold ${referral.status === 'active' || referral.status === 'completed' ? 'text-green-400' : 'text-muted-foreground'}`}>
+                          {referral.status === 'active' || referral.status === 'completed' 
+                            ? `+${(referral.bonus_earned || 0).toFixed(2)} USDT`
+                            : '0.00 USDT'}
+                        </p>
+                        <p className="text-xs text-muted-foreground">Заработано</p>
+                      </div>
                       {getStatusBadge(referral.status)}
                     </div>
                   </div>
 
-                  {referral.status === 'active' && (
-                    <div className="mt-3 pt-3 border-t border-border/50 sm:hidden">
-                      <p className="text-sm">
-                        <span className="text-muted-foreground">Бонус: </span>
-                        <span className="font-semibold text-green-400">+{(referral.bonus_earned || 0).toFixed(2)} USDT</span>
-                      </p>
-                    </div>
-                  )}
+                  <div className="mt-3 pt-3 border-t border-border/50 sm:hidden">
+                    <p className="text-sm">
+                      <span className="text-muted-foreground">Заработано: </span>
+                      <span className={`font-semibold ${referral.status === 'active' || referral.status === 'completed' ? 'text-green-400' : 'text-muted-foreground'}`}>
+                        {referral.status === 'active' || referral.status === 'completed' 
+                          ? `+${(referral.bonus_earned || 0).toFixed(2)} USDT`
+                          : '0.00 USDT'}
+                      </span>
+                    </p>
+                  </div>
                 </Card>
               ))}
             </div>
