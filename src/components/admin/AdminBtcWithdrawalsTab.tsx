@@ -135,7 +135,7 @@ const AdminBtcWithdrawalsTab = ({ withdrawals, currentUserId, onRefresh }: Admin
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-muted/50 rounded-lg p-4">
                   <div>
                     <p className="text-xs text-muted-foreground mb-1">Сумма</p>
-                    <p className="text-lg font-bold text-orange-400">{withdrawal.amount.toFixed(8)} BTC</p>
+                    <p className="text-lg font-bold text-orange-400">{Number(withdrawal.amount).toFixed(8)} BTC</p>
                   </div>
                   <div>
                     <p className="text-xs text-muted-foreground mb-1">BTC адрес</p>
@@ -226,7 +226,7 @@ const AdminBtcWithdrawalsTab = ({ withdrawals, currentUserId, onRefresh }: Admin
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-muted/30 rounded-lg p-4">
                   <div>
                     <p className="text-xs text-muted-foreground mb-1">Сумма</p>
-                    <p className="text-lg font-bold text-orange-400">{withdrawal.amount.toFixed(8)} BTC</p>
+                    <p className="text-lg font-bold text-orange-400">{Number(withdrawal.amount).toFixed(8)} BTC</p>
                   </div>
                   <div>
                     <p className="text-xs text-muted-foreground mb-1">BTC адрес</p>
