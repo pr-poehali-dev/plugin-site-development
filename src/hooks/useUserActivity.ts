@@ -168,7 +168,11 @@ export const useUserActivity = ({
             setUser(updatedUser);
             localStorage.setItem('user', JSON.stringify(updatedUser));
             
-            if (data.is_verified && showToast) {
+            const verificationToastShown = sessionStorage.getItem(`verification_toast_${user.id}`);
+            
+            if (data.is_verified && !verificationToastShown && showToast) {
+              sessionStorage.setItem(`verification_toast_${user.id}`, 'true');
+              
               showToast(
                 '✅ Поздравляем!',
                 'Ваша заявка на верификацию одобрена. Теперь рядом с вашим ником отображается значок верификации.',
