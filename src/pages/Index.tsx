@@ -152,6 +152,16 @@ const Index = () => {
     };
   }, []);
 
+  useEffect(() => {
+    const savedTopicId = localStorage.getItem('selectedTopicId');
+    if (savedTopicId && activeView === 'forum' && forumTopics.length > 0 && !selectedTopic) {
+      const topic = forumTopics.find(t => t.id === parseInt(savedTopicId));
+      if (topic) {
+        handleTopicSelect(topic);
+      }
+    }
+  }, [forumTopics, activeView]);
+
   const handleAuth = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
@@ -274,6 +284,7 @@ const Index = () => {
       localStorage.setItem('activeCategory', category);
     }
     setSelectedTopic(null);
+    localStorage.removeItem('selectedTopicId');
     window.scrollTo(0, 0);
   };
 
@@ -361,7 +372,10 @@ const Index = () => {
           newComment={newComment}
           onShowTopicDialog={() => setShowTopicDialog(true)}
           onTopicSelect={handleTopicSelect}
-          onBackToTopics={() => setSelectedTopic(null)}
+          onBackToTopics={() => {
+            setSelectedTopic(null);
+            localStorage.removeItem('selectedTopicId');
+          }}
           onCommentChange={setNewComment}
           onCreateComment={handleCreateComment}
           onUserClick={handleUserClick}

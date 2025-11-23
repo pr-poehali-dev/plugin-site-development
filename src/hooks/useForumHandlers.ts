@@ -103,6 +103,7 @@ export const useForumHandlers = ({
 
   const handleTopicSelect = async (topic: ForumTopic) => {
     setSelectedTopic(topic);
+    localStorage.setItem('selectedTopicId', topic.id.toString());
     try {
       const response = await fetch(`${FORUM_URL}?topic_id=${topic.id}`);
       const data = await response.json();
