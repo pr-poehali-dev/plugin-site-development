@@ -170,11 +170,21 @@ const UserProfile = ({ user, isOwnProfile, onClose, onTopUpBalance, onUpdateProf
         const data = await response.json();
         
         if (data.success) {
+          const oldBalance = Number(user.balance) || 0;
+          const newBalance = data.new_balance;
+          const addedAmount = newBalance - oldBalance;
+          
           if (onTopUpBalance) {
             const updatedUser = { ...user, balance: data.new_balance };
             Object.assign(user, updatedUser);
           }
           setCheckingStatus('Платёж подтверждён! Баланс пополнен.');
+          
+          toast({
+            title: '💰 Баланс пополнен!',
+            description: `Зачислено +${addedAmount.toFixed(2)} ₽. Новый баланс: ${newBalance.toFixed(2)} ₽`
+          });
+          
           setTimeout(() => {
             setShowCryptoDialog(false);
             setCryptoPayment(null);
@@ -184,10 +194,6 @@ const UserProfile = ({ user, isOwnProfile, onClose, onTopUpBalance, onUpdateProf
           if (activeTab === 'transactions') {
             fetchTransactions();
           }
-          toast({
-            title: 'Успешно',
-            description: 'Платёж подтверждён! Баланс пополнен.'
-          });
           return true;
         }
         
