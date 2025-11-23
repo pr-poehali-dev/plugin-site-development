@@ -12,6 +12,7 @@ import RulesPage from './RulesPage';
 import SmartContractsPage from './SmartContractsPage';
 import ReferralProgramPage from './ReferralProgramPage';
 import AboutPage from './AboutPage';
+import ExchangePage from './ExchangePage';
 
 interface MainContentProps {
   activeView: 'plugins' | 'forum';
@@ -61,6 +62,8 @@ const MainContent = ({
           <RulesPage />
         ) : activeCategory === 'about' ? (
           <AboutPage />
+        ) : activeCategory === 'exchange' ? (
+          user ? <ExchangePage user={user} onRefreshUserBalance={onRefreshUserBalance} /> : <div className="text-center py-12"><p className="text-muted-foreground">Требуется авторизация</p></div>
         ) : activeCategory === 'faq' ? (
           <FAQPage />
         ) : activeCategory === 'support' ? (

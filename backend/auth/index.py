@@ -1156,6 +1156,97 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 'isBase64Encoded': False
             }
         
+        elif action == 'get_btc_balance':
+            headers = event.get('headers', {})
+            user_id = headers.get('X-User-Id') or headers.get('x-user-id')
+            
+            if not user_id:
+                return {
+                    'statusCode': 401,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'error': 'Требуется авторизация'}),
+                    'isBase64Encoded': False
+                }
+            
+            cur.execute(
+                f"SELECT btc_balance FROM {SCHEMA}.users WHERE id = %s",
+                (int(user_id),)
+            )
+            user_data = cur.fetchone()
+            btc_balance = float(user_data['btc_balance']) if user_data and user_data['btc_balance'] else 0
+            
+            return {
+                'statusCode': 200,
+                'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                'body': json.dumps({
+                    'success': True,
+                    'btc_balance': btc_balance
+                }),
+                'isBase64Encoded': False
+            }
+        
+        elif action == 'exchange_usdt_to_btc':
+            headers = event.get('headers', {})
+            user_id = headers.get('X-User-Id') or headers.get('x-user-id')
+            
+            if not user_id:
+                return {
+                    'statusCode': 401,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'error': 'Требуется авторизация'}),
+                    'isBase64Encoded': False
+                }
+            
+            usdt_amount = float(body_data.get('usdt_amount', 0))
+            
+            if usdt_amount < 10:
+                return {
+                    'statusCode': 400,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'error': 'Минимальная сумма обмена: 10 USDT'}),
+                    'isBase64Encoded': False
+                }
+            
+            cur.execute(
+                f"SELECT balance FROM {SCHEMA}.users WHERE id = %s",
+                (int(user_id),)
+            )
+            user_data = cur.fetchone()
+            current_balance = float(user_data['balance']) if user_data else 0
+            
+            if current_balance < usdt_amount:
+                return {
+                    'statusCode': 400,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'error': 'Недостаточно средств'}),
+                    'isBase64Encoded': False
+                }
+            
+            exchange_rate = 0.000015
+            btc_received = usdt_amount * exchange_rate
+            
+            cur.execute(
+                f"UPDATE {SCHEMA}.users SET balance = balance - %s, btc_balance = btc_balance + %s WHERE id = %s",
+                (usdt_amount, btc_received, int(user_id))
+            )
+            
+            cur.execute(
+                f"INSERT INTO {SCHEMA}.transactions (user_id, amount, type, description) VALUES (%s, %s, 'exchange', %s)",
+                (int(user_id), -usdt_amount, f'Обмен {usdt_amount} USDT на {btc_received:.8f} BTC')
+            )
+            
+            conn.commit()
+            
+            return {
+                'statusCode': 200,
+                'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                'body': json.dumps({
+                    'success': True,
+                    'btc_received': btc_received
+                }),
+                'isBase64Encoded': False
+            }
+        
         else:
             return {
                 'statusCode': 400,

@@ -32,6 +32,7 @@ export interface User {
   forum_role?: string;
   is_blocked?: boolean;
   balance?: number;
+  btc_balance?: number;
   referred_by_code?: string;
   referral_bonus_claimed?: boolean;
   vip_until?: string;
