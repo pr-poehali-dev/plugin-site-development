@@ -197,7 +197,9 @@ const MessagesPanel = ({ open, onOpenChange, userId, initialRecipientId }: Messa
     const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
 
     if (diffDays === 0) {
-      return date.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+      const hours = date.getHours().toString().padStart(2, '0');
+      const minutes = date.getMinutes().toString().padStart(2, '0');
+      return `${hours}:${minutes}`;
     } else if (diffDays === 1) {
       return 'вчера';
     } else if (diffDays < 7) {
