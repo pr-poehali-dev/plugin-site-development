@@ -59,8 +59,8 @@ const UserRankBadge = ({ forumRole, size = 'md', className = '' }: UserRankBadge
       hideLabel: false
     },
     lg: {
-      badge: 'px-2 py-1 text-xs gap-1',
-      icon: 14,
+      badge: 'px-2 py-0.5 text-[10px] gap-1',
+      icon: 12,
       hideLabel: false
     }
   };
@@ -71,13 +71,22 @@ const UserRankBadge = ({ forumRole, size = 'md', className = '' }: UserRankBadge
         bg-gradient-to-r ${config.gradient}
         border ${config.border}
         text-white font-semibold
-        shadow-md shadow-black/20
+        shadow-lg shadow-black/30
         ${sizes[size].badge}
         inline-flex items-center justify-center
         whitespace-nowrap
+        backdrop-blur-sm
+        ${size === 'lg' ? 'shadow-[0_0_15px_rgba(var(--primary-rgb),0.5)]' : ''}
         ${className}
       `}
       variant="outline"
+      style={size === 'lg' ? {
+        boxShadow: `0 0 15px ${config.gradient.includes('red') ? 'rgba(239,68,68,0.6)' : 
+                                config.gradient.includes('purple') ? 'rgba(168,85,247,0.6)' : 
+                                config.gradient.includes('yellow') ? 'rgba(234,179,8,0.6)' : 
+                                config.gradient.includes('blue') ? 'rgba(59,130,246,0.6)' : 
+                                'rgba(107,114,128,0.6)'}`
+      } : undefined}
     >
       <Icon name={config.icon as any} size={sizes[size].icon} />
       {!sizes[size].hideLabel && <span>{config.label}</span>}
