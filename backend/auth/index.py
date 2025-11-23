@@ -920,7 +920,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 
                 ticket_num = winning_ticket['ticket_number']
                 cur.execute(
-                    "INSERT INTO transactions (user_id, amount, type, description) VALUES (%s, %s, %s, %s)",
+                    f"INSERT INTO {SCHEMA}.transactions (user_id, amount, type, description) VALUES (%s, %s, %s, %s)",
                     (winning_ticket['user_id'], 400, 'lottery_win', f'Выигрыш в лотерее (билет #{ticket_num})')
                 )
                 
