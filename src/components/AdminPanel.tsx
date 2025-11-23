@@ -68,8 +68,12 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
     tickets: 0,
     verification: 0
   });
+  const [readSections, setReadSections] = useState<Set<string>>(new Set());
 
   useEffect(() => {
+    // Отмечаем текущий раздел как прочитанный
+    setReadSections(prev => new Set([...prev, activeTab]));
+    
     if (activeTab === 'users') {
       fetchUsers();
     } else if (activeTab === 'topics') {
@@ -302,7 +306,7 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
         return (Date.now() - createdAt.getTime()) < 24 * 60 * 60 * 1000;
       }).length;
 
-      setSectionCounts({
+      const newCounts = {
         users: newUsers,
         topics: newTopics,
         disputes: (disputesData.deals || []).length,
@@ -313,7 +317,27 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
         flashUsdt: (flashUsdtData.orders || []).filter((o: any) => o.status === 'pending').length,
         tickets: 2, // Mock данные - 2 открытых тикета
         verification: notificationCounts.verification_request
+      };
+
+      // Если счётчик увеличился, сбрасываем статус "прочитано" для этого раздела
+      const sectionsToUnread = new Set<string>();
+      Object.keys(newCounts).forEach(key => {
+        const oldCount = sectionCounts[key as keyof typeof sectionCounts];
+        const newCount = newCounts[key as keyof typeof newCounts];
+        if (newCount > oldCount) {
+          sectionsToUnread.add(key);
+        }
       });
+
+      if (sectionsToUnread.size > 0) {
+        setReadSections(prev => {
+          const newSet = new Set(prev);
+          sectionsToUnread.forEach(section => newSet.delete(section));
+          return newSet;
+        });
+      }
+
+      setSectionCounts(newCounts);
     } catch (error) {
       console.error('Ошибка загрузки счётчиков:', error);
     }
@@ -667,6 +691,11 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
     }
   };
 
+  // Функция для получения счётчика с учётом прочитанных разделов
+  const getVisibleCount = (section: string, count: number) => {
+    return readSections.has(section) ? 0 : count;
+  };
+
   return (
     <div className="fixed inset-0 bg-background/95 z-50 overflow-auto animate-fade-in">
       <div className="container max-w-7xl mx-auto p-3 sm:p-6 animate-slide-up">
@@ -736,9 +765,9 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
               }`}
             >
               Пользователи
-              {sectionCounts.users > 0 && (
+              {getVisibleCount('users', sectionCounts.users) > 0 && (
                 <span className="absolute -top-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 bg-red-500 text-white text-[9px] sm:text-[10px] rounded-full flex items-center justify-center font-semibold">
-                  {sectionCounts.users}
+                  {getVisibleCount('users', sectionCounts.users)}
                 </span>
               )}
             </button>
@@ -751,9 +780,9 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
               }`}
             >
               Темы форума
-              {sectionCounts.topics > 0 && (
+              {getVisibleCount('topics', sectionCounts.topics) > 0 && (
                 <span className="absolute -top-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 bg-red-500 text-white text-[9px] sm:text-[10px] rounded-full flex items-center justify-center font-semibold">
-                  {sectionCounts.topics}
+                  {getVisibleCount('topics', sectionCounts.topics)}
                 </span>
               )}
             </button>
@@ -766,9 +795,9 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
               }`}
             >
               Споры
-              {sectionCounts.disputes > 0 && (
+              {getVisibleCount('disputes', sectionCounts.disputes) > 0 && (
                 <span className="absolute -top-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 bg-red-500 text-white text-[9px] sm:text-[10px] rounded-full flex items-center justify-center font-semibold">
-                  {sectionCounts.disputes}
+                  {getVisibleCount('disputes', sectionCounts.disputes)}
                 </span>
               )}
             </button>
@@ -781,9 +810,9 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
               }`}
             >
               Ввод
-              {sectionCounts.deposits > 0 && (
+              {getVisibleCount('deposits', sectionCounts.deposits) > 0 && (
                 <span className="absolute -top-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 bg-red-500 text-white text-[9px] sm:text-[10px] rounded-full flex items-center justify-center font-semibold">
-                  {sectionCounts.deposits}
+                  {getVisibleCount('deposits', sectionCounts.deposits)}
                 </span>
               )}
             </button>
@@ -796,9 +825,9 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
               }`}
             >
               Вывод
-              {sectionCounts.withdrawals > 0 && (
+              {getVisibleCount('withdrawals', sectionCounts.withdrawals) > 0 && (
                 <span className="absolute -top-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 bg-red-500 text-white text-[9px] sm:text-[10px] rounded-full flex items-center justify-center font-semibold">
-                  {sectionCounts.withdrawals}
+                  {getVisibleCount('withdrawals', sectionCounts.withdrawals)}
                 </span>
               )}
             </button>
@@ -811,9 +840,9 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
               }`}
             >
               Гарант
-              {sectionCounts.escrow > 0 && (
+              {getVisibleCount('escrow', sectionCounts.escrow) > 0 && (
                 <span className="absolute -top-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 bg-red-500 text-white text-[9px] sm:text-[10px] rounded-full flex items-center justify-center font-semibold">
-                  {sectionCounts.escrow}
+                  {getVisibleCount('escrow', sectionCounts.escrow)}
                 </span>
               )}
             </button>
@@ -826,9 +855,9 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
               }`}
             >
               Flash USDT
-              {sectionCounts.flashUsdt > 0 && (
+              {getVisibleCount('flash-usdt', sectionCounts.flashUsdt) > 0 && (
                 <span className="absolute -top-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 bg-red-500 text-white text-[9px] sm:text-[10px] rounded-full flex items-center justify-center font-semibold">
-                  {sectionCounts.flashUsdt}
+                  {getVisibleCount('flash-usdt', sectionCounts.flashUsdt)}
                 </span>
               )}
             </button>
@@ -841,9 +870,9 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
               }`}
             >
               BTC Вывод
-              {sectionCounts.btcWithdrawals > 0 && (
+              {getVisibleCount('btc-withdrawals', sectionCounts.btcWithdrawals) > 0 && (
                 <span className="absolute -top-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 bg-red-500 text-white text-[9px] sm:text-[10px] rounded-full flex items-center justify-center font-semibold">
-                  {sectionCounts.btcWithdrawals}
+                  {getVisibleCount('btc-withdrawals', sectionCounts.btcWithdrawals)}
                 </span>
               )}
             </button>
@@ -856,9 +885,9 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
               }`}
             >
               Тикеты
-              {sectionCounts.tickets > 0 && (
+              {getVisibleCount('tickets', sectionCounts.tickets) > 0 && (
                 <span className="absolute -top-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 bg-red-500 text-white text-[9px] sm:text-[10px] rounded-full flex items-center justify-center font-semibold">
-                  {sectionCounts.tickets}
+                  {getVisibleCount('tickets', sectionCounts.tickets)}
                 </span>
               )}
             </button>
@@ -871,9 +900,9 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
               }`}
             >
               Верификация
-              {sectionCounts.verification > 0 && (
+              {getVisibleCount('verification', sectionCounts.verification) > 0 && (
                 <span className="absolute -top-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 bg-red-500 text-white text-[9px] sm:text-[10px] rounded-full flex items-center justify-center font-semibold">
-                  {sectionCounts.verification}
+                  {getVisibleCount('verification', sectionCounts.verification)}
                 </span>
               )}
             </button>
