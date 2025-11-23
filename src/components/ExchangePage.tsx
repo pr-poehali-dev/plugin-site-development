@@ -321,9 +321,13 @@ const ExchangePage = ({ user, onRefreshUserBalance }: ExchangePageProps) => {
 
       if (data.success) {
         toast({
-          title: '✅ Заявка на вывод создана!',
-          description: `Вывод ${amount} BTC на адрес ${withdrawAddress.substring(0, 10)}... будет обработан в течение 24 часов`
+          title: '✅ Заявка на вывод принята!',
+          description: 'Ваш вывод находится на рассмотрении. Среднее время рассмотрения от 2 минут до 1 часа'
         });
+        
+        if (onRefreshUserBalance) {
+          onRefreshUserBalance();
+        }
         
         loadBtcBalance();
         setWithdrawAddress('');

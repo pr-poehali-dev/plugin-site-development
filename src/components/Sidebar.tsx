@@ -70,6 +70,7 @@ const Sidebar = ({
             { icon: 'Zap', label: 'Flash USDT', id: 'categories', view: 'plugins' },
             { icon: 'Spade', label: 'Казино', id: 'new', view: 'plugins' },
             { icon: 'TrendingUp', label: 'Гарант сервис', id: 'popular', view: 'plugins' },
+            { icon: 'ArrowLeftRight', label: 'Обменник', id: 'exchange', view: 'plugins' },
             { icon: 'FileCode', label: 'Смарт-контракты', id: 'smart-contracts', view: 'plugins' },
             { icon: 'MessageSquare', label: 'Форум', id: 'forum', view: 'forum' },
           ].map(item => (
@@ -161,7 +162,6 @@ const Sidebar = ({
         <div className="mt-8 pt-8 border-t border-sidebar-border">
           <p className="text-xs text-muted-foreground px-4 mb-3">ДРУГОЕ</p>
           {[
-            { slug: 'exchange', name: 'Обменник', icon: 'ArrowLeftRight' },
             { slug: 'referral-program', name: 'Реферальная система', icon: 'Users' },
             { slug: 'faq', name: 'FAQ', icon: 'HelpCircle' },
             { slug: 'support', name: 'Поддержка', icon: 'MessageCircle' },
