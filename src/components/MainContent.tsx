@@ -8,6 +8,7 @@ import FlashUsdtShop from './FlashUsdtShop';
 import FAQPage from './FAQPage';
 import SupportPage from './SupportPage';
 import TermsPage from './TermsPage';
+import RulesPage from './RulesPage';
 
 interface MainContentProps {
   activeView: 'plugins' | 'forum';
@@ -53,7 +54,9 @@ const MainContent = ({
   return (
     <main className="p-2 sm:p-3 md:p-4 lg:p-6 animate-fade-in max-w-full overflow-x-hidden">
       {activeView === 'plugins' ? (
-        activeCategory === 'faq' ? (
+        activeCategory === 'rules' ? (
+          <RulesPage />
+        ) : activeCategory === 'faq' ? (
           <FAQPage />
         ) : activeCategory === 'support' ? (
           <SupportPage user={user} onShowAuthDialog={onShowAuthDialog} />
