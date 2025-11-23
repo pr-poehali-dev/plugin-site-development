@@ -3,13 +3,18 @@ import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
 import { useState } from 'react';
 import { User } from '@/types';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { useToast } from '@/hooks/use-toast';
 
 interface SmartContractsPageProps {
   user?: User | null;
 }
 
 const SmartContractsPage = ({ user }: SmartContractsPageProps) => {
+  const { toast } = useToast();
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
+  const [showVipDialog, setShowVipDialog] = useState(false);
+  const [isPurchasing, setIsPurchasing] = useState(false);
   
   const isAdmin = user?.role === 'admin';
   const canViewFullCode = isAdmin;
@@ -41,6 +46,44 @@ const SmartContractsPage = ({ user }: SmartContractsPageProps) => {
     
     const lines = code.split('\n');
     return lines.map(obfuscateLine).join('\n');
+  };
+
+  const handlePurchaseVip = async () => {
+    if (!user) {
+      toast({
+        title: 'Ошибка',
+        description: 'Необходимо войти в систему',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    const userBalance = Number(user.balance) || 0;
+    if (userBalance < 1000) {
+      toast({
+        title: 'Недостаточно средств',
+        description: `На балансе ${userBalance.toFixed(2)} ₽. Необходимо 1000 ₽`,
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    setIsPurchasing(true);
+    
+    try {
+      toast({
+        title: 'В разработке',
+        description: 'Функция покупки VIP-статуса скоро будет доступна',
+      });
+    } catch (error) {
+      toast({
+        title: 'Ошибка',
+        description: 'Не удалось приобрести VIP-статус',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsPurchasing(false);
+    }
   };
 
   const copyCode = async (code: string, id: string) => {
@@ -617,6 +660,7 @@ contract SimpleNFT {
                       </div>
                       <Button 
                         size="sm" 
+                        onClick={() => setShowVipDialog(true)}
                         className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold shadow-lg"
                       >
                         <Icon name="Crown" size={14} className="mr-1.5" />
@@ -663,6 +707,84 @@ contract SimpleNFT {
           ))}
         </div>
       </Card>
+
+      {/* VIP Purchase Dialog */}
+      <Dialog open={showVipDialog} onOpenChange={setShowVipDialog}>
+        <DialogContent className="max-w-md animate-scale-in">
+          <DialogHeader>
+            <div className="flex items-center justify-center mb-4">
+              <div className="w-20 h-20 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center">
+                <Icon name="Crown" size={40} className="text-white" />
+              </div>
+            </div>
+            <DialogTitle className="text-center text-2xl">
+              <span className="bg-gradient-to-r from-amber-500 to-orange-500 bg-clip-text text-transparent font-bold">
+                VIP Привилегия
+              </span>
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <div className="p-4 bg-gradient-to-br from-amber-500/10 to-orange-500/10 border border-amber-500/30 rounded-xl">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-muted-foreground">Стоимость:</span>
+                <span className="text-2xl font-bold text-foreground">1000 ₽</span>
+              </div>
+              {user && (
+                <div className="flex items-center justify-between pt-3 border-t border-border/50">
+                  <span className="text-sm text-muted-foreground">Ваш баланс:</span>
+                  <span className="text-sm font-semibold">{Number(user.balance || 0).toFixed(2)} ₽</span>
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-3">
+              <h3 className="font-semibold flex items-center gap-2">
+                <Icon name="Sparkles" size={18} className="text-amber-500" />
+                Преимущества VIP:
+              </h3>
+              <ul className="space-y-2">
+                {[
+                  'Полный доступ к коду Flash USDT контракта',
+                  'Возможность копировать критические части',
+                  'Доступ к будущим премиум-контрактам',
+                  'Приоритетная поддержка'
+                ].map((benefit, idx) => (
+                  <li key={idx} className="flex items-start gap-2 text-sm">
+                    <Icon name="Check" size={16} className="text-green-500 mt-0.5 flex-shrink-0" />
+                    <span>{benefit}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="pt-4 space-y-2">
+              <Button
+                onClick={handlePurchaseVip}
+                disabled={isPurchasing || !user || Number(user.balance || 0) < 1000}
+                className="w-full h-12 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold text-base shadow-lg"
+              >
+                {isPurchasing ? (
+                  <>
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                    Обработка...
+                  </>
+                ) : (
+                  <>
+                    <Icon name="Crown" size={20} className="mr-2" />
+                    Купить VIP за 1000 ₽
+                  </>
+                )}
+              </Button>
+              {user && Number(user.balance || 0) < 1000 && (
+                <p className="text-xs text-center text-muted-foreground">
+                  Недостаточно средств. Пополните баланс на {(1000 - Number(user.balance || 0)).toFixed(2)} ₽
+                </p>
+              )}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
