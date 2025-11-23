@@ -43,9 +43,8 @@ const Sidebar = ({
       <aside className={`fixed top-0 left-0 h-full bg-sidebar border-r border-sidebar-border transition-all duration-300 z-30 overflow-hidden ${sidebarOpen ? 'w-64' : 'w-0'} md:z-30`}>
         <div className={`p-4 w-64 transition-opacity duration-300 overflow-y-auto h-full ${sidebarOpen ? 'opacity-100' : 'opacity-0'}`}>
           {/* Кнопка закрытия для мобильных */}
-          <div className="flex items-center justify-between mb-6 md:hidden">
-            <div className="w-8"></div>
-            <h1 className="text-xl font-bold bg-gradient-to-r from-zinc-300 via-zinc-600 to-zinc-900 bg-clip-text text-transparent tracking-wide animate-gradient-x bg-[length:200%_auto]">
+          <div className="flex items-center mb-6 md:hidden">
+            <h1 className="text-xl font-bold bg-gradient-to-r from-zinc-300 via-zinc-600 to-zinc-900 bg-clip-text text-transparent tracking-wide animate-gradient-x bg-[length:200%_auto] flex-1">
               Git Crypto
             </h1>
             <Button
