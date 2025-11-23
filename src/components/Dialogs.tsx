@@ -378,45 +378,40 @@ const Dialogs = ({
             <DialogTitle>Личный кабинет</DialogTitle>
           </DialogHeader>
           {user && (
-            <Tabs defaultValue="profile" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 mb-4">
-                <TabsTrigger value="profile">Профиль</TabsTrigger>
-                <TabsTrigger value="verification">Верификация</TabsTrigger>
-              </TabsList>
+            <div className="space-y-6 mt-6">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                className="hidden"
+              />
               
-              <TabsContent value="profile" className="space-y-6 mt-6">
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  onChange={handleFileChange}
-                  className="hidden"
-                />
-                
-                <div className="flex items-center gap-4">
-                  <div className="relative group cursor-pointer" onClick={handleAvatarSelect}>
-                    <Avatar className="w-20 h-20">
-                      <AvatarImage src={avatarPreview || user.avatar_url} />
-                      <AvatarFallback className={`bg-gradient-to-br ${getAvatarGradient(user.username)} text-white text-2xl`}>
-                        {user.username[0].toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="absolute inset-0 rounded-full bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                      {avatarUploading ? (
-                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
-                      ) : (
-                        <Icon name="Camera" size={24} className="text-white" />
-                      )}
-                    </div>
+              <div className="flex items-center gap-4">
+                <div className="relative group cursor-pointer" onClick={handleAvatarSelect}>
+                  <Avatar className="w-20 h-20">
+                    <AvatarImage src={avatarPreview || user.avatar_url} />
+                    <AvatarFallback className={`bg-gradient-to-br ${getAvatarGradient(user.username)} text-white text-2xl`}>
+                      {user.username[0].toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="absolute inset-0 rounded-full bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    {avatarUploading ? (
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
+                    ) : (
+                      <Icon name="Camera" size={24} className="text-white" />
+                    )}
                   </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <h3 className="text-xl font-bold">{user.username}</h3>
-                      {user.is_verified && (
-                        <Icon name="BadgeCheck" size={20} className="text-primary" title="Верифицирован" />
-                      )}
-                    </div>
-                    <p className="text-sm text-muted-foreground mb-2">{user.email}</p>
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <h3 className="text-xl font-bold">{user.username}</h3>
+                    {user.is_verified && (
+                      <Icon name="BadgeCheck" size={20} className="text-primary" title="Верифицирован" />
+                    )}
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-3">{user.email}</p>
+                  <div className="flex gap-2">
                     <Button
                       variant="outline"
                       size="sm"
@@ -427,66 +422,80 @@ const Dialogs = ({
                       <Icon name="Upload" size={16} />
                       {avatarUploading ? 'Загрузка...' : 'Загрузить фото'}
                     </Button>
+                    <Button
+                      variant={user.is_verified ? "default" : "outline"}
+                      size="sm"
+                      className="gap-2"
+                      onClick={() => {
+                        const verificationSection = document.getElementById('verification-section');
+                        if (verificationSection) {
+                          verificationSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        }
+                      }}
+                    >
+                      <Icon name="ShieldCheck" size={16} />
+                      {user.is_verified ? 'Верифицирован' : 'Верификация'}
+                    </Button>
                   </div>
                 </div>
+              </div>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="text-sm font-medium mb-1 block">О себе</label>
+                  <Textarea 
+                    defaultValue={user.bio || ''}
+                    onBlur={(e) => onUpdateProfile({ bio: e.target.value })}
+                    className="min-h-[100px]"
+                    placeholder="Расскажите о себе..."
+                  />
+                </div>
                 
-                <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="text-sm font-medium mb-1 block">О себе</label>
-                    <Textarea 
-                      defaultValue={user.bio || ''}
-                      onBlur={(e) => onUpdateProfile({ bio: e.target.value })}
-                      className="min-h-[100px]"
-                      placeholder="Расскажите о себе..."
+                    <label className="text-sm font-medium mb-1 block flex items-center gap-2">
+                      <Icon name="MessageCircle" size={16} />
+                      VK
+                    </label>
+                    <Input 
+                      defaultValue={user.vk_url || ''}
+                      onBlur={(e) => onUpdateProfile({ vk_url: e.target.value })}
+                      placeholder="https://vk.com/..."
                     />
                   </div>
                   
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-sm font-medium mb-1 block flex items-center gap-2">
-                        <Icon name="MessageCircle" size={16} />
-                        VK
-                      </label>
-                      <Input 
-                        defaultValue={user.vk_url || ''}
-                        onBlur={(e) => onUpdateProfile({ vk_url: e.target.value })}
-                        placeholder="https://vk.com/..."
-                      />
-                    </div>
-                    
-                    <div>
-                      <label className="text-sm font-medium mb-1 block flex items-center gap-2">
-                        <Icon name="Send" size={16} />
-                        Telegram
-                      </label>
-                      <Input 
-                        defaultValue={user.telegram || ''}
-                        onBlur={(e) => onUpdateProfile({ telegram: e.target.value })}
-                        placeholder="@username"
-                      />
-                    </div>
-                    
-                    <div>
-                      <label className="text-sm font-medium mb-1 block flex items-center gap-2">
-                        <Icon name="MessageSquare" size={16} />
-                        Discord
-                      </label>
-                      <Input 
-                        defaultValue={user.discord || ''}
-                        onBlur={(e) => onUpdateProfile({ discord: e.target.value })}
-                        placeholder="username#1234"
-                      />
-                    </div>
+                  <div>
+                    <label className="text-sm font-medium mb-1 block flex items-center gap-2">
+                      <Icon name="Send" size={16} />
+                      Telegram
+                    </label>
+                    <Input 
+                      defaultValue={user.telegram || ''}
+                      onBlur={(e) => onUpdateProfile({ telegram: e.target.value })}
+                      placeholder="@username"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="text-sm font-medium mb-1 block flex items-center gap-2">
+                      <Icon name="MessageSquare" size={16} />
+                      Discord
+                    </label>
+                    <Input 
+                      defaultValue={user.discord || ''}
+                      onBlur={(e) => onUpdateProfile({ discord: e.target.value })}
+                      placeholder="username#1234"
+                    />
                   </div>
                 </div>
-              </TabsContent>
+              </div>
               
-              <TabsContent value="verification" className="mt-6">
+              <div id="verification-section" className="pt-6 border-t">
                 <VerificationForm user={user} onVerified={() => {
                   onUpdateProfile({ is_verified: true });
                 }} />
-              </TabsContent>
-            </Tabs>
+              </div>
+            </div>
           )}
         </DialogContent>
       </Dialog>
