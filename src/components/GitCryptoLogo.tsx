@@ -1,60 +1,52 @@
 const GitCryptoLogo = () => {
   return (
-    <div className="relative flex items-center justify-center">
-      <div className="relative z-10 flex flex-col items-center justify-center">
+    <>
+      <div className="relative flex items-center justify-center">
         <div className="git-crypto-fragments">
           <svg width="42" height="42" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="git-crypto-icon">
-              {/* Hexagon shape like Tether */}
+            <path 
+              d="M12 2L21 7V17L12 22L3 17V7L12 2Z" 
+              fill="white" 
+              fillOpacity="0.95" 
+              className="fragment-hex"
+            />
+            
+            <defs>
+              <linearGradient id="gitGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#10b981" />
+                <stop offset="50%" stopColor="#14b8a6" />
+                <stop offset="100%" stopColor="#06b6d4" />
+              </linearGradient>
+            </defs>
+            
+            <g className="fragment-symbol">
               <path 
-                d="M12 2L21 7V17L12 22L3 17V7L12 2Z" 
-                fill="white" 
-                fillOpacity="0.95" 
-                className="fragment-hex"
+                d="M12 7V17" 
+                stroke="url(#gitGradient)" 
+                strokeWidth="1.8" 
+                strokeLinecap="round"
               />
-              
-              {/* Git branch symbol + crypto elements */}
-              {/* Gradient definition */}
-              <defs>
-                <linearGradient id="gitGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#10b981" />
-                  <stop offset="50%" stopColor="#14b8a6" />
-                  <stop offset="100%" stopColor="#06b6d4" />
-                </linearGradient>
-              </defs>
-              
-              <g className="fragment-symbol">
-                {/* Main vertical line */}
-                <path 
-                  d="M12 7V17" 
-                  stroke="url(#gitGradient)" 
-                  strokeWidth="1.8" 
-                  strokeLinecap="round"
-                />
-                {/* Branch circles */}
-                <circle cx="12" cy="8" r="1.8" fill="url(#gitGradient)" className="pulse-circle"/>
-                <circle cx="12" cy="16" r="1.8" fill="url(#gitGradient)" className="pulse-circle"/>
-                {/* Side branch */}
-                <path 
-                  d="M12 12L15 12" 
-                  stroke="url(#gitGradient)" 
-                  strokeWidth="1.8" 
-                  strokeLinecap="round"
-                />
-                <circle cx="15" cy="12" r="1.5" fill="url(#gitGradient)" className="pulse-circle"/>
-                {/* Dollar sign overlay */}
-                <text 
-                  x="8" 
-                  y="13.5" 
-                  fontSize="7" 
-                  fill="url(#gitGradient)" 
-                  fontWeight="bold"
-                  className="dollar-sign"
-                >
-                  $
-                </text>
-              </g>
-            </svg>
-          </div>
+              <circle cx="12" cy="8" r="1.8" fill="url(#gitGradient)" className="pulse-circle"/>
+              <circle cx="12" cy="16" r="1.8" fill="url(#gitGradient)" className="pulse-circle"/>
+              <path 
+                d="M12 12L15 12" 
+                stroke="url(#gitGradient)" 
+                strokeWidth="1.8" 
+                strokeLinecap="round"
+              />
+              <circle cx="15" cy="12" r="1.5" fill="url(#gitGradient)" className="pulse-circle"/>
+              <text 
+                x="8" 
+                y="13.5" 
+                fontSize="7" 
+                fill="url(#gitGradient)" 
+                fontWeight="bold"
+                className="dollar-sign"
+              >
+                $
+              </text>
+            </g>
+          </svg>
         </div>
       </div>
 
@@ -174,7 +166,7 @@ const GitCryptoLogo = () => {
           animation: fragment-symbol-break 1s ease-in-out infinite;
         }
       `}</style>
-    </div>
+    </>
   );
 };
 
