@@ -56,7 +56,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     if user_id:
                         # Авторизованный пользователь видит:
                         # 1. Все сделки БЕЗ покупателя (status='open' AND buyer_id IS NULL)
-                        # 2. Свои сделки в процессе (где он продавец или покупатель И status IN ('open', 'in_progress'))
+                        # 2. Свои открытые сделки с покупателем (status='open' И есть покупатель)
                         query = """
                             SELECT ed.*, 
                                 seller.username as seller_name, seller.avatar_url as seller_avatar,
@@ -64,8 +64,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                             FROM escrow_deals ed
                             LEFT JOIN users seller ON ed.seller_id = seller.id
                             LEFT JOIN users buyer ON ed.buyer_id = buyer.id
-                            WHERE (ed.status = 'open' AND ed.buyer_id IS NULL)
-                               OR (ed.status IN ('open', 'in_progress') AND (ed.seller_id = %s OR ed.buyer_id = %s))
+                            WHERE ed.status = 'open' 
+                               AND (ed.buyer_id IS NULL OR ed.seller_id = %s OR ed.buyer_id = %s)
                             ORDER BY ed.created_at DESC
                         """
                         cursor.execute(query, (user_id, user_id))

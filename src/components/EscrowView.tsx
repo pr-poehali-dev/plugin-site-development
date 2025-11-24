@@ -642,6 +642,7 @@ export const EscrowView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Esc
           onClose={handleCloseDeal}
           onUpdate={fetchDeals}
           onRefreshUserBalance={onRefreshUserBalance}
+          onStatusChange={setStatusFilter}
         />
       )}
     </div>
@@ -654,9 +655,10 @@ interface DealDetailDialogProps {
   onClose: () => void;
   onUpdate: () => void;
   onRefreshUserBalance?: () => void;
+  onStatusChange?: (status: 'open' | 'in_progress' | 'completed' | 'dispute') => void;
 }
 
-const DealDetailDialog = ({ deal, user, onClose, onUpdate, onRefreshUserBalance }: DealDetailDialogProps) => {
+const DealDetailDialog = ({ deal, user, onClose, onUpdate, onRefreshUserBalance, onStatusChange }: DealDetailDialogProps) => {
   const { toast } = useToast();
   const [open, setOpen] = useState(true);
   const [currentDeal, setCurrentDeal] = useState<EscrowDeal>(deal);
@@ -755,6 +757,12 @@ const DealDetailDialog = ({ deal, user, onClose, onUpdate, onRefreshUserBalance 
         await fetchDealDetails();
         onUpdate();
         onRefreshUserBalance?.();
+        
+        // Переключаем на вкладку "Незавершенные" и закрываем диалог
+        setTimeout(() => {
+          onStatusChange?.('in_progress');
+          handleClose();
+        }, 2000);
       } else if (data.error === 'Insufficient balance') {
         toast({
           title: 'Недостаточно средств',
@@ -869,6 +877,12 @@ const DealDetailDialog = ({ deal, user, onClose, onUpdate, onRefreshUserBalance 
         await fetchDealDetails();
         onUpdate();
         onRefreshUserBalance?.();
+        
+        // Переключаем на вкладку "Завершенные" и закрываем диалог
+        setTimeout(() => {
+          onStatusChange?.('completed');
+          handleClose();
+        }, 2000);
       }
     } catch (error) {
       console.error('Ошибка:', error);
@@ -913,6 +927,12 @@ const DealDetailDialog = ({ deal, user, onClose, onUpdate, onRefreshUserBalance 
         });
         await fetchDealDetails();
         onUpdate();
+        
+        // Переключаем на вкладку "Споры" и закрываем диалог
+        setTimeout(() => {
+          onStatusChange?.('dispute');
+          handleClose();
+        }, 2000);
       } else {
         toast({
           title: 'Ошибка',
