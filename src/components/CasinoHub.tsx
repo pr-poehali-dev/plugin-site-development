@@ -18,6 +18,8 @@ type GameType = 'menu' | 'blackjack' | 'baccarat' | 'dice' | 'lottery';
 
 const CasinoHub = ({ user, onShowAuthDialog, onRefreshUserBalance }: CasinoHubProps) => {
   const [selectedGame, setSelectedGame] = useState<GameType>('menu');
+  
+  const canPlay = user && user.forum_role === 'member';
 
   const games = [
     {
@@ -65,7 +67,7 @@ const CasinoHub = ({ user, onShowAuthDialog, onRefreshUserBalance }: CasinoHubPr
           className="gap-2"
         >
           <Icon name="ArrowLeft" size={18} />
-          Назад в казино
+          Назад к играм
         </Button>
         <BlackjackGame 
           user={user} 
@@ -86,7 +88,7 @@ const CasinoHub = ({ user, onShowAuthDialog, onRefreshUserBalance }: CasinoHubPr
           className="gap-2"
         >
           <Icon name="ArrowLeft" size={18} />
-          Назад в казино
+          Назад к играм
         </Button>
         <BaccaratGame 
           user={user} 
@@ -109,7 +111,7 @@ const CasinoHub = ({ user, onShowAuthDialog, onRefreshUserBalance }: CasinoHubPr
           className="gap-2"
         >
           <Icon name="ArrowLeft" size={18} />
-          Назад в казино
+          Назад к играм
         </Button>
         <DiceGame 
           user={user} 
@@ -130,7 +132,7 @@ const CasinoHub = ({ user, onShowAuthDialog, onRefreshUserBalance }: CasinoHubPr
           className="gap-2"
         >
           <Icon name="ArrowLeft" size={18} />
-          Назад в казино
+          Назад к играм
         </Button>
         <LotteryGame 
           user={user} 
@@ -144,20 +146,44 @@ const CasinoHub = ({ user, onShowAuthDialog, onRefreshUserBalance }: CasinoHubPr
   return (
     <div className="space-y-6 animate-fade-in">
       <div>
-        <h1 className="text-3xl font-bold mb-2">🎰 Казино</h1>
+        <h1 className="text-3xl font-bold mb-2">🎮 Игры</h1>
         <p className="text-muted-foreground">
-          Выберите игру и испытайте удачу. Играйте на реальные USDT
+          Выберите игру и испытайте удачу. Играйте на реальные USDT. 
         </p>
+        {!canPlay && (
+          <div className="mt-4 p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
+            <div className="flex items-start gap-3">
+              <Icon name="Info" size={20} className="text-yellow-500 flex-shrink-0 mt-0.5" />
+              <div className="text-sm">
+                <p className="font-semibold text-yellow-500 mb-1">Требуется роль "Участник"</p>
+                <p className="text-muted-foreground">
+                  Роль "Участник" выдается автоматически через 24 часа после регистрации. Это сделано для защиты от злоупотреблений.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {games.map((game) => (
           <Card 
             key={game.id}
-            className={`p-0 bg-gradient-to-br ${game.color} border-0 relative overflow-hidden group cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl ${
-              !game.available ? 'opacity-60 cursor-not-allowed' : ''
+            className={`p-0 bg-gradient-to-br ${game.color} border-0 relative overflow-hidden group transition-all duration-300 ${
+              !game.available || !canPlay ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer hover:scale-[1.02] hover:shadow-2xl'
             }`}
-            onClick={() => game.available && setSelectedGame(game.id)}
+            onClick={() => {
+              if (!user) {
+                onShowAuthDialog();
+                return;
+              }
+              if (!canPlay) {
+                return;
+              }
+              if (game.available) {
+                setSelectedGame(game.id);
+              }
+            }}
           >
             {/* Тематический фоновый паттерн */}
             <div className="absolute inset-0">
@@ -211,15 +237,20 @@ const CasinoHub = ({ user, onShowAuthDialog, onRefreshUserBalance }: CasinoHubPr
               <h3 className="text-2xl font-bold text-white mb-2 drop-shadow-lg">{game.name}</h3>
               <p className="text-white/90 text-sm mb-6 drop-shadow-md">{game.description}</p>
 
-              {game.available ? (
-                <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-xl text-white font-semibold transition-all">
-                  <span>Играть</span>
-                  <Icon name="ArrowRight" size={18} className="group-hover:translate-x-1 transition-transform" />
-                </div>
-              ) : (
+              {!game.available ? (
                 <div className="flex items-center gap-2 text-white/60 text-sm">
                   <Icon name="Lock" size={16} />
                   <span>В разработке</span>
+                </div>
+              ) : !canPlay ? (
+                <div className="flex items-center gap-2 text-white/60 text-sm">
+                  <Icon name="Lock" size={16} />
+                  <span>Требуется роль "Участник"</span>
+                </div>
+              ) : (
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-xl text-white font-semibold transition-all">
+                  <span>Играть</span>
+                  <Icon name="ArrowRight" size={18} className="group-hover:translate-x-1 transition-transform" />
                 </div>
               )}
             </div>

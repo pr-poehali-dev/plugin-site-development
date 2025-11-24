@@ -75,7 +75,7 @@ const RulesPage = () => {
               <div className="w-10 h-10 bg-cyan-800/20 rounded-lg flex items-center justify-center">
                 <Icon name="Gamepad2" className="text-cyan-400" size={20} />
               </div>
-              <h2 className="text-xl sm:text-2xl font-bold text-cyan-400">Правила казино</h2>
+              <h2 className="text-xl sm:text-2xl font-bold text-cyan-400">Правила игр</h2>
             </div>
             
             <div className="space-y-3 text-sm sm:text-base">
@@ -111,7 +111,7 @@ const RulesPage = () => {
                   <span className="text-xs text-cyan-400 font-bold">4</span>
                 </div>
                 <p className="text-foreground/90">
-                  <span className="font-semibold text-foreground">Возрастные ограничения:</span> Участие в играх казино доступно только пользователям старше 18 лет
+                  <span className="font-semibold text-foreground">Возрастные ограничения:</span> Участие в играх доступно только пользователям старше 18 лет
                 </p>
               </div>
 

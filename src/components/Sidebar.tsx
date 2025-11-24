@@ -70,7 +70,7 @@ const Sidebar = ({
           {[
             { icon: 'Home', label: 'Главная', id: 'all', view: 'plugins' },
             { icon: 'Zap', label: 'Flash USDT', id: 'categories', view: 'plugins' },
-            { icon: 'Spade', label: 'Казино', id: 'new', view: 'plugins' },
+            { icon: 'Gamepad2', label: 'Игры', id: 'new', view: 'plugins' },
             { icon: 'TrendingUp', label: 'Гарант сервис', id: 'popular', view: 'plugins' },
             { icon: 'ArrowLeftRight', label: 'Обменник', id: 'exchange', view: 'plugins' },
             { icon: 'FileCode', label: 'Смарт-контракты', id: 'smart-contracts', view: 'plugins' },
