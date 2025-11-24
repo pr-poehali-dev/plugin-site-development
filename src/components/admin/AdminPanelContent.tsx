@@ -67,6 +67,7 @@ const AdminPanelContent = ({
       {activeTab === 'users' && (
         <AdminUsersTab 
           users={users}
+          currentUser={currentUser}
           onBlockUser={onBlockUser}
           onUnblockUser={onUnblockUser}
           onDeleteUser={onDeleteUser}
