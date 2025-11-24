@@ -18,13 +18,21 @@ const RecentWinsFeed = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    fetchRecentWins();
-    const interval = setInterval(fetchRecentWins, 10000);
+    fetchRecentWins().catch(() => {
+      setIsLoading(false);
+      setWins([]);
+    });
+    const interval = setInterval(() => {
+      fetchRecentWins().catch(() => {});
+    }, 10000);
     return () => clearInterval(interval);
   }, []);
 
   const fetchRecentWins = async () => {
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
+
       const response = await fetch(AUTH_URL, {
         method: 'POST',
         headers: {
@@ -33,8 +41,15 @@ const RecentWinsFeed = () => {
         body: JSON.stringify({
           action: 'get_recent_wins',
           limit: 15
-        })
+        }),
+        signal: controller.signal
       });
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        throw new Error('Network response error');
+      }
 
       const data = await response.json();
       if (data.success && data.wins) {
@@ -46,6 +61,7 @@ const RecentWinsFeed = () => {
       }
     } catch (error) {
       console.error('Ошибка загрузки выигрышей:', error);
+      setWins([]);
     } finally {
       setIsLoading(false);
     }
@@ -83,21 +99,7 @@ const RecentWinsFeed = () => {
   };
 
   if (isLoading) {
-    return (
-      <div className="space-y-3">
-        <div className="flex items-center gap-2">
-          <div className="w-7 h-7 bg-yellow-500/20 rounded-full flex items-center justify-center">
-            <Icon name="Trophy" size={14} className="text-yellow-400" />
-          </div>
-          <h3 className="text-sm font-semibold">Последние выигрыши</h3>
-        </div>
-        <Card className="p-4 bg-gradient-to-br from-yellow-950/20 via-yellow-900/10 to-orange-950/20 border-yellow-800/20">
-          <div className="flex items-center justify-center h-20">
-            <Icon name="Loader2" size={24} className="animate-spin text-yellow-400" />
-          </div>
-        </Card>
-      </div>
-    );
+    return null;
   }
 
   if (wins.length === 0) {

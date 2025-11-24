@@ -151,7 +151,9 @@ const CasinoHub = ({ user, onShowAuthDialog, onRefreshUserBalance }: CasinoHubPr
         </p>
       </div>
 
-      <RecentWinsFeed />
+      <div className="w-full">
+        <RecentWinsFeed />
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {games.map((game) => (
