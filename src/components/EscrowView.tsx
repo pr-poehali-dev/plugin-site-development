@@ -40,10 +40,10 @@ export const EscrowView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Esc
     const urlParams = new URLSearchParams(window.location.search);
     const dealId = urlParams.get('deal');
     
-    if (dealId && !selectedDeal) {
+    if (dealId && !selectedDeal && user) {
       loadDealById(dealId);
     }
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     fetchDeals();
@@ -120,10 +120,20 @@ export const EscrowView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Esc
 
   const loadDealById = async (dealId: string) => {
     try {
-      const response = await fetch(`${ESCROW_URL}?action=deal&id=${dealId}`);
+      const headers: HeadersInit = {};
+      if (user) {
+        headers['X-User-Id'] = user.id.toString();
+      }
+      
+      const response = await fetch(`${ESCROW_URL}?action=deal&id=${dealId}`, { headers });
       const data = await response.json();
       if (data.deal) {
         setSelectedDeal(data.deal);
+      } else {
+        // Убираем параметр из URL если сделка не найдена
+        const url = new URL(window.location.href);
+        url.searchParams.delete('deal');
+        window.history.replaceState({}, '', url.toString());
       }
     } catch (error) {
       console.error('Ошибка загрузки сделки:', error);
@@ -667,7 +677,12 @@ const DealDetailDialog = ({ deal, user, onClose, onUpdate, onRefreshUserBalance 
 
   const fetchDealDetails = async () => {
     try {
-      const response = await fetch(`${ESCROW_URL}?action=deal&id=${deal.id}`);
+      const headers: HeadersInit = {};
+      if (user) {
+        headers['X-User-Id'] = user.id.toString();
+      }
+      
+      const response = await fetch(`${ESCROW_URL}?action=deal&id=${deal.id}`, { headers });
       const data = await response.json();
       if (data.deal) {
         setCurrentDeal(data.deal);

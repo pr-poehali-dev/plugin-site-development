@@ -169,7 +169,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     cursor.execute('SELECT role FROM users WHERE id = %s', (user_id,))
                     user_role_data = cursor.fetchone()
                     is_admin = user_role_data and user_role_data.get('role') == 'admin'
-                    is_participant = deal['seller_id'] == int(user_id) or deal['buyer_id'] == int(user_id)
+                    is_participant = deal['seller_id'] == int(user_id) or (deal['buyer_id'] and deal['buyer_id'] == int(user_id))
                     
                     if is_admin or is_participant:
                         messages_query = """
