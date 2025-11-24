@@ -854,18 +854,23 @@ const DealDetailDialog = ({ deal, user, onClose, onUpdate, onRefreshUserBalance,
         });
         
         // КРИТИЧЕСКИ ВАЖНЫЙ ПОРЯДОК:
-        // 1. Переключаем вкладку СРАЗУ (синхронно)
+        // 1. Обновляем баланс пользователя
+        onRefreshUserBalance?.();
+        
+        // 2. Переключаем вкладку (синхронно меняет state)
         onStatusChange?.('in_progress');
         
-        // 2. Даём React отрендерить новую вкладку
-        await new Promise(resolve => setTimeout(resolve, 100));
+        // 3. Даём React полностью отрендерить компонент с новой вкладкой
+        // ВАЖНО: useState обновляется асинхронно, поэтому нужна задержка
+        await new Promise(resolve => setTimeout(resolve, 200));
         
-        // 3. Обновляем данные пользователя и список сделок
-        onRefreshUserBalance?.();
-        await fetchDealDetails();
+        // 4. Теперь fetchDeals() будет запрашивать правильную вкладку (in_progress)
         onUpdate();
         
-        // 4. Закрываем диалог с задержкой
+        // 5. Обновляем детали текущей сделки
+        await fetchDealDetails();
+        
+        // 6. Закрываем диалог с задержкой
         setTimeout(() => {
           handleClose();
         }, 1500);
@@ -990,18 +995,22 @@ const DealDetailDialog = ({ deal, user, onClose, onUpdate, onRefreshUserBalance,
         });
         
         // КРИТИЧЕСКИ ВАЖНЫЙ ПОРЯДОК:
-        // 1. Переключаем вкладку СРАЗУ
+        // 1. Обновляем баланс
+        onRefreshUserBalance?.();
+        
+        // 2. Переключаем вкладку
         onStatusChange?.('completed');
         
-        // 2. Даём React отрендерить новую вкладку
-        await new Promise(resolve => setTimeout(resolve, 100));
+        // 3. Даём React полностью обновить state
+        await new Promise(resolve => setTimeout(resolve, 200));
         
-        // 3. Обновляем данные
-        onRefreshUserBalance?.();
-        await fetchDealDetails();
+        // 4. Обновляем список сделок (уже на правильной вкладке)
         onUpdate();
         
-        // 4. Закрываем диалог
+        // 5. Обновляем детали сделки
+        await fetchDealDetails();
+        
+        // 6. Закрываем диалог
         setTimeout(() => {
           handleClose();
         }, 1500);
@@ -1049,17 +1058,19 @@ const DealDetailDialog = ({ deal, user, onClose, onUpdate, onRefreshUserBalance,
         });
         
         // КРИТИЧЕСКИ ВАЖНЫЙ ПОРЯДОК:
-        // 1. Переключаем вкладку СРАЗУ
+        // 1. Переключаем вкладку
         onStatusChange?.('dispute');
         
-        // 2. Даём React отрендерить новую вкладку
-        await new Promise(resolve => setTimeout(resolve, 100));
+        // 2. Даём React полностью обновить state
+        await new Promise(resolve => setTimeout(resolve, 200));
         
-        // 3. Обновляем данные
-        await fetchDealDetails();
+        // 3. Обновляем список сделок (уже на правильной вкладке)
         onUpdate();
         
-        // 4. Закрываем диалог
+        // 4. Обновляем детали сделки
+        await fetchDealDetails();
+        
+        // 5. Закрываем диалог
         setTimeout(() => {
           handleClose();
         }, 1500);
