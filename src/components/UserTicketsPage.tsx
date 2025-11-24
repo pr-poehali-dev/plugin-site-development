@@ -184,6 +184,13 @@ const UserTicketsPage = ({ user }: UserTicketsPageProps) => {
                           </div>
                         </div>
                       </div>
+                    ) : ticket.status === 'closed' ? (
+                      <div className="bg-muted/50 border border-border p-3 rounded-lg">
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <Icon name="CheckCircle" size={16} />
+                          <span>Тикет закрыт администратором без ответа</span>
+                        </div>
+                      </div>
                     ) : (
                       <div className="bg-yellow-500/10 border border-yellow-500/30 p-3 rounded-lg">
                         <div className="flex items-center gap-2 text-sm text-yellow-600 dark:text-yellow-400">

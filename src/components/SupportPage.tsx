@@ -35,8 +35,7 @@ const SupportPage = ({ user, onShowAuthDialog }: SupportPageProps) => {
     { value: 'other', label: 'Другое', icon: 'HelpCircle' }
   ];
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const createTicket = () => {
     console.log('=== НАЧАЛО СОЗДАНИЯ ТИКЕТА ===');
     console.log('User:', user);
     console.log('Category:', category);
@@ -83,7 +82,7 @@ const SupportPage = ({ user, onShowAuthDialog }: SupportPageProps) => {
         category: category,
         subject: subject.trim(),
         message: message.trim(),
-        status: 'open',
+        status: 'open' as const,
         created_at: new Date().toISOString()
       };
       
@@ -92,12 +91,6 @@ const SupportPage = ({ user, onShowAuthDialog }: SupportPageProps) => {
       localStorage.setItem('admin_mock_tickets', JSON.stringify(tickets));
       console.log('Тикет сохранен. Всего тикетов:', tickets.length);
       console.log('Тикеты в localStorage после сохранения:', localStorage.getItem('admin_mock_tickets'));
-      
-      window.dispatchEvent(new StorageEvent('storage', {
-        key: 'admin_mock_tickets',
-        newValue: JSON.stringify(tickets)
-      }));
-      console.log('Событие storage отправлено');
       
       window.dispatchEvent(new CustomEvent('ticket-created', { 
         detail: newTicket 
@@ -113,6 +106,7 @@ const SupportPage = ({ user, onShowAuthDialog }: SupportPageProps) => {
       setSubject('');
       setMessage('');
     } catch (error) {
+      console.error('Ошибка создания тикета:', error);
       toast({
         title: 'Ошибка',
         description: 'Не удалось создать тикет',
@@ -121,6 +115,11 @@ const SupportPage = ({ user, onShowAuthDialog }: SupportPageProps) => {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    createTicket();
   };
 
   return (
@@ -236,12 +235,11 @@ const SupportPage = ({ user, onShowAuthDialog }: SupportPageProps) => {
               type="button"
               disabled={isSubmitting || !user}
               className="flex-1"
-              onClick={async (e) => {
-                e.preventDefault();
+              onClick={() => {
                 console.log('=== КЛИК НА КНОПКУ ОТПРАВКИ ===');
                 console.log('User существует:', !!user);
                 console.log('isSubmitting:', isSubmitting);
-                await handleSubmit(e as any);
+                createTicket();
               }}
             >
               {isSubmitting ? (
