@@ -1,14 +1,15 @@
-import { useEffect } from 'react';
-import AdminPanel from '@/components/AdminPanel';
-import UserProfileDialog from '@/components/UserProfileDialog';
-import UserProfile from '@/components/UserProfile';
-import MessagesPanel from '@/components/MessagesPanel';
-import NotificationsPanel from '@/components/NotificationsPanel';
-import DDoSMonitor from '@/components/DDoSMonitor';
-import Dialogs from '@/components/Dialogs';
+import { useEffect, lazy, Suspense } from 'react';
 import { useIndexState } from './index/IndexState';
 import { useIndexHandlers } from './index/IndexHandlers';
 import IndexLayout from './index/IndexLayout';
+
+const AdminPanel = lazy(() => import('@/components/AdminPanel'));
+const UserProfileDialog = lazy(() => import('@/components/UserProfileDialog'));
+const UserProfile = lazy(() => import('@/components/UserProfile'));
+const MessagesPanel = lazy(() => import('@/components/MessagesPanel'));
+const NotificationsPanel = lazy(() => import('@/components/NotificationsPanel'));
+const DDoSMonitor = lazy(() => import('@/components/DDoSMonitor'));
+const Dialogs = lazy(() => import('@/components/Dialogs'));
 
 const AUTH_URL = 'https://functions.poehali.dev/2497448a-6aff-4df5-97ef-9181cf792f03';
 const NOTIFICATIONS_URL = 'https://functions.poehali.dev/6c968792-7d48-41a9-af0a-c92adb047acb';
@@ -108,7 +109,9 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background text-foreground flex relative" onClick={() => state.setShowSearchResults(false)}>
       {state.showAdminPanel && state.user?.role === 'admin' ? (
-        <AdminPanel currentUser={state.user} onClose={() => state.setShowAdminPanel(false)} />
+        <Suspense fallback={<div className="flex items-center justify-center h-screen w-full"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div></div>}>
+          <AdminPanel currentUser={state.user} onClose={() => state.setShowAdminPanel(false)} />
+        </Suspense>
       ) : (
         <>
           <IndexLayout 
@@ -168,46 +171,50 @@ const Index = () => {
             onRefreshUserBalance={handlers.refreshUserBalance}
           />
 
-          <Dialogs
-            authDialogOpen={state.authDialogOpen}
-            authMode={state.authMode}
-            showTopicDialog={state.showTopicDialog}
-            showProfileDialog={state.showProfileDialog}
-            user={state.user}
-            newTopicTitle={state.newTopicTitle}
-            newTopicContent={state.newTopicContent}
-            onAuthDialogChange={state.setAuthDialogOpen}
-            onAuthModeChange={state.setAuthMode}
-            onAuthSubmit={handlers.handleAuth}
-            onTopicDialogChange={state.setShowTopicDialog}
-            onTopicTitleChange={state.setNewTopicTitle}
-            onTopicContentChange={state.setNewTopicContent}
-            onCreateTopic={state.handleCreateTopic}
-            onProfileDialogChange={state.setShowProfileDialog}
-            onUpdateProfile={handlers.handleUpdateProfile}
-            onAuthDialogAttemptClose={handlers.handleAuthDialogAttemptClose}
-          />
-
-          {state.showUserProfile && state.selectedUserId && state.user && state.selectedUserId === state.user.id ? (
-            <UserProfile
+          <Suspense fallback={null}>
+            <Dialogs
+              authDialogOpen={state.authDialogOpen}
+              authMode={state.authMode}
+              showTopicDialog={state.showTopicDialog}
+              showProfileDialog={state.showProfileDialog}
               user={state.user}
-              isOwnProfile={true}
-              onClose={() => state.setShowUserProfile(false)}
-              onTopUpBalance={handlers.handleTopUpBalance}
+              newTopicTitle={state.newTopicTitle}
+              newTopicContent={state.newTopicContent}
+              onAuthDialogChange={state.setAuthDialogOpen}
+              onAuthModeChange={state.setAuthMode}
+              onAuthSubmit={handlers.handleAuth}
+              onTopicDialogChange={state.setShowTopicDialog}
+              onTopicTitleChange={state.setNewTopicTitle}
+              onTopicContentChange={state.setNewTopicContent}
+              onCreateTopic={state.handleCreateTopic}
+              onProfileDialogChange={state.setShowProfileDialog}
               onUpdateProfile={handlers.handleUpdateProfile}
+              onAuthDialogAttemptClose={handlers.handleAuthDialogAttemptClose}
             />
-          ) : (
-            <UserProfileDialog
-              open={state.showUserProfile}
-              onOpenChange={state.setShowUserProfile}
-              userId={state.selectedUserId}
-              currentUserId={state.user?.id}
-              onSendMessage={handlers.handleSendMessage}
-            />
-          )}
+          </Suspense>
+
+          <Suspense fallback={null}>
+            {state.showUserProfile && state.selectedUserId && state.user && state.selectedUserId === state.user.id ? (
+              <UserProfile
+                user={state.user}
+                isOwnProfile={true}
+                onClose={() => state.setShowUserProfile(false)}
+                onTopUpBalance={handlers.handleTopUpBalance}
+                onUpdateProfile={handlers.handleUpdateProfile}
+              />
+            ) : (
+              <UserProfileDialog
+                open={state.showUserProfile}
+                onOpenChange={state.setShowUserProfile}
+                userId={state.selectedUserId}
+                currentUserId={state.user?.id}
+                onSendMessage={handlers.handleSendMessage}
+              />
+            )}
+          </Suspense>
 
           {state.user && (
-            <>
+            <Suspense fallback={null}>
               <NotificationsPanel
                 open={state.showNotificationsPanel}
                 onOpenChange={(open) => {
@@ -239,7 +246,7 @@ const Index = () => {
                 userId={state.user.id}
                 initialRecipientId={state.messageRecipientId}
               />
-            </>
+            </Suspense>
           )}
         </>
       )}
@@ -249,12 +256,13 @@ const Index = () => {
           <div className="fixed inset-0 backdrop-blur-[2px] bg-background/9 z-40 pointer-events-none" />
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div className="bg-background/95 backdrop-blur-xl border-2 border-primary/50 rounded-2xl shadow-2xl max-w-md w-full animate-scale-in">
-              <Dialogs
-                authDialogOpen={true}
-                authMode={state.authMode}
-                showTopicDialog={false}
-                showProfileDialog={false}
-                user={null}
+              <Suspense fallback={<div className="flex items-center justify-center p-8"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>}>
+                <Dialogs
+                  authDialogOpen={true}
+                  authMode={state.authMode}
+                  showTopicDialog={false}
+                  showProfileDialog={false}
+                  user={null}
                 newTopicTitle=""
                 newTopicContent=""
                 onAuthDialogChange={() => {}}
@@ -267,12 +275,17 @@ const Index = () => {
                 onProfileDialogChange={() => {}}
                 onUpdateProfile={() => {}}
               />
+              </Suspense>
             </div>
           </div>
         </>
       )}
 
-      {state.user && <DDoSMonitor currentUser={state.user} />}
+      {state.user && (
+        <Suspense fallback={null}>
+          <DDoSMonitor currentUser={state.user} />
+        </Suspense>
+      )}
     </div>
   );
 };

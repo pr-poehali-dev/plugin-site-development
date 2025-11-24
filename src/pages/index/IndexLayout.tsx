@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import Sidebar from '@/components/Sidebar';
 import Header from '@/components/Header';
 import MainContent from '@/components/MainContent';
@@ -144,4 +145,4 @@ const IndexLayout = ({
   );
 };
 
-export default IndexLayout;
+export default memo(IndexLayout);
