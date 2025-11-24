@@ -29,7 +29,7 @@ export const FlashUsdtPackages = ({ packages, onPurchase, selectedPackageId }: F
           <p className="text-xs sm:text-sm md:text-base text-muted-foreground">Выберите количество Flash USDT</p>
         </div>
         <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30 text-xs sm:text-sm md:text-base px-2.5 sm:px-3 md:px-4 py-1 sm:py-1.5">
-          Скидка 80%
+          Скидка 76.6%
         </Badge>
       </div>
 

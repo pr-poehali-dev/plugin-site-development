@@ -24,7 +24,7 @@ export const FlashUsdtHeader = ({ onTestPurchase }: FlashUsdtHeaderProps) => {
               Flash USDT Token
             </h1>
             <p className="text-sm sm:text-base md:text-lg lg:text-xl text-muted-foreground">
-              Временный токен TRC20 со скидкой 80%
+              Временный токен TRC20 со скидкой 76.6%
             </p>
           </div>
           <Button
