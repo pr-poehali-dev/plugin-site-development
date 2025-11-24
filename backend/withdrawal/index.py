@@ -272,7 +272,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 if new_status == 'rejected':
                     # При отклонении возвращаем сумму + комиссию
                     usdt_commission = 5.0
-                    refund_amount = withdrawal['amount'] + usdt_commission
+                    refund_amount = float(withdrawal['amount']) + usdt_commission
                     
                     cursor.execute('UPDATE users SET balance = balance + %s WHERE id = %s', 
                                  (refund_amount, withdrawal['user_id']))
@@ -291,10 +291,6 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 
                 if new_status == 'completed':
                     notif_msg = f'Ваша заявка на вывод {withdrawal["amount"]} USDT успешно обработана! Средства отправлены на ваш кошелек.'
-                    cursor.execute("""
-                        INSERT INTO transactions (user_id, amount, type, description)
-                        VALUES (%s, %s, 'withdrawal_completed', %s)
-                    """, (withdrawal['user_id'], 0, f'Вывод #{withdrawal_id} завершен'))
                 else:
                     notif_msg = f'Ваша заявка на вывод {withdrawal["amount"]} USDT отклонена.'
                     if admin_comment:
