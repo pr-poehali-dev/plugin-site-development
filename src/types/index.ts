@@ -49,6 +49,8 @@ export interface ForumCategory {
   color?: string;
   display_order: number;
   created_at: string;
+  parent_id?: number | null;
+  subcategories?: ForumCategory[];
 }
 
 export interface ForumTopic {

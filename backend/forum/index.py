@@ -102,18 +102,34 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 }
             elif params.get('action') == 'get_categories':
                 cur.execute("""
-                    SELECT id, name, slug, description, icon, color, display_order, created_at
+                    SELECT id, name, slug, description, icon, color, display_order, created_at, parent_id
                     FROM forum_categories
                     ORDER BY display_order ASC, name ASC
                 """)
-                categories = cur.fetchall()
+                all_categories = cur.fetchall()
+                
+                parent_categories = []
+                subcategories_map = {}
+                
+                for cat in all_categories:
+                    cat_dict = dict(cat)
+                    if cat['parent_id'] is None:
+                        cat_dict['subcategories'] = []
+                        parent_categories.append(cat_dict)
+                        subcategories_map[cat['id']] = cat_dict['subcategories']
+                
+                for cat in all_categories:
+                    if cat['parent_id'] is not None:
+                        parent_id = cat['parent_id']
+                        if parent_id in subcategories_map:
+                            subcategories_map[parent_id].append(dict(cat))
                 
                 return {
                     'statusCode': 200,
                     'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
                     'body': json.dumps({
                         'success': True,
-                        'categories': [dict(c) for c in categories]
+                        'categories': parent_categories
                     }, default=serialize_datetime),
                     'isBase64Encoded': False
                 }
@@ -296,18 +312,34 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             
             elif action == 'get_categories':
                 cur.execute("""
-                    SELECT id, name, slug, description, icon, color, display_order, created_at
+                    SELECT id, name, slug, description, icon, color, display_order, created_at, parent_id
                     FROM forum_categories
                     ORDER BY display_order ASC, name ASC
                 """)
-                categories = cur.fetchall()
+                all_categories = cur.fetchall()
+                
+                parent_categories = []
+                subcategories_map = {}
+                
+                for cat in all_categories:
+                    cat_dict = dict(cat)
+                    if cat['parent_id'] is None:
+                        cat_dict['subcategories'] = []
+                        parent_categories.append(cat_dict)
+                        subcategories_map[cat['id']] = cat_dict['subcategories']
+                
+                for cat in all_categories:
+                    if cat['parent_id'] is not None:
+                        parent_id = cat['parent_id']
+                        if parent_id in subcategories_map:
+                            subcategories_map[parent_id].append(dict(cat))
                 
                 return {
                     'statusCode': 200,
                     'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
                     'body': json.dumps({
                         'success': True,
-                        'categories': [dict(c) for c in categories]
+                        'categories': parent_categories
                     }, default=serialize_datetime),
                     'isBase64Encoded': False
                 }

@@ -183,7 +183,7 @@ export const ForumTopicsList = ({
       </div>
 
       {categories.length > 0 && (
-        <div className="mb-4 flex flex-wrap gap-2">
+        <div className="mb-4 space-y-3">
           <button
             onClick={() => setSelectedCategory(null)}
             className={`h-8 px-3 rounded-md text-xs font-medium transition-all ${
@@ -194,20 +194,47 @@ export const ForumTopicsList = ({
           >
             Все категории
           </button>
-          {categories.map((category) => (
-            <button
-              key={category.id}
-              onClick={() => setSelectedCategory(category.slug)}
-              className="h-8 px-3 rounded-md text-xs font-medium transition-all flex items-center gap-1.5 border hover:brightness-110"
-              style={{
-                backgroundColor: selectedCategory === category.slug ? `${category.color}25` : `${category.color}12`,
-                borderColor: selectedCategory === category.slug ? `${category.color}50` : `${category.color}30`,
-                color: selectedCategory === category.slug ? category.color : `${category.color}cc`
-              }}
-            >
-              <Icon name={category.icon as any} size={14} />
-              {category.name}
-            </button>
+          
+          {categories.map((parentCategory) => (
+            <div key={parentCategory.id} className="space-y-2">
+              <div className="flex items-center gap-2 text-xs font-medium text-zinc-500">
+                <Icon name={parentCategory.icon as any} size={14} style={{ color: parentCategory.color }} />
+                <span>{parentCategory.name}</span>
+              </div>
+              
+              <div className="flex flex-wrap gap-2 pl-5">
+                {parentCategory.subcategories && parentCategory.subcategories.length > 0 ? (
+                  parentCategory.subcategories.map((subcategory) => (
+                    <button
+                      key={subcategory.id}
+                      onClick={() => setSelectedCategory(subcategory.slug)}
+                      className="h-8 px-3 rounded-md text-xs font-medium transition-all flex items-center gap-1.5 border hover:brightness-110"
+                      style={{
+                        backgroundColor: selectedCategory === subcategory.slug ? `${subcategory.color}25` : `${subcategory.color}12`,
+                        borderColor: selectedCategory === subcategory.slug ? `${subcategory.color}50` : `${subcategory.color}30`,
+                        color: selectedCategory === subcategory.slug ? subcategory.color : `${subcategory.color}cc`
+                      }}
+                    >
+                      <Icon name={subcategory.icon as any} size={14} />
+                      {subcategory.name}
+                    </button>
+                  ))
+                ) : (
+                  <button
+                    onClick={() => setSelectedCategory(parentCategory.slug)}
+                    className="h-8 px-3 rounded-md text-xs font-medium transition-all flex items-center gap-1.5 border hover:brightness-110"
+                    style={{
+                      backgroundColor: selectedCategory === parentCategory.slug ? `${parentCategory.color}25` : `${parentCategory.color}12`,
+                      borderColor: selectedCategory === parentCategory.slug ? `${parentCategory.color}50` : `${parentCategory.color}30`,
+                      color: selectedCategory === parentCategory.slug ? parentCategory.color : `${parentCategory.color}cc`
+                    }}
+                  >
+                    <Icon name={parentCategory.icon as any} size={14} />
+                    {parentCategory.name}
+                  </button>
+                )}
+              </div>
+            </div>
           ))}
         </div>
       )}
