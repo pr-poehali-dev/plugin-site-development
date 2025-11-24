@@ -437,10 +437,13 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     conn.commit()
                 except Exception as e:
                     conn.rollback()
+                    import traceback
+                    error_details = traceback.format_exc()
+                    print(f"ERROR deleting user {target_user_id}: {error_details}")
                     return {
                         'statusCode': 500,
                         'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                        'body': json.dumps({'error': f'Ошибка удаления: {str(e)}'}),
+                        'body': json.dumps({'error': f'Ошибка удаления: {str(e)}', 'details': error_details}),
                         'isBase64Encoded': False
                     }
                 
