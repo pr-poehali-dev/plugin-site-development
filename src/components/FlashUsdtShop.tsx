@@ -23,8 +23,8 @@ const FlashUsdtShop = ({ user, onShowAuthDialog, onRefreshUserBalance }: FlashUs
     {
       id: 1,
       amount: 100000,
-      price: 20000,
-      discount: '80%',
+      price: 23400,
+      discount: '76.6%',
       color: 'from-blue-600 to-blue-800',
       borderColor: 'border-blue-500/30',
       icon: 'Package',
@@ -33,8 +33,8 @@ const FlashUsdtShop = ({ user, onShowAuthDialog, onRefreshUserBalance }: FlashUs
     {
       id: 2,
       amount: 500000,
-      price: 100000,
-      discount: '80%',
+      price: 105600,
+      discount: '78.9%',
       color: 'from-purple-600 to-purple-800',
       borderColor: 'border-purple-500/30',
       icon: 'Boxes',
@@ -43,8 +43,8 @@ const FlashUsdtShop = ({ user, onShowAuthDialog, onRefreshUserBalance }: FlashUs
     {
       id: 3,
       amount: 1000000,
-      price: 200000,
-      discount: '80%',
+      price: 190000,
+      discount: '81%',
       color: 'from-orange-600 to-orange-800',
       borderColor: 'border-orange-500/30',
       icon: 'Warehouse',
@@ -53,8 +53,8 @@ const FlashUsdtShop = ({ user, onShowAuthDialog, onRefreshUserBalance }: FlashUs
     {
       id: 4,
       amount: 5000000,
-      price: 1000000,
-      discount: '80%',
+      price: 760000,
+      discount: '84.8%',
       color: 'from-red-600 to-red-800',
       borderColor: 'border-red-500/30',
       icon: 'Building',
