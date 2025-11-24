@@ -161,6 +161,43 @@ export const AdminForumModeration = ({ topics, onRefresh, currentUserId }: Admin
     }
   };
 
+  const handleTogglePin = async (topic: ForumTopic) => {
+    setLoading(true);
+    try {
+      const response = await fetch(FORUM_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-User-Id': currentUserId.toString()
+        },
+        body: JSON.stringify({
+          action: 'admin_update_topic',
+          topic_id: topic.id,
+          is_pinned: !topic.is_pinned
+        })
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        toast({
+          title: 'Успешно',
+          description: topic.is_pinned ? 'Тема откреплена' : 'Тема закреплена'
+        });
+        onRefresh();
+      } else {
+        throw new Error(data.error || 'Ошибка обновления');
+      }
+    } catch (error: any) {
+      toast({
+        title: 'Ошибка',
+        description: error.message,
+        variant: 'destructive'
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleDeleteTopic = async (topicId: number) => {
     if (!confirm('Удалить эту тему?')) return;
 
@@ -260,6 +297,15 @@ export const AdminForumModeration = ({ topics, onRefresh, currentUserId }: Admin
                 </div>
               </div>
               <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => handleTogglePin(topic)}
+                  disabled={loading}
+                  title={topic.is_pinned ? 'Открепить тему' : 'Закрепить тему'}
+                >
+                  <Icon name="Pin" size={16} className={topic.is_pinned ? 'text-yellow-500' : ''} />
+                </Button>
                 <Button
                   size="sm"
                   variant="ghost"
