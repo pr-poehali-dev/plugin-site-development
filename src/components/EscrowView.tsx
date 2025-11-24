@@ -807,8 +807,12 @@ const DealDetailDialog = ({ deal, user, onClose, onUpdate, onRefreshUserBalance,
       
       const data = await response.json();
       if (data.success) {
+        toast({
+          title: 'Отлично!',
+          description: 'Ожидайте подтверждения от продавца о передаче криптовалюты.'
+        });
         await fetchDealDetails();
-        onUpdate();
+        // Не вызываем onUpdate() чтобы не закрывать окно
       }
     } catch (error) {
       console.error('Ошибка:', error);
@@ -836,8 +840,12 @@ const DealDetailDialog = ({ deal, user, onClose, onUpdate, onRefreshUserBalance,
       
       const data = await response.json();
       if (data.success) {
+        toast({
+          title: 'Отлично!',
+          description: 'Покупатель уведомлен о передаче криптовалюты. Ожидайте его подтверждения.'
+        });
         await fetchDealDetails();
-        onUpdate();
+        // Не вызываем onUpdate() чтобы не закрывать окно
       }
     } catch (error) {
       console.error('Ошибка:', error);
