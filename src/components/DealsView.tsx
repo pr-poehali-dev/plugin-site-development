@@ -569,24 +569,24 @@ export const DealsView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Deal
       {/* Диалог детальной сделки */}
       {selectedDeal && (
         <Dialog open={!!selectedDeal} onOpenChange={(open) => !open && setSelectedDeal(null)}>
-          <DialogContent className="max-w-4xl h-[95vh] sm:h-[90vh] overflow-hidden flex flex-col p-3 sm:p-6">
-            <DialogHeader className="flex-shrink-0 space-y-0.5 sm:space-y-1.5">
-              <DialogTitle className="pr-8 text-base sm:text-xl line-clamp-1">{selectedDeal.title}</DialogTitle>
-              <DialogDescription className="text-xs sm:text-base line-clamp-2">{selectedDeal.description}</DialogDescription>
+          <DialogContent className="max-w-4xl h-[100dvh] sm:h-[90vh] overflow-hidden flex flex-col p-3 sm:p-6 max-h-[100dvh] sm:max-h-[90vh]">
+            <DialogHeader className="flex-shrink-0 pb-2 sm:pb-3">
+              <DialogTitle className="pr-8 text-sm sm:text-xl leading-tight">{selectedDeal.title}</DialogTitle>
+              <DialogDescription className="text-xs sm:text-sm line-clamp-1 sm:line-clamp-2 mt-1">{selectedDeal.description}</DialogDescription>
             </DialogHeader>
 
-            <div className="flex-1 overflow-y-auto space-y-2 sm:space-y-3 pr-1">
+            <div className="flex-1 overflow-y-auto space-y-2 sm:space-y-3 pr-1 min-h-0">
               {user && (Number(user.id) === Number(selectedDeal.seller_id) || Number(user.id) === Number(selectedDeal.buyer_id)) && (
-                <Card className="p-2 sm:p-3 bg-gradient-to-r from-blue-500/10 to-purple-500/10 border-blue-500/30">
+                <Card className="p-2 bg-gradient-to-r from-blue-500/10 to-purple-500/10 border-blue-500/30 shadow-lg shadow-blue-500/5">
                   <div className="flex items-center gap-2">
-                    <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-full bg-blue-500/20 flex items-center justify-center flex-shrink-0">
-                      <Icon name={Number(user.id) === Number(selectedDeal.seller_id) ? "Store" : "ShoppingCart"} size={16} className="text-blue-400" />
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500/30 to-purple-500/30 flex items-center justify-center flex-shrink-0 shadow-inner">
+                      <Icon name={Number(user.id) === Number(selectedDeal.seller_id) ? "Store" : "ShoppingCart"} size={14} className="text-blue-300" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="text-xs sm:text-sm font-semibold truncate">
+                      <p className="text-xs font-bold truncate text-blue-300">
                         {Number(user.id) === Number(selectedDeal.seller_id) ? 'Вы - продавец' : 'Вы - покупатель'}
                       </p>
-                      <p className="text-[10px] sm:text-xs text-muted-foreground truncate">
+                      <p className="text-[10px] text-muted-foreground/80 truncate leading-tight">
                         {getStepText(selectedDeal.step, Number(user.id) === Number(selectedDeal.seller_id))}
                       </p>
                     </div>
@@ -594,44 +594,47 @@ export const DealsView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Deal
                 </Card>
               )}
 
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                <Card className="p-2 sm:p-3 bg-gradient-to-br from-green-500/5 to-green-600/10 border-green-500/20">
-                  <p className="text-[10px] sm:text-xs text-muted-foreground mb-1 uppercase tracking-wide">Продавец</p>
-                  <div className="flex items-center gap-1.5">
-                    <Avatar className="w-7 h-7 sm:w-8 sm:h-8">
+              <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
+                <Card className="p-1.5 sm:p-2.5 bg-gradient-to-br from-green-500/5 to-green-600/10 border-green-500/20 shadow-md hover:shadow-green-500/10 transition-shadow">
+                  <p className="text-[9px] sm:text-xs text-muted-foreground/70 mb-0.5 sm:mb-1 font-medium">Продавец</p>
+                  <div className="flex items-center gap-1">
+                    <Avatar className="w-6 h-6 sm:w-8 sm:h-8 ring-1 ring-green-500/20">
                       <AvatarImage src={selectedDeal.seller_avatar} />
-                      <AvatarFallback className={`bg-gradient-to-br ${getAvatarGradient(selectedDeal.seller_name)} text-white text-xs`}>
+                      <AvatarFallback className={`bg-gradient-to-br ${getAvatarGradient(selectedDeal.seller_name)} text-white text-[10px]`}>
                         {selectedDeal.seller_name[0].toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
-                    <p className="font-semibold text-xs sm:text-sm truncate">{selectedDeal.seller_name}</p>
+                    <p className="font-bold text-[10px] sm:text-sm truncate text-green-300">{selectedDeal.seller_name}</p>
                   </div>
                 </Card>
 
-                <Card className="p-2 sm:p-3 bg-gradient-to-br from-green-600/10 to-green-700/20 border-green-600/30">
-                  <p className="text-[10px] sm:text-xs text-muted-foreground mb-1 uppercase tracking-wide">Цена</p>
-                  <p className="text-lg sm:text-2xl font-bold text-green-400 truncate">{selectedDeal.price} <span className="text-sm sm:text-lg text-muted-foreground">USDT</span></p>
+                <Card className="p-1.5 sm:p-2.5 bg-gradient-to-br from-green-600/15 to-green-700/25 border-green-600/30 shadow-md hover:shadow-green-600/20 transition-shadow">
+                  <p className="text-[9px] sm:text-xs text-muted-foreground/70 mb-0.5 sm:mb-1 font-medium">Цена</p>
+                  <p className="text-base sm:text-2xl font-black text-green-400 truncate leading-tight">
+                    {selectedDeal.price}
+                    <span className="text-[10px] sm:text-base text-muted-foreground/60 ml-0.5 font-semibold">USDT</span>
+                  </p>
                 </Card>
 
                 {selectedDeal.buyer_id && (
-                  <Card className="p-2 sm:p-3 bg-gradient-to-br from-blue-500/5 to-blue-600/10 border-blue-500/20 col-span-2 sm:col-span-1">
-                    <p className="text-[10px] sm:text-xs text-muted-foreground mb-1 uppercase tracking-wide">Покупатель</p>
-                    <div className="flex items-center gap-1.5">
-                      <Avatar className="w-7 h-7 sm:w-8 sm:h-8">
+                  <Card className="p-1.5 sm:p-2.5 bg-gradient-to-br from-blue-500/5 to-blue-600/10 border-blue-500/20 shadow-md hover:shadow-blue-500/10 transition-shadow">
+                    <p className="text-[9px] sm:text-xs text-muted-foreground/70 mb-0.5 sm:mb-1 font-medium">Покупатель</p>
+                    <div className="flex items-center gap-1">
+                      <Avatar className="w-6 h-6 sm:w-8 sm:h-8 ring-1 ring-blue-500/20">
                         <AvatarImage src={selectedDeal.buyer_avatar} />
-                        <AvatarFallback className={`bg-gradient-to-br ${getAvatarGradient(selectedDeal.buyer_name || '')} text-white text-xs`}>
+                        <AvatarFallback className={`bg-gradient-to-br ${getAvatarGradient(selectedDeal.buyer_name || '')} text-white text-[10px]`}>
                           {selectedDeal.buyer_name?.[0].toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
-                      <p className="font-semibold text-xs sm:text-sm truncate">{selectedDeal.buyer_name}</p>
+                      <p className="font-bold text-[10px] sm:text-sm truncate text-blue-300">{selectedDeal.buyer_name}</p>
                     </div>
                   </Card>
                 )}
               </div>
 
               {/* Чат */}
-              <Card className="p-2 sm:p-3 h-[200px] sm:h-[280px] md:h-[350px] overflow-y-auto bg-gradient-to-br from-muted/30 to-muted/10 border-border/50">
-                <div className="space-y-2">
+              <Card className="p-2 flex-1 min-h-0 overflow-y-auto bg-gradient-to-br from-muted/30 to-muted/10 border-border/50 shadow-inner">
+                <div className="space-y-1.5 sm:space-y-2">
                   {dealMessages.map((msg) => (
                     <div
                       key={msg.id}
@@ -644,29 +647,29 @@ export const DealsView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Deal
                       }`}
                     >
                       {msg.is_system ? (
-                        <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full bg-blue-500/10 border border-blue-500/20">
-                          <Icon name="Info" size={10} className="text-blue-400" />
-                          <p className="text-[10px] sm:text-xs text-blue-400 font-medium">{msg.message}</p>
+                        <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-500/10 border border-blue-500/20 backdrop-blur-sm">
+                          <Icon name="Info" size={9} className="text-blue-400" />
+                          <p className="text-[9px] sm:text-xs text-blue-400 font-semibold">{msg.message}</p>
                         </div>
                       ) : (
-                        <div className={`max-w-[85%] sm:max-w-[75%] ${
+                        <div className={`max-w-[90%] sm:max-w-[80%] ${
                           msg.user_id === user?.id
-                            ? 'bg-green-800/30 border border-green-700/40'
-                            : 'bg-card border border-border'
-                        } p-2 sm:p-2.5 rounded-2xl space-y-0.5`}>
-                          <div className="flex items-center gap-1.5">
-                            <Avatar className="w-5 h-5 sm:w-6 sm:h-6">
+                            ? 'bg-gradient-to-br from-green-800/40 to-green-900/30 border border-green-700/40 shadow-md shadow-green-900/20'
+                            : 'bg-gradient-to-br from-card to-muted/50 border border-border shadow-sm'
+                        } p-1.5 sm:p-2 rounded-2xl space-y-0.5`}>
+                          <div className="flex items-center gap-1">
+                            <Avatar className="w-4 h-4 sm:w-5 sm:h-5 ring-1 ring-border/50">
                               <AvatarImage src={msg.avatar_url} />
-                              <AvatarFallback className={`bg-gradient-to-br ${getAvatarGradient(msg.username || '')} text-white text-[9px]`}>
+                              <AvatarFallback className={`bg-gradient-to-br ${getAvatarGradient(msg.username || '')} text-white text-[8px]`}>
                                 {msg.username?.[0].toUpperCase()}
                               </AvatarFallback>
                             </Avatar>
-                            <span className="text-[10px] sm:text-xs font-semibold truncate">{msg.username}</span>
-                            <span className="text-[9px] sm:text-[10px] text-muted-foreground ml-auto flex-shrink-0">
+                            <span className="text-[9px] sm:text-xs font-bold truncate">{msg.username}</span>
+                            <span className="text-[8px] sm:text-[9px] text-muted-foreground/60 ml-auto flex-shrink-0">
                               {new Date(msg.created_at).toLocaleString('ru-RU', { hour: '2-digit', minute: '2-digit' })}
                             </span>
                           </div>
-                          <p className="text-xs sm:text-sm leading-relaxed break-words">{msg.message}</p>
+                          <p className="text-[10px] sm:text-xs leading-snug break-words pl-5 sm:pl-6">{msg.message}</p>
                         </div>
                       )}
                     </div>
@@ -675,30 +678,30 @@ export const DealsView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Deal
               </Card>
 
               {selectedDeal.status !== 'completed' && selectedDeal.status !== 'cancelled' && user && (Number(user.id) === Number(selectedDeal.seller_id) || Number(user.id) === Number(selectedDeal.buyer_id)) && (
-                <div className="flex items-center gap-1.5 sm:gap-2">
+                <div className="flex items-center gap-1.5 flex-shrink-0 sticky bottom-0 bg-background/95 backdrop-blur-sm p-2 -mx-1 rounded-lg border border-border/50">
                   <Input
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
                     placeholder="Сообщение..."
                     onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
-                    className="flex-1 bg-muted/50 h-9 text-xs sm:text-sm"
+                    className="flex-1 bg-muted/50 h-8 sm:h-9 text-xs sm:text-sm border-border/50"
                   />
-                  <Button onClick={sendMessage} size="icon" className="bg-green-700 hover:bg-green-600 h-9 w-9">
-                    <Icon name="Send" size={14} />
+                  <Button onClick={sendMessage} size="icon" className="bg-gradient-to-r from-green-700 to-green-800 hover:from-green-600 hover:to-green-700 h-8 w-8 sm:h-9 sm:w-9 shadow-md shadow-green-900/30">
+                    <Icon name="Send" size={13} />
                   </Button>
                 </div>
               )}
 
               {/* Кнопки действий */}
-              <div className="space-y-1.5 sm:space-y-2 flex-shrink-0">
+              <div className="space-y-1.5 flex-shrink-0 pt-1">
                 {selectedDeal.status === 'active' && !selectedDeal.buyer_id && user && Number(user.id) !== Number(selectedDeal.seller_id) && (
                   <Button
                     onClick={handleBuyerPay}
                     disabled={actionLoading}
-                    className="w-full bg-gradient-to-r from-green-800 to-green-900 hover:from-green-700 hover:to-green-800 h-9 sm:h-11 text-sm sm:text-base"
+                    className="w-full bg-gradient-to-r from-green-700 to-green-900 hover:from-green-600 hover:to-green-800 h-9 sm:h-11 text-xs sm:text-base font-bold shadow-lg shadow-green-900/40"
                   >
-                    <Icon name={actionLoading ? "Loader2" : "ShoppingCart"} size={16} className={`mr-1.5 ${actionLoading ? 'animate-spin' : ''}`} />
-                    {actionLoading ? 'Оплачиваем...' : `Купить за ${selectedDeal.price} USDT`}
+                    <Icon name={actionLoading ? "Loader2" : "ShoppingCart"} size={14} className={`mr-1 ${actionLoading ? 'animate-spin' : ''}`} />
+                    {actionLoading ? 'Оплата...' : `Купить ${selectedDeal.price} USDT`}
                   </Button>
                 )}
 
@@ -706,23 +709,23 @@ export const DealsView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Deal
                   <Button
                     onClick={handleSellerSent}
                     disabled={actionLoading}
-                    className="w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-500 hover:to-purple-600 h-9 sm:h-11 text-sm sm:text-base"
+                    className="w-full bg-gradient-to-r from-purple-600 to-purple-800 hover:from-purple-500 hover:to-purple-700 h-9 sm:h-11 text-xs sm:text-base font-bold shadow-lg shadow-purple-900/40"
                   >
-                    <Icon name="Package" size={16} className="mr-1.5" />
-                    {actionLoading ? 'Обработка...' : 'Товар передан покупателю'}
+                    <Icon name="Package" size={14} className="mr-1" />
+                    {actionLoading ? 'Обработка...' : 'Товар передан'}
                   </Button>
                 )}
 
                 {selectedDeal.step === 'seller_sent' && user && Number(user.id) === Number(selectedDeal.buyer_id) && (
-                  <Card className="p-2 sm:p-3 bg-gradient-to-br from-green-800/10 to-green-900/20 border border-green-500/30 space-y-2">
-                    <div className="flex items-start gap-2">
-                      <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
-                        <Icon name="AlertCircle" size={16} className="text-green-400" />
+                  <Card className="p-2 bg-gradient-to-br from-orange-500/10 to-red-500/10 border border-orange-500/30 space-y-1.5 shadow-lg shadow-orange-900/20">
+                    <div className="flex items-start gap-1.5">
+                      <div className="w-7 h-7 rounded-full bg-gradient-to-br from-orange-500/30 to-red-500/20 flex items-center justify-center flex-shrink-0 shadow-inner">
+                        <Icon name="AlertCircle" size={14} className="text-orange-300" />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <p className="text-xs sm:text-sm font-semibold text-green-400 mb-0.5">⚠️ Внимание!</p>
-                        <p className="text-[10px] sm:text-xs text-muted-foreground">
-                          Нажимайте только если получили товар. {selectedDeal.price} USDT будут переведены продавцу
+                        <p className="text-[10px] sm:text-xs font-bold text-orange-300">⚠️ Внимание!</p>
+                        <p className="text-[9px] sm:text-xs text-muted-foreground/80 leading-tight">
+                          Только если получили товар! {selectedDeal.price} USDT → продавцу
                         </p>
                       </div>
                     </div>
@@ -733,24 +736,24 @@ export const DealsView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Deal
                         handleBuyerConfirm();
                       }}
                       disabled={actionLoading}
-                      className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-500 hover:to-green-600 cursor-pointer h-9 sm:h-11 text-sm sm:text-base"
+                      className="w-full bg-gradient-to-r from-green-600 to-green-800 hover:from-green-500 hover:to-green-700 cursor-pointer h-9 sm:h-10 text-xs sm:text-base font-bold shadow-lg shadow-green-900/40"
                       type="button"
                     >
-                      <Icon name="Check" size={16} className="mr-1.5" />
-                      {actionLoading ? 'Обработка...' : 'Подтвердить получение товара'}
+                      <Icon name="Check" size={14} className="mr-1" />
+                      {actionLoading ? 'Обработка...' : 'Подтвердить получение'}
                     </Button>
                   </Card>
                 )}
 
                 {selectedDeal.status === 'completed' && (
-                  <Card className="p-2 sm:p-3 bg-gradient-to-br from-green-800/10 to-green-900/20 border-green-500/30">
-                    <div className="flex items-center gap-2 sm:gap-3">
-                      <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
-                        <Icon name="CheckCircle2" size={20} className="text-green-400" />
+                  <Card className="p-2 bg-gradient-to-br from-green-800/15 to-green-900/25 border-green-500/30 shadow-lg shadow-green-900/30">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-green-500/30 to-green-600/20 flex items-center justify-center flex-shrink-0 shadow-inner">
+                        <Icon name="CheckCircle2" size={16} className="text-green-300" />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <h4 className="font-bold text-green-400 text-sm sm:text-base">Сделка завершена!</h4>
-                        <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5">
+                        <h4 className="font-black text-green-300 text-xs sm:text-base leading-tight">Сделка завершена!</h4>
+                        <p className="text-[9px] sm:text-xs text-muted-foreground/80 leading-tight">
                           {user && Number(user.id) === Number(selectedDeal.seller_id) ? `Вы получили ${(selectedDeal.price - selectedDeal.commission).toFixed(2)} USDT (комиссия ${selectedDeal.commission.toFixed(2)} USDT)` : `Средства ${selectedDeal.price} USDT переведены продавцу`}
                         </p>
                       </div>
