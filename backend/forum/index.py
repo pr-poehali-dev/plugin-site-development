@@ -100,6 +100,23 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     }, default=serialize_datetime),
                     'isBase64Encoded': False
                 }
+            elif params.get('action') == 'get_categories':
+                cur.execute("""
+                    SELECT id, name, slug, description, icon, color, display_order, created_at
+                    FROM forum_categories
+                    ORDER BY display_order ASC, name ASC
+                """)
+                categories = cur.fetchall()
+                
+                return {
+                    'statusCode': 200,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({
+                        'success': True,
+                        'categories': [dict(c) for c in categories]
+                    }, default=serialize_datetime),
+                    'isBase64Encoded': False
+                }
             else:
                 plugin_id = params.get('plugin_id')
                 category_slug = params.get('category')

@@ -40,15 +40,11 @@ const CreateTopicDialog = ({
   const fetchCategories = async () => {
     setIsLoadingCategories(true);
     try {
-      const response = await fetch(FORUM_URL, {
-        method: 'POST',
+      const response = await fetch(`${FORUM_URL}?action=get_categories`, {
+        method: 'GET',
         headers: {
-          'Content-Type': 'application/json',
-          'X-User-Id': user?.id.toString() || ''
-        },
-        body: JSON.stringify({
-          action: 'get_categories'
-        })
+          'Content-Type': 'application/json'
+        }
       });
 
       const data = await response.json();
