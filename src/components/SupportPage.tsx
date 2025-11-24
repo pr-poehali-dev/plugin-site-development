@@ -21,6 +21,8 @@ const SupportPage = ({ user, onShowAuthDialog }: SupportPageProps) => {
   const [message, setMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  console.log('SupportPage render:', { user: user?.username, category, subject: subject.length, message: message.length });
+
   const categories = [
     { value: 'account', label: 'Проблемы с аккаунтом', icon: 'User' },
     { value: 'payment', label: 'Вопросы по платежам', icon: 'CreditCard' },
@@ -231,9 +233,16 @@ const SupportPage = ({ user, onShowAuthDialog }: SupportPageProps) => {
 
           <div className="flex gap-3">
             <Button
-              type="submit"
+              type="button"
               disabled={isSubmitting || !user}
               className="flex-1"
+              onClick={async (e) => {
+                e.preventDefault();
+                console.log('=== КЛИК НА КНОПКУ ОТПРАВКИ ===');
+                console.log('User существует:', !!user);
+                console.log('isSubmitting:', isSubmitting);
+                await handleSubmit(e as any);
+              }}
             >
               {isSubmitting ? (
                 <>
