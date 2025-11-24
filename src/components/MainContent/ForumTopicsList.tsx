@@ -250,34 +250,26 @@ export const ForumTopicsList = ({
             {/* Выбранная категория или кнопка выбора */}
             <div className="space-y-2">
               <div className="text-xs font-medium text-muted-foreground px-1">Категория</div>
-              {!selectedCategory && selectedParentCategory === null ? (
+              {selectedParentCategory === null ? (
                 <select
                   onChange={(e) => {
                     const value = e.target.value;
                     if (value === 'all') {
                       setSelectedCategory(null);
                       setSelectedParentCategory(null);
-                    } else if (value.startsWith('parent-')) {
+                    } else {
                       const parentId = parseInt(value.replace('parent-', ''));
                       setSelectedParentCategory(parentId);
                       setSelectedCategory(null);
-                    } else {
-                      setSelectedCategory(value);
-                      setSelectedParentCategory(null);
                     }
                   }}
                   className="w-full h-10 px-3 rounded-md border bg-background text-sm font-medium"
                 >
                   <option value="all">📂 Все категории</option>
                   {categories.map((parentCategory) => (
-                    <optgroup key={parentCategory.id} label={parentCategory.name}>
-                      <option value={`parent-${parentCategory.id}`}>📁 {parentCategory.name} (все)</option>
-                      {parentCategory.subcategories?.map((sub) => (
-                        <option key={sub.id} value={sub.slug}>
-                          └─ {sub.name}
-                        </option>
-                      ))}
-                    </optgroup>
+                    <option key={parentCategory.id} value={`parent-${parentCategory.id}`}>
+                      {parentCategory.name}
+                    </option>
                   ))}
                 </select>
               ) : (
@@ -288,19 +280,13 @@ export const ForumTopicsList = ({
                   }}
                   className="w-full h-10 px-3 rounded-md border flex items-center justify-between text-sm font-medium"
                   style={{
-                    backgroundColor: selectedCategory
-                      ? `${categories.find(c => c.subcategories?.find(s => s.slug === selectedCategory))?.subcategories?.find(s => s.slug === selectedCategory)?.color}25`
-                      : selectedParentCategory !== null
+                    backgroundColor: selectedParentCategory !== null
                       ? `${categories.find(c => c.id === selectedParentCategory)?.color}25`
                       : undefined,
-                    borderColor: selectedCategory
-                      ? `${categories.find(c => c.subcategories?.find(s => s.slug === selectedCategory))?.subcategories?.find(s => s.slug === selectedCategory)?.color}50`
-                      : selectedParentCategory !== null
+                    borderColor: selectedParentCategory !== null
                       ? `${categories.find(c => c.id === selectedParentCategory)?.color}50`
                       : undefined,
-                    color: selectedCategory
-                      ? categories.find(c => c.subcategories?.find(s => s.slug === selectedCategory))?.subcategories?.find(s => s.slug === selectedCategory)?.color
-                      : selectedParentCategory !== null
+                    color: selectedParentCategory !== null
                       ? categories.find(c => c.id === selectedParentCategory)?.color
                       : undefined
                   }}
@@ -308,18 +294,14 @@ export const ForumTopicsList = ({
                   <div className="flex items-center gap-2">
                     <Icon 
                       name={
-                        selectedCategory
-                          ? (categories.find(c => c.subcategories?.find(s => s.slug === selectedCategory))?.subcategories?.find(s => s.slug === selectedCategory)?.icon as any)
-                          : selectedParentCategory !== null
+                        selectedParentCategory !== null
                           ? (categories.find(c => c.id === selectedParentCategory)?.icon as any)
                           : 'Folder'
                       } 
                       size={16} 
                     />
                     <span>
-                      {selectedCategory
-                        ? categories.find(c => c.subcategories?.find(s => s.slug === selectedCategory))?.subcategories?.find(s => s.slug === selectedCategory)?.name
-                        : selectedParentCategory !== null
+                      {selectedParentCategory !== null
                         ? categories.find(c => c.id === selectedParentCategory)?.name
                         : 'Выбрать категорию'
                       }
