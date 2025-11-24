@@ -10,6 +10,7 @@ import os
 import hashlib
 import secrets
 import datetime
+import urllib.request
 from typing import Dict, Any, Optional
 import psycopg2
 from psycopg2.extras import RealDictCursor
@@ -32,6 +33,28 @@ def generate_token() -> str:
 def generate_referral_code() -> str:
     """Генерация уникального реферального кода"""
     return secrets.token_urlsafe(8).upper().replace('-', '').replace('_', '')[:8]
+
+def get_real_btc_price() -> float:
+    """Получить реальную цену BTC с CoinGecko API"""
+    try:
+        with urllib.request.urlopen('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd', timeout=5) as response:
+            data = json.loads(response.read().decode())
+            real_price = float(data['bitcoin']['usd'])
+            return real_price + 1000
+    except Exception as e:
+        print(f'Error fetching BTC price: {e}')
+        return 0
+
+def validate_btc_price(client_price: float, tolerance_percent: float = 2.0) -> bool:
+    """Валидация цены BTC от клиента с допустимым отклонением"""
+    real_price = get_real_btc_price()
+    if real_price == 0:
+        return False
+    
+    lower_bound = real_price * (1 - tolerance_percent / 100)
+    upper_bound = real_price * (1 + tolerance_percent / 100)
+    
+    return lower_bound <= client_price <= upper_bound
 
 def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     method: str = event.get('httpMethod', 'POST')
@@ -1372,13 +1395,42 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 }
             
             usdt_amount = float(body_data.get('usdt_amount', 0))
-            btc_price = float(body_data.get('btc_price', 65000))
+            client_btc_price = float(body_data.get('btc_price', 0))
             
             if usdt_amount < 10:
                 return {
                     'statusCode': 400,
                     'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
                     'body': json.dumps({'error': 'Минимальная сумма обмена: 10 USDT'}),
+                    'isBase64Encoded': False
+                }
+            
+            if client_btc_price <= 0:
+                return {
+                    'statusCode': 400,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'error': 'Некорректная цена BTC'}),
+                    'isBase64Encoded': False
+                }
+            
+            if not validate_btc_price(client_btc_price):
+                real_price = get_real_btc_price()
+                return {
+                    'statusCode': 400,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({
+                        'error': f'Цена BTC устарела. Актуальный курс: ${real_price:.2f}',
+                        'current_price': real_price
+                    }),
+                    'isBase64Encoded': False
+                }
+            
+            btc_price = get_real_btc_price()
+            if btc_price == 0:
+                return {
+                    'statusCode': 503,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'error': 'Сервис временно недоступен, попробуйте позже'}),
                     'isBase64Encoded': False
                 }
             
@@ -1437,13 +1489,42 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 }
             
             btc_amount = float(body_data.get('btc_amount', 0))
-            btc_price = float(body_data.get('btc_price', 65000))
+            client_btc_price = float(body_data.get('btc_price', 0))
             
             if btc_amount < 0.0001:
                 return {
                     'statusCode': 400,
                     'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
                     'body': json.dumps({'error': 'Минимальная сумма обмена: 0.0001 BTC'}),
+                    'isBase64Encoded': False
+                }
+            
+            if client_btc_price <= 0:
+                return {
+                    'statusCode': 400,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'error': 'Некорректная цена BTC'}),
+                    'isBase64Encoded': False
+                }
+            
+            if not validate_btc_price(client_btc_price):
+                real_price = get_real_btc_price()
+                return {
+                    'statusCode': 400,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({
+                        'error': f'Цена BTC устарела. Актуальный курс: ${real_price:.2f}',
+                        'current_price': real_price
+                    }),
+                    'isBase64Encoded': False
+                }
+            
+            btc_price = get_real_btc_price()
+            if btc_price == 0:
+                return {
+                    'statusCode': 503,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'error': 'Сервис временно недоступен, попробуйте позже'}),
                     'isBase64Encoded': False
                 }
             

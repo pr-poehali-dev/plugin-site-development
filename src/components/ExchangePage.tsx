@@ -32,7 +32,7 @@ const ExchangePage = ({ user, onRefreshUserBalance }: ExchangePageProps) => {
   useEffect(() => {
     loadBtcBalance();
     loadBtcPrice();
-    const interval = setInterval(loadBtcPrice, 10000);
+    const interval = setInterval(loadBtcPrice, 1000);
     return () => clearInterval(interval);
   }, [user.id]);
 
@@ -41,7 +41,7 @@ const ExchangePage = ({ user, onRefreshUserBalance }: ExchangePageProps) => {
       const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd');
       const data = await response.json();
       const realPrice = data.bitcoin.usd;
-      const newPrice = realPrice - 500;
+      const newPrice = realPrice + 1000;
       
       if (btcPrice > 0) {
         setPrevBtcPrice(btcPrice);
@@ -60,7 +60,9 @@ const ExchangePage = ({ user, onRefreshUserBalance }: ExchangePageProps) => {
     } catch (error) {
       console.error('Ошибка загрузки курса BTC:', error);
       if (btcPrice === 0) {
-        setBtcPrice(64500);
+        const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd');
+        const data = await response.json();
+        setBtcPrice(data.bitcoin.usd + 1000);
       }
     } finally {
       setPriceLoading(false);
@@ -92,23 +94,26 @@ const ExchangePage = ({ user, onRefreshUserBalance }: ExchangePageProps) => {
   const handleUsdtToBtcChange = (value: string) => {
     const numValue = parseFloat(value) || 0;
     setUsdtAmount(value);
-    if (btcPrice > 0) {
-      // Комиссия 0.5%
+    if (btcPrice > 0 && numValue > 0) {
       const commission = numValue * 0.005;
       const afterCommission = numValue - commission;
-      setBtcAmount((afterCommission / btcPrice).toFixed(8));
+      const btcResult = afterCommission / btcPrice;
+      setBtcAmount(btcResult > 0 ? btcResult.toFixed(8) : '0.00000000');
+    } else {
+      setBtcAmount('');
     }
   };
 
   const handleBtcToUsdtChange = (value: string) => {
     const numValue = parseFloat(value) || 0;
     setBtcAmount(value);
-    if (btcPrice > 0) {
-      // Комиссия 0.5%
+    if (btcPrice > 0 && numValue > 0) {
       const gross = numValue * btcPrice;
       const commission = gross * 0.005;
       const afterCommission = gross - commission;
-      setUsdtAmount(afterCommission.toFixed(2));
+      setUsdtAmount(afterCommission > 0 ? afterCommission.toFixed(2) : '0.00');
+    } else {
+      setUsdtAmount('');
     }
   };
 
@@ -174,11 +179,20 @@ const ExchangePage = ({ user, onRefreshUserBalance }: ExchangePageProps) => {
         setUsdtAmount('');
         setBtcAmount('');
       } else {
-        toast({
-          title: 'Ошибка',
-          description: data.error || 'Ошибка обмена',
-          variant: 'destructive'
-        });
+        if (data.current_price) {
+          setBtcPrice(data.current_price);
+          toast({
+            title: 'Курс обновлён',
+            description: data.error || 'Цена BTC устарела. Попробуйте снова.',
+            variant: 'destructive'
+          });
+        } else {
+          toast({
+            title: 'Ошибка',
+            description: data.error || 'Ошибка обмена',
+            variant: 'destructive'
+          });
+        }
       }
     } catch (error) {
       toast({
@@ -253,11 +267,20 @@ const ExchangePage = ({ user, onRefreshUserBalance }: ExchangePageProps) => {
         setUsdtAmount('');
         setBtcAmount('');
       } else {
-        toast({
-          title: 'Ошибка',
-          description: data.error || 'Ошибка обмена',
-          variant: 'destructive'
-        });
+        if (data.current_price) {
+          setBtcPrice(data.current_price);
+          toast({
+            title: 'Курс обновлён',
+            description: data.error || 'Цена BTC устарела. Попробуйте снова.',
+            variant: 'destructive'
+          });
+        } else {
+          toast({
+            title: 'Ошибка',
+            description: data.error || 'Ошибка обмена',
+            variant: 'destructive'
+          });
+        }
       }
     } catch (error) {
       toast({
