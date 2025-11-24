@@ -32,7 +32,7 @@ const RecentWinsFeed = () => {
         },
         body: JSON.stringify({
           action: 'get_recent_wins',
-          limit: 9
+          limit: 15
         })
       });
 
@@ -129,7 +129,7 @@ const RecentWinsFeed = () => {
       
       <Card className="p-4 bg-gradient-to-br from-yellow-950/20 via-yellow-900/10 to-orange-950/20 border-yellow-800/20 overflow-hidden relative">
         <div className="flex items-center gap-4 overflow-x-auto scrollbar-hide pb-2" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-          {wins.slice(0, 9).map((win) => (
+          {wins.slice(0, 15).map((win) => (
             <div
               key={win.id}
               className="flex flex-col items-center gap-2 group flex-shrink-0"
