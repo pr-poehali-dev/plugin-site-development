@@ -197,6 +197,23 @@ export const ForumTopicDetail = ({
             </div>
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-2 flex-wrap">
+                {selectedTopic.parent_category_name && selectedTopic.parent_category_color && selectedTopic.parent_category_icon && (
+                  <>
+                    <Badge 
+                      variant="outline" 
+                      className="text-xs gap-1.5"
+                      style={{
+                        borderColor: selectedTopic.parent_category_color,
+                        color: selectedTopic.parent_category_color,
+                        backgroundColor: `${selectedTopic.parent_category_color}10`
+                      }}
+                    >
+                      <Icon name={selectedTopic.parent_category_icon as any} size={14} />
+                      {selectedTopic.parent_category_name}
+                    </Badge>
+                    <Icon name="ChevronRight" size={14} className="text-muted-foreground" />
+                  </>
+                )}
                 {selectedTopic.category_name && selectedTopic.category_color && selectedTopic.category_icon && (
                   <Badge 
                     variant="outline" 

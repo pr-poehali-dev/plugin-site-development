@@ -73,6 +73,10 @@ export interface ForumTopic {
   category_slug?: string;
   category_color?: string;
   category_icon?: string;
+  parent_category_name?: string;
+  parent_category_slug?: string;
+  parent_category_color?: string;
+  parent_category_icon?: string;
 }
 
 export interface ForumComment {

@@ -269,10 +269,26 @@ export const ForumTopicsList = ({
                         PIN
                       </Badge>
                     )}
+                    {topic.parent_category_name && topic.parent_category_color && topic.parent_category_icon && (
+                      <>
+                        <Badge 
+                          variant="outline" 
+                          className="h-4 px-1.5 text-[10px] gap-0.5 border-zinc-700/50"
+                          style={{
+                            color: topic.parent_category_color,
+                            backgroundColor: `${topic.parent_category_color}15`
+                          }}
+                        >
+                          <Icon name={topic.parent_category_icon as any} size={10} />
+                          {topic.parent_category_name}
+                        </Badge>
+                        <Icon name="ChevronRight" size={10} className="text-zinc-600" />
+                      </>
+                    )}
                     {topic.category_name && topic.category_color && topic.category_icon && (
                       <Badge 
                         variant="outline" 
-                        className="h-4 px-1.5 text-[10px] gap-1 border-zinc-700/50"
+                        className="h-4 px-1.5 text-[10px] gap-0.5 border-zinc-700/50"
                         style={{
                           color: topic.category_color,
                           backgroundColor: `${topic.category_color}15`

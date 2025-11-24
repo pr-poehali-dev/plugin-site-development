@@ -58,11 +58,14 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                         u.forum_role as author_forum_role, u.last_seen_at as author_last_seen,
                         u.is_verified as author_is_verified,
                         p.id as plugin_id, p.title as plugin_title,
-                        fc.name as category_name, fc.slug as category_slug, fc.color as category_color, fc.icon as category_icon
+                        fc.name as category_name, fc.slug as category_slug, fc.color as category_color, fc.icon as category_icon,
+                        parent_fc.name as parent_category_name, parent_fc.slug as parent_category_slug, 
+                        parent_fc.color as parent_category_color, parent_fc.icon as parent_category_icon
                     FROM forum_topics ft
                     LEFT JOIN users u ON ft.author_id = u.id
                     LEFT JOIN plugins p ON ft.plugin_id = p.id
                     LEFT JOIN forum_categories fc ON ft.category_id = fc.id
+                    LEFT JOIN forum_categories parent_fc ON fc.parent_id = parent_fc.id
                     WHERE ft.id = %s AND ft.removed_at IS NULL
                 """, (topic_id,))
                 topic = cur.fetchone()
@@ -143,11 +146,14 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                         u.forum_role as author_forum_role, u.last_seen_at as author_last_seen,
                         u.is_verified as author_is_verified,
                         fcat.name as category_name, fcat.slug as category_slug, fcat.color as category_color, fcat.icon as category_icon,
+                        parent_fc.name as parent_category_name, parent_fc.slug as parent_category_slug,
+                        parent_fc.color as parent_category_color, parent_fc.icon as parent_category_icon,
                         COUNT(fcom.id) as comments_count
                     FROM forum_topics ft
                     LEFT JOIN users u ON ft.author_id = u.id
                     LEFT JOIN forum_comments fcom ON ft.id = fcom.topic_id AND fcom.removed_at IS NULL
                     LEFT JOIN forum_categories fcat ON ft.category_id = fcat.id
+                    LEFT JOIN forum_categories parent_fc ON fcat.parent_id = parent_fc.id
                     WHERE ft.removed_at IS NULL
                 """
                 query_params: List[Any] = []
@@ -160,7 +166,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     query += " AND fcat.slug = %s"
                     query_params.append(category_slug)
                 
-                query += " GROUP BY ft.id, ft.updated_at, u.id, u.username, u.avatar_url, u.forum_role, u.last_seen_at, fcat.id, fcat.name, fcat.slug, fcat.color, fcat.icon ORDER BY ft.is_pinned DESC, ft.created_at DESC LIMIT 50"
+                query += " GROUP BY ft.id, ft.updated_at, u.id, u.username, u.avatar_url, u.forum_role, u.last_seen_at, fcat.id, fcat.name, fcat.slug, fcat.color, fcat.icon, parent_fc.id, parent_fc.name, parent_fc.slug, parent_fc.color, parent_fc.icon ORDER BY ft.is_pinned DESC, ft.created_at DESC LIMIT 50"
                 
                 cur.execute(query, query_params)
                 topics = cur.fetchall()
