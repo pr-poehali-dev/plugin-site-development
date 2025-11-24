@@ -232,4 +232,27 @@
     scrollbar-width: thin;
     scrollbar-color: rgba(234, 179, 8, 0.3) rgba(0, 0, 0, 0.2);
   }
+
+  .custom-scrollbar-horizontal::-webkit-scrollbar {
+    height: 6px;
+  }
+
+  .custom-scrollbar-horizontal::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 3px;
+  }
+
+  .custom-scrollbar-horizontal::-webkit-scrollbar-thumb {
+    background: rgba(234, 179, 8, 0.3);
+    border-radius: 3px;
+  }
+
+  .custom-scrollbar-horizontal::-webkit-scrollbar-thumb:hover {
+    background: rgba(234, 179, 8, 0.5);
+  }
+
+  .custom-scrollbar-horizontal {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(234, 179, 8, 0.3) rgba(0, 0, 0, 0.2);
+  }
 }

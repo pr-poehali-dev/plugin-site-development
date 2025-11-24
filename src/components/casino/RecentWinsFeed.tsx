@@ -109,61 +109,58 @@ const RecentWinsFeed = () => {
   }
 
   return (
-    <Card className="p-6 bg-gradient-to-br from-yellow-950/40 via-yellow-900/30 to-orange-950/40 border-yellow-800/30 relative overflow-hidden">
+    <Card className="p-4 bg-gradient-to-br from-yellow-950/40 via-yellow-900/30 to-orange-950/40 border-yellow-800/30 relative overflow-hidden">
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-yellow-600/5 via-transparent to-transparent"></div>
       
       <div className="relative z-10">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 bg-yellow-500/20 rounded-full flex items-center justify-center">
-            <Icon name="Trophy" size={20} className="text-yellow-400" />
+        <div className="flex items-center gap-2 mb-4">
+          <div className="w-8 h-8 bg-yellow-500/20 rounded-full flex items-center justify-center">
+            <Icon name="Trophy" size={16} className="text-yellow-400" />
           </div>
-          <h3 className="text-xl font-bold">🏆 Последние выигрыши</h3>
+          <h3 className="text-base font-bold">🏆 Последние выигрыши</h3>
         </div>
 
-        <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
-          {wins.map((win) => (
-            <div
-              key={win.id}
-              className="flex items-center gap-3 p-3 bg-black/20 rounded-lg hover:bg-black/30 transition-colors border border-yellow-800/20"
-            >
-              <div className="relative">
-                {win.avatar_url ? (
-                  <img
-                    src={win.avatar_url}
-                    alt={win.username}
-                    className="w-10 h-10 rounded-full border-2 border-yellow-500/30"
-                  />
-                ) : (
-                  <div className="w-10 h-10 bg-gradient-to-br from-yellow-500/30 to-orange-500/30 rounded-full flex items-center justify-center border-2 border-yellow-500/30">
-                    <Icon name="User" size={20} className="text-yellow-400" />
+        <div className="relative">
+          <div className="flex gap-3 overflow-x-auto pb-2 custom-scrollbar-horizontal">
+            {wins.map((win) => (
+              <div
+                key={win.id}
+                className="flex-shrink-0 w-32 p-3 bg-black/20 rounded-lg hover:bg-black/30 transition-all hover:scale-105 border border-yellow-800/20"
+              >
+                <div className="flex flex-col items-center gap-2">
+                  <div className="relative">
+                    {win.avatar_url ? (
+                      <img
+                        src={win.avatar_url}
+                        alt={win.username}
+                        className="w-12 h-12 rounded-full border-2 border-yellow-500/30"
+                      />
+                    ) : (
+                      <div className="w-12 h-12 bg-gradient-to-br from-yellow-500/30 to-orange-500/30 rounded-full flex items-center justify-center border-2 border-yellow-500/30">
+                        <Icon name="User" size={20} className="text-yellow-400" />
+                      </div>
+                    )}
+                    <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-yellow-500/20 rounded-full flex items-center justify-center border border-yellow-500/50">
+                      <Icon name={getGameIcon(win.game)} size={10} className={getGameColor(win.game)} />
+                    </div>
                   </div>
-                )}
-                <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-yellow-500/20 rounded-full flex items-center justify-center border border-yellow-500/50">
-                  <Icon name={getGameIcon(win.game)} size={12} className={getGameColor(win.game)} />
-                </div>
-              </div>
 
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="font-semibold text-sm truncate">{win.username}</span>
-                  <span className="text-xs text-muted-foreground">
-                    {formatTimeAgo(win.timestamp)}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-muted-foreground">{win.game}</span>
-                </div>
-              </div>
+                  <div className="text-center w-full">
+                    <p className="font-semibold text-xs truncate">{win.username}</p>
+                    <p className="text-xs text-muted-foreground truncate">{win.game}</p>
+                  </div>
 
-              <div className="text-right flex-shrink-0">
-                <div className="flex items-center gap-1 text-yellow-400 font-bold">
-                  <Icon name="TrendingUp" size={14} />
-                  <span className="text-lg">+{win.amount.toFixed(2)}</span>
+                  <div className="text-center">
+                    <div className="flex items-center justify-center gap-1 text-yellow-400 font-bold">
+                      <Icon name="TrendingUp" size={12} />
+                      <span className="text-sm">+{win.amount.toFixed(0)}</span>
+                    </div>
+                    <span className="text-xs text-muted-foreground">{formatTimeAgo(win.timestamp)}</span>
+                  </div>
                 </div>
-                <span className="text-xs text-muted-foreground">USDT</span>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
     </Card>
