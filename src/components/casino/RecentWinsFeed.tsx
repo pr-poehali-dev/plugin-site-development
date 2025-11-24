@@ -32,7 +32,7 @@ const RecentWinsFeed = () => {
         },
         body: JSON.stringify({
           action: 'get_recent_wins',
-          limit: 5
+          limit: 9
         })
       });
 
@@ -84,73 +84,82 @@ const RecentWinsFeed = () => {
 
   if (isLoading) {
     return (
-      <Card className="p-3 bg-gradient-to-br from-yellow-950/20 via-yellow-900/10 to-orange-950/20 border-yellow-800/20">
-        <div className="flex items-center justify-center h-12">
-          <Icon name="Loader2" size={20} className="animate-spin text-yellow-400" />
-        </div>
-      </Card>
-    );
-  }
-
-  if (wins.length === 0) {
-    return (
-      <Card className="p-3 bg-gradient-to-br from-yellow-950/20 via-yellow-900/10 to-orange-950/20 border-yellow-800/20">
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 bg-yellow-500/20 rounded-full flex items-center justify-center">
-              <Icon name="Trophy" size={14} className="text-yellow-400" />
-            </div>
-            <h3 className="text-sm font-semibold">Последние выигрыши</h3>
-          </div>
-          <p className="text-xs text-muted-foreground">
-            Будьте первым!
-          </p>
-        </div>
-      </Card>
-    );
-  }
-
-  return (
-    <Card className="p-3 bg-gradient-to-br from-yellow-950/20 via-yellow-900/10 to-orange-950/20 border-yellow-800/20">
-      <div className="flex items-center justify-between gap-3">
+      <div className="space-y-3">
         <div className="flex items-center gap-2">
           <div className="w-7 h-7 bg-yellow-500/20 rounded-full flex items-center justify-center">
             <Icon name="Trophy" size={14} className="text-yellow-400" />
           </div>
           <h3 className="text-sm font-semibold">Последние выигрыши</h3>
         </div>
-        
+        <Card className="p-4 bg-gradient-to-br from-yellow-950/20 via-yellow-900/10 to-orange-950/20 border-yellow-800/20">
+          <div className="flex items-center justify-center h-20">
+            <Icon name="Loader2" size={24} className="animate-spin text-yellow-400" />
+          </div>
+        </Card>
+      </div>
+    );
+  }
+
+  if (wins.length === 0) {
+    return (
+      <div className="space-y-3">
         <div className="flex items-center gap-2">
-          {wins.slice(0, 5).map((win, index) => (
+          <div className="w-7 h-7 bg-yellow-500/20 rounded-full flex items-center justify-center">
+            <Icon name="Trophy" size={14} className="text-yellow-400" />
+          </div>
+          <h3 className="text-sm font-semibold">Последние выигрыши</h3>
+        </div>
+        <Card className="p-4 bg-gradient-to-br from-yellow-950/20 via-yellow-900/10 to-orange-950/20 border-yellow-800/20">
+          <div className="flex items-center justify-center h-20">
+            <p className="text-xs text-muted-foreground">Будьте первым!</p>
+          </div>
+        </Card>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center gap-2">
+        <div className="w-7 h-7 bg-yellow-500/20 rounded-full flex items-center justify-center">
+          <Icon name="Trophy" size={14} className="text-yellow-400" />
+        </div>
+        <h3 className="text-sm font-semibold">Последние выигрыши</h3>
+      </div>
+      
+      <Card className="p-4 bg-gradient-to-br from-yellow-950/20 via-yellow-900/10 to-orange-950/20 border-yellow-800/20">
+        <div className="flex items-center justify-center gap-4 flex-wrap">
+          {wins.slice(0, 9).map((win) => (
             <div
               key={win.id}
-              className="relative group"
-              title={`${win.username}: +${win.amount.toFixed(0)} USDT в ${win.game}`}
+              className="flex flex-col items-center gap-2 group"
             >
-              {win.avatar_url ? (
-                <img
-                  src={win.avatar_url}
-                  alt={win.username}
-                  className="w-8 h-8 rounded-full border-2 border-yellow-500/30 transition-transform group-hover:scale-110"
-                />
-              ) : (
-                <div className="w-8 h-8 bg-gradient-to-br from-yellow-500/30 to-orange-500/30 rounded-full flex items-center justify-center border-2 border-yellow-500/30 transition-transform group-hover:scale-110">
-                  <Icon name="User" size={14} className="text-yellow-400" />
+              <div className="relative">
+                {win.avatar_url ? (
+                  <img
+                    src={win.avatar_url}
+                    alt={win.username}
+                    className="w-14 h-14 rounded-full border-2 border-yellow-500/30 transition-transform group-hover:scale-110"
+                  />
+                ) : (
+                  <div className="w-14 h-14 bg-gradient-to-br from-yellow-500/30 to-orange-500/30 rounded-full flex items-center justify-center border-2 border-yellow-500/30 transition-transform group-hover:scale-110">
+                    <Icon name="User" size={24} className="text-yellow-400" />
+                  </div>
+                )}
+                <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-black/80 rounded-full flex items-center justify-center border border-yellow-500/50">
+                  <Icon name={getGameIcon(win.game)} size={12} className={getGameColor(win.game)} />
                 </div>
-              )}
-              <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-black/80 rounded-full flex items-center justify-center border border-yellow-500/50">
-                <Icon name={getGameIcon(win.game)} size={8} className={getGameColor(win.game)} />
               </div>
               
-              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-black/90 rounded text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
-                <div className="font-semibold text-yellow-400">+{win.amount.toFixed(0)} USDT</div>
-                <div className="text-muted-foreground text-[10px]">{win.username} • {win.game}</div>
+              <div className="text-center">
+                <div className="font-semibold text-yellow-400 text-sm">+{win.amount.toFixed(0)}</div>
+                <div className="text-muted-foreground text-[10px]">{win.username}</div>
               </div>
             </div>
           ))}
         </div>
-      </div>
-    </Card>
+      </Card>
+    </div>
   );
 };
 
