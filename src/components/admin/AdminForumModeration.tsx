@@ -37,24 +37,73 @@ export const AdminForumModeration = ({ topics, onRefresh }: AdminForumModeration
   const [editIsPinned, setEditIsPinned] = useState(false);
   const [editIsClosed, setEditIsClosed] = useState(false);
   const [categories, setCategories] = useState<ForumCategory[]>([]);
+  const [allCategories, setAllCategories] = useState<ForumCategory[]>([]);
   const [loading, setLoading] = useState(false);
+  const [movingTopicId, setMovingTopicId] = useState<number | null>(null);
+  const [selectedMoveCategory, setSelectedMoveCategory] = useState<string>('');
 
   const fetchCategories = async () => {
     try {
       const response = await fetch(`${FORUM_URL}?action=get_categories`);
       const data = await response.json();
       if (data.success && data.categories) {
-        const allCategories: ForumCategory[] = [];
+        const subcats: ForumCategory[] = [];
         data.categories.forEach((parent: ForumCategory) => {
           if (parent.subcategories) {
-            allCategories.push(...parent.subcategories);
+            subcats.push(...parent.subcategories);
           }
         });
-        setCategories(allCategories);
+        setCategories(subcats);
+        setAllCategories(data.categories);
       }
     } catch (error) {
       console.error('Ошибка загрузки категорий:', error);
     }
+  };
+
+  const handleQuickMoveCategory = async (topicId: number, categoryId: number) => {
+    setLoading(true);
+    try {
+      const response = await fetch(FORUM_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-User-Id': '1'
+        },
+        body: JSON.stringify({
+          action: 'admin_update_topic',
+          topic_id: topicId,
+          category_id: categoryId
+        })
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        toast({
+          title: 'Успешно',
+          description: 'Тема перемещена в другую категорию'
+        });
+        setMovingTopicId(null);
+        setSelectedMoveCategory('');
+        onRefresh();
+      } else {
+        throw new Error(data.error || 'Ошибка перемещения');
+      }
+    } catch (error: any) {
+      toast({
+        title: 'Ошибка',
+        description: error.message,
+        variant: 'destructive'
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const openMoveCategoryDialog = (topicId: number) => {
+    setMovingTopicId(topicId);
+    setSelectedMoveCategory('');
+    fetchCategories();
   };
 
   const handleEditTopic = (topic: ForumTopic) => {
@@ -212,6 +261,14 @@ export const AdminForumModeration = ({ topics, onRefresh }: AdminForumModeration
               <div className="flex items-center gap-2">
                 <Button
                   size="sm"
+                  variant="ghost"
+                  onClick={() => openMoveCategoryDialog(topic.id)}
+                  title="Переместить в другую категорию"
+                >
+                  <Icon name="FolderInput" size={14} />
+                </Button>
+                <Button
+                  size="sm"
                   variant="outline"
                   onClick={() => handleEditTopic(topic)}
                 >
@@ -230,6 +287,59 @@ export const AdminForumModeration = ({ topics, onRefresh }: AdminForumModeration
           </div>
         ))}
       </div>
+
+      <Dialog open={movingTopicId !== null} onOpenChange={() => setMovingTopicId(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Переместить тему в категорию</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Выберите категорию, в которую хотите переместить тему
+            </p>
+            {allCategories.map((parent) => (
+              <div key={parent.id} className="space-y-2">
+                <div className="text-sm font-semibold flex items-center gap-2">
+                  <Icon name={parent.icon as any} size={16} />
+                  {parent.name}
+                </div>
+                <div className="pl-6 space-y-1">
+                  {parent.subcategories?.map((subcat) => (
+                    <button
+                      key={subcat.id}
+                      onClick={() => setSelectedMoveCategory(subcat.id.toString())}
+                      className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${
+                        selectedMoveCategory === subcat.id.toString()
+                          ? 'bg-primary text-primary-foreground'
+                          : 'hover:bg-accent'
+                      }`}
+                      style={{
+                        borderLeft: `3px solid ${subcat.color}`
+                      }}
+                    >
+                      <div className="flex items-center gap-2">
+                        <Icon name={subcat.icon as any} size={14} />
+                        {subcat.name}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setMovingTopicId(null)}>
+              Отмена
+            </Button>
+            <Button
+              onClick={() => movingTopicId && handleQuickMoveCategory(movingTopicId, parseInt(selectedMoveCategory))}
+              disabled={!selectedMoveCategory || loading}
+            >
+              {loading ? 'Перемещение...' : 'Переместить'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={!!editingTopic} onOpenChange={() => setEditingTopic(null)}>
         <DialogContent className="max-w-2xl">
