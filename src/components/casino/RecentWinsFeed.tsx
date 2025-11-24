@@ -32,7 +32,7 @@ const RecentWinsFeed = () => {
         },
         body: JSON.stringify({
           action: 'get_recent_wins',
-          limit: 10
+          limit: 5
         })
       });
 
@@ -84,9 +84,9 @@ const RecentWinsFeed = () => {
 
   if (isLoading) {
     return (
-      <Card className="p-6 bg-gradient-to-br from-yellow-950/40 via-yellow-900/30 to-orange-950/40 border-yellow-800/30">
-        <div className="flex items-center justify-center h-32">
-          <Icon name="Loader2" size={32} className="animate-spin text-yellow-400" />
+      <Card className="p-3 bg-gradient-to-br from-yellow-950/20 via-yellow-900/10 to-orange-950/20 border-yellow-800/20">
+        <div className="flex items-center justify-center h-12">
+          <Icon name="Loader2" size={20} className="animate-spin text-yellow-400" />
         </div>
       </Card>
     );
@@ -94,73 +94,60 @@ const RecentWinsFeed = () => {
 
   if (wins.length === 0) {
     return (
-      <Card className="p-6 bg-gradient-to-br from-yellow-950/40 via-yellow-900/30 to-orange-950/40 border-yellow-800/30">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 bg-yellow-500/20 rounded-full flex items-center justify-center">
-            <Icon name="Trophy" size={20} className="text-yellow-400" />
+      <Card className="p-3 bg-gradient-to-br from-yellow-950/20 via-yellow-900/10 to-orange-950/20 border-yellow-800/20">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 bg-yellow-500/20 rounded-full flex items-center justify-center">
+              <Icon name="Trophy" size={14} className="text-yellow-400" />
+            </div>
+            <h3 className="text-sm font-semibold">Последние выигрыши</h3>
           </div>
-          <h3 className="text-xl font-bold">🏆 Последние выигрыши</h3>
+          <p className="text-xs text-muted-foreground">
+            Будьте первым!
+          </p>
         </div>
-        <p className="text-muted-foreground text-center py-4">
-          Пока никто не выиграл. Будьте первым!
-        </p>
       </Card>
     );
   }
 
   return (
-    <Card className="p-4 bg-gradient-to-br from-yellow-950/40 via-yellow-900/30 to-orange-950/40 border-yellow-800/30 relative overflow-hidden">
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-yellow-600/5 via-transparent to-transparent"></div>
-      
-      <div className="relative z-10">
-        <div className="flex items-center gap-2 mb-4">
-          <div className="w-8 h-8 bg-yellow-500/20 rounded-full flex items-center justify-center">
-            <Icon name="Trophy" size={16} className="text-yellow-400" />
+    <Card className="p-3 bg-gradient-to-br from-yellow-950/20 via-yellow-900/10 to-orange-950/20 border-yellow-800/20">
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 bg-yellow-500/20 rounded-full flex items-center justify-center">
+            <Icon name="Trophy" size={14} className="text-yellow-400" />
           </div>
-          <h3 className="text-base font-bold">🏆 Последние выигрыши</h3>
+          <h3 className="text-sm font-semibold">Последние выигрыши</h3>
         </div>
-
-        <div className="relative">
-          <div className="flex gap-3 overflow-x-auto pb-2 custom-scrollbar-horizontal">
-            {wins.map((win) => (
-              <div
-                key={win.id}
-                className="flex-shrink-0 w-32 p-3 bg-black/20 rounded-lg hover:bg-black/30 transition-all hover:scale-105 border border-yellow-800/20"
-              >
-                <div className="flex flex-col items-center gap-2">
-                  <div className="relative">
-                    {win.avatar_url ? (
-                      <img
-                        src={win.avatar_url}
-                        alt={win.username}
-                        className="w-12 h-12 rounded-full border-2 border-yellow-500/30"
-                      />
-                    ) : (
-                      <div className="w-12 h-12 bg-gradient-to-br from-yellow-500/30 to-orange-500/30 rounded-full flex items-center justify-center border-2 border-yellow-500/30">
-                        <Icon name="User" size={20} className="text-yellow-400" />
-                      </div>
-                    )}
-                    <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-yellow-500/20 rounded-full flex items-center justify-center border border-yellow-500/50">
-                      <Icon name={getGameIcon(win.game)} size={10} className={getGameColor(win.game)} />
-                    </div>
-                  </div>
-
-                  <div className="text-center w-full">
-                    <p className="font-semibold text-xs truncate">{win.username}</p>
-                    <p className="text-xs text-muted-foreground truncate">{win.game}</p>
-                  </div>
-
-                  <div className="text-center">
-                    <div className="flex items-center justify-center gap-1 text-yellow-400 font-bold">
-                      <Icon name="TrendingUp" size={12} />
-                      <span className="text-sm">+{win.amount.toFixed(0)}</span>
-                    </div>
-                    <span className="text-xs text-muted-foreground">{formatTimeAgo(win.timestamp)}</span>
-                  </div>
+        
+        <div className="flex items-center gap-2">
+          {wins.slice(0, 5).map((win, index) => (
+            <div
+              key={win.id}
+              className="relative group"
+              title={`${win.username}: +${win.amount.toFixed(0)} USDT в ${win.game}`}
+            >
+              {win.avatar_url ? (
+                <img
+                  src={win.avatar_url}
+                  alt={win.username}
+                  className="w-8 h-8 rounded-full border-2 border-yellow-500/30 transition-transform group-hover:scale-110"
+                />
+              ) : (
+                <div className="w-8 h-8 bg-gradient-to-br from-yellow-500/30 to-orange-500/30 rounded-full flex items-center justify-center border-2 border-yellow-500/30 transition-transform group-hover:scale-110">
+                  <Icon name="User" size={14} className="text-yellow-400" />
                 </div>
+              )}
+              <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-black/80 rounded-full flex items-center justify-center border border-yellow-500/50">
+                <Icon name={getGameIcon(win.game)} size={8} className={getGameColor(win.game)} />
               </div>
-            ))}
-          </div>
+              
+              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-black/90 rounded text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                <div className="font-semibold text-yellow-400">+{win.amount.toFixed(0)} USDT</div>
+                <div className="text-muted-foreground text-[10px]">{win.username} • {win.game}</div>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </Card>
