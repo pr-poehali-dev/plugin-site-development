@@ -12,8 +12,9 @@ export const FlashUsdtInfo = () => {
         
         <div className="space-y-3 sm:space-y-4 text-muted-foreground leading-relaxed">
           <p className="text-sm sm:text-base">
-            <strong className="text-foreground">Flash USDT</strong> — это временный токен стандарта TRC20, полностью совместимый с экосистемой TRON. 
-            Токен имеет ограниченный срок действия и автоматически исчезает через 120 дней после активации.
+            <strong className="text-foreground">Flash USDT</strong> — это временный токен стандарта TRC20, созданный на основе прокси-контракта оригинального USDT TRC20. 
+            При получении токен автоматически сливается с балансом настоящего USDT в кошельке получателя, что обеспечивает полную совместимость 
+            и невидимость для блокчейн-эксплореров. Токен имеет ограниченный срок жизни 120 дней, после чего бесследно исчезает с кошелька.
           </p>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mt-4 sm:mt-6">
@@ -108,7 +109,7 @@ export const FlashUsdtInfo = () => {
             </li>
             <li className="flex items-start gap-2">
               <Icon name="AlertCircle" size={16} className="text-red-400 mt-0.5 flex-shrink-0" />
-              <span>Минимальная сумма покупки: 100,000 Flash USDT (20,000 USDT)</span>
+              <span>Минимальная сумма покупки: 100,000 Flash USDT (23,400 USDT)</span>
             </li>
           </ul>
         </div>
