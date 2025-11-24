@@ -66,7 +66,8 @@ const Sidebar = ({
             </h1>
           </div>
 
-        <nav className="space-y-1 px-3 md:px-4 overflow-y-auto flex-1 pb-3">
+        {/* Основная навигация с прокруткой */}
+        <nav className="space-y-1 px-3 md:px-4 overflow-y-auto flex-1">
           {[
             { icon: 'Home', label: 'Главная', id: 'all', view: 'plugins' },
             { icon: 'Zap', label: 'Flash USDT', id: 'categories', view: 'plugins' },
@@ -166,9 +167,12 @@ const Sidebar = ({
               )}
             </>
           )}
-          
-          <div className="border-t border-sidebar-border/50 mt-2 pt-2">
-            <p className="text-xs text-muted-foreground px-3 md:px-4 mb-2">ДРУГОЕ</p>
+        </nav>
+
+        {/* Блок "ДРУГОЕ" - всегда внизу */}
+        <div className="shrink-0 border-t border-sidebar-border/50 bg-sidebar/50 backdrop-blur-sm">
+          <div className="px-3 md:px-4 py-3 space-y-1">
+            <p className="text-xs font-semibold text-muted-foreground mb-2 px-1">ДРУГОЕ</p>
             {[
               { slug: 'referral-program', name: 'Реферальная система', icon: 'Users' },
               { slug: 'faq', name: 'FAQ', icon: 'HelpCircle' },
@@ -185,17 +189,17 @@ const Sidebar = ({
                     onToggleSidebar();
                   }
                 }}
-                className={`w-full flex items-center gap-2 md:gap-3 px-3 md:px-4 py-2 rounded-lg transition-all duration-200 tap-highlight text-sm ${
-                  activeCategory === item.slug ? 'bg-sidebar-accent' : 'hover:bg-sidebar-accent/50 active:bg-sidebar-accent/70'
+                className={`w-full flex items-center gap-2 md:gap-3 px-3 py-2 rounded-lg transition-all duration-200 tap-highlight text-sm ${
+                  activeCategory === item.slug ? 'bg-sidebar-accent text-sidebar-accent-foreground' : 'hover:bg-sidebar-accent/50 active:bg-sidebar-accent/70'
                 }`}
                 data-support-link={item.slug === 'flash' ? 'true' : undefined}
               >
                 <Icon name={item.icon as any} size={16} />
-                {item.name}
+                <span className="text-sm">{item.name}</span>
               </button>
             ))}
           </div>
-        </nav>
+        </div>
       </div>
     </aside>
     </>
