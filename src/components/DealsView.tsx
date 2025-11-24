@@ -246,7 +246,8 @@ export const DealsView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Deal
   };
 
   const handleBuyerConfirm = async () => {
-    if (!user || !selectedDeal) return;
+    console.log('handleBuyerConfirm вызвана', { user, selectedDeal, actionLoading });
+    if (!user || !selectedDeal || actionLoading) return;
     
     const confirmed = window.confirm('Подтвердить получение товара? Средства будут переведены продавцу (комиссия 1%)');
     if (!confirmed) return;
@@ -551,13 +552,13 @@ export const DealsView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Deal
             </DialogHeader>
 
             <div className="space-y-4">
-              {user && (user.id === selectedDeal.seller_id || user.id === selectedDeal.buyer_id) && (
+              {user && (Number(user.id) === Number(selectedDeal.seller_id) || Number(user.id) === Number(selectedDeal.buyer_id)) && (
                 <Card className="p-4 bg-blue-500/10 border-blue-500/30">
                   <p className="text-sm font-medium mb-1">
-                    {user.id === selectedDeal.seller_id ? 'Вы - продавец' : 'Вы - покупатель'}
+                    {Number(user.id) === Number(selectedDeal.seller_id) ? 'Вы - продавец' : 'Вы - покупатель'}
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    {getStepText(selectedDeal.step, user.id === selectedDeal.seller_id)}
+                    {getStepText(selectedDeal.step, Number(user.id) === Number(selectedDeal.seller_id))}
                   </p>
                 </Card>
               )}
@@ -631,7 +632,7 @@ export const DealsView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Deal
                 </div>
               </Card>
 
-              {selectedDeal.status !== 'completed' && selectedDeal.status !== 'cancelled' && user && (user.id === selectedDeal.seller_id || user.id === selectedDeal.buyer_id) && (
+              {selectedDeal.status !== 'completed' && selectedDeal.status !== 'cancelled' && user && (Number(user.id) === Number(selectedDeal.seller_id) || Number(user.id) === Number(selectedDeal.buyer_id)) && (
                 <div className="flex items-center gap-2">
                   <Input
                     value={newMessage}
@@ -647,7 +648,7 @@ export const DealsView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Deal
 
               {/* Кнопки действий */}
               <div className="space-y-2">
-                {selectedDeal.status === 'active' && !selectedDeal.buyer_id && user && user.id !== selectedDeal.seller_id && (
+                {selectedDeal.status === 'active' && !selectedDeal.buyer_id && user && Number(user.id) !== Number(selectedDeal.seller_id) && (
                   <Button
                     onClick={handleBuyerPay}
                     disabled={actionLoading}
@@ -658,7 +659,7 @@ export const DealsView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Deal
                   </Button>
                 )}
 
-                {selectedDeal.step === 'buyer_paid' && user?.id === selectedDeal.seller_id && (
+                {selectedDeal.step === 'buyer_paid' && user && Number(user.id) === Number(selectedDeal.seller_id) && (
                   <Button
                     onClick={handleSellerSent}
                     disabled={actionLoading}
@@ -669,7 +670,7 @@ export const DealsView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Deal
                   </Button>
                 )}
 
-                {selectedDeal.step === 'seller_sent' && user?.id === selectedDeal.buyer_id && (
+                {selectedDeal.step === 'seller_sent' && user && Number(user.id) === Number(selectedDeal.buyer_id) && (
                   <Card className="p-4 bg-green-800/10 border border-green-500/30 space-y-3">
                     <div className="flex items-start gap-2">
                       <Icon name="AlertCircle" size={18} className="text-green-400 flex-shrink-0 mt-0.5" />
@@ -695,7 +696,7 @@ export const DealsView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Deal
                       <div>
                         <h4 className="font-semibold text-green-400">Сделка завершена!</h4>
                         <p className="text-sm text-muted-foreground mt-1">
-                          {user?.id === selectedDeal.seller_id ? `Вы получили ${(selectedDeal.price - selectedDeal.commission).toFixed(2)} USDT (комиссия ${selectedDeal.commission.toFixed(2)} USDT)` : 'Средства переведены продавцу'}
+                          {user && Number(user.id) === Number(selectedDeal.seller_id) ? `Вы получили ${(selectedDeal.price - selectedDeal.commission).toFixed(2)} USDT (комиссия ${selectedDeal.commission.toFixed(2)} USDT)` : 'Средства переведены продавцу'}
                         </p>
                       </div>
                     </div>
