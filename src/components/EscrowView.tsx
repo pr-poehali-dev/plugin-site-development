@@ -201,12 +201,16 @@ export const EscrowView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Esc
   };
 
   const createDeal = async () => {
+    console.log('createDeal вызвана', { user, creating, newDeal });
+    
     if (!user) {
+      console.log('Нет пользователя');
       onShowAuthDialog();
       return;
     }
 
     if (!newDeal.title || !newDeal.description || !newDeal.price) {
+      console.log('Не все поля заполнены');
       toast({
         title: 'Ошибка',
         description: 'Заполните все поля',
@@ -215,7 +219,12 @@ export const EscrowView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Esc
       return;
     }
 
-    if (creating) return;
+    if (creating) {
+      console.log('Уже создается');
+      return;
+    }
+    
+    console.log('Начинаем создание товара...');
     setCreating(true);
 
     try {
@@ -647,7 +656,10 @@ export const EscrowView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Esc
                 Отмена
               </Button>
               <Button
-                onClick={createDeal}
+                onClick={() => {
+                  console.log('Клик на кнопку Разместить товар');
+                  createDeal();
+                }}
                 disabled={creating}
                 className="flex-1 bg-gradient-to-r from-green-600 to-green-800 hover:from-green-700 hover:to-green-900 shadow-lg shadow-green-500/20 h-10 sm:h-11 text-xs sm:text-sm font-semibold"
               >
@@ -782,11 +794,15 @@ const DealDetailDialog = ({ deal, user, onClose, onUpdate, onRefreshUserBalance,
   };
 
   const joinDeal = async () => {
+    console.log('joinDeal вызвана', { user, loading, currentDeal });
+    
     if (!user) {
+      console.log('Нет пользователя');
       return;
     }
     
     if (loading) {
+      console.log('Уже загружается');
       return;
     }
     
@@ -1261,7 +1277,10 @@ const DealDetailDialog = ({ deal, user, onClose, onUpdate, onRefreshUserBalance,
           <div className="space-y-1.5 sm:space-y-2">
             {currentDeal.status === 'open' && !isSeller && (
               <Button
-                onClick={joinDeal}
+                onClick={() => {
+                  console.log('Клик на кнопку Купить');
+                  joinDeal();
+                }}
                 disabled={loading}
                 className="w-full bg-gradient-to-r from-green-800 to-green-900 hover:from-green-700 hover:to-green-800 h-9 sm:h-10 text-xs sm:text-sm"
               >
