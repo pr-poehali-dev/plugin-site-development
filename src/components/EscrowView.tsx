@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import Icon from '@/components/ui/icon';
@@ -27,13 +27,30 @@ export const EscrowView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Esc
   const [loading, setLoading] = useState(true);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [selectedDeal, setSelectedDeal] = useState<EscrowDeal | null>(null);
-  const [statusFilter, setStatusFilter] = useState<'open' | 'in_progress' | 'completed' | 'dispute'>('open');
+  
+  // Восстанавливаем последнюю выбранную вкладку из localStorage
+  const [statusFilter, setStatusFilter] = useState<'open' | 'in_progress' | 'completed' | 'dispute'>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('escrow_filter');
+      if (saved && ['open', 'in_progress', 'completed', 'dispute'].includes(saved)) {
+        return saved as 'open' | 'in_progress' | 'completed' | 'dispute';
+      }
+    }
+    return 'open';
+  });
   
   const [newDeal, setNewDeal] = useState({
     title: '',
     description: '',
     price: ''
   });
+  
+  // Сохраняем выбранную вкладку в localStorage
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('escrow_filter', statusFilter);
+    }
+  }, [statusFilter]);
 
   // Восстановление открытой сделки из URL при загрузке
   useEffect(() => {
@@ -169,6 +186,8 @@ export const EscrowView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Esc
     const url = new URL(window.location.href);
     url.searchParams.delete('deal');
     window.history.replaceState({}, '', url.toString());
+    // Обновляем список сделок после закрытия диалога
+    fetchDeals();
   };
 
   const createDeal = async () => {
@@ -714,6 +733,7 @@ const DealDetailDialog = ({ deal, user, onClose, onUpdate, onRefreshUserBalance,
   const [messages, setMessages] = useState<any[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(false);
+  const hasShownBuyerJoinedToast = React.useRef(false);
 
   const handleClose = () => {
     setOpen(false);
@@ -736,7 +756,36 @@ const DealDetailDialog = ({ deal, user, onClose, onUpdate, onRefreshUserBalance,
       const response = await fetch(`${ESCROW_URL}?action=deal&id=${deal.id}`, { headers });
       const data = await response.json();
       if (data.deal) {
+        const oldStatus = currentDeal.status;
+        const newStatus = data.deal.status;
+        const oldBuyerId = currentDeal.buyer_id;
+        const newBuyerId = data.deal.buyer_id;
+        
         setCurrentDeal(data.deal);
+        
+        // Если статус изменился или появился покупатель - обновляем список и переключаем вкладку
+        if (oldStatus !== newStatus || (oldBuyerId === null && newBuyerId !== null)) {
+          onUpdate();
+          
+          // Автоматически переключаем вкладку в зависимости от нового статуса
+          if (newStatus === 'in_progress' && newBuyerId !== null) {
+            onStatusChange?.('in_progress');
+            
+            // Показываем уведомление продавцу только один раз
+            if (user?.id === data.deal.seller_id && oldBuyerId === null && !hasShownBuyerJoinedToast.current) {
+              hasShownBuyerJoinedToast.current = true;
+              toast({
+                title: '🎉 Покупатель присоединился!',
+                description: 'Сделка перемещена в "Незавершенные". Ожидайте подтверждения от покупателя.',
+                duration: 5000
+              });
+            }
+          } else if (newStatus === 'completed') {
+            onStatusChange?.('completed');
+          } else if (newStatus === 'dispute') {
+            onStatusChange?.('dispute');
+          }
+        }
       }
       if (data.messages) {
         setMessages(data.messages);
