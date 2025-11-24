@@ -400,6 +400,9 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     cur.execute(f"DELETE FROM {SCHEMA}.crypto_payments WHERE user_id = %s", (target_user_id,))
                 except: pass
                 try:
+                    cur.execute(f"UPDATE {SCHEMA}.withdrawal_requests SET processed_by = NULL WHERE processed_by = %s", (target_user_id,))
+                except: pass
+                try:
                     cur.execute(f"DELETE FROM {SCHEMA}.withdrawal_requests WHERE user_id = %s", (target_user_id,))
                 except: pass
                 try:
@@ -422,6 +425,9 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 except: pass
                 try:
                     cur.execute(f"UPDATE {SCHEMA}.lottery_rounds SET winner_user_id = NULL WHERE winner_user_id = %s", (target_user_id,))
+                except: pass
+                try:
+                    cur.execute(f"UPDATE {SCHEMA}.plugins SET author_id = NULL WHERE author_id = %s", (target_user_id,))
                 except: pass
                 
                 # Step 3: Finally delete the user
