@@ -35,6 +35,16 @@ export const EscrowView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Esc
     price: ''
   });
 
+  // Восстановление открытой сделки из URL при загрузке
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const dealId = urlParams.get('deal');
+    
+    if (dealId && !selectedDeal) {
+      loadDealById(dealId);
+    }
+  }, []);
+
   useEffect(() => {
     fetchDeals();
     if (user) {
@@ -106,6 +116,38 @@ export const EscrowView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Esc
     } finally {
       setLoading(false);
     }
+  };
+
+  const loadDealById = async (dealId: string) => {
+    try {
+      const response = await fetch(`${ESCROW_URL}?action=deal&id=${dealId}`);
+      const data = await response.json();
+      if (data.deal) {
+        setSelectedDeal(data.deal);
+      }
+    } catch (error) {
+      console.error('Ошибка загрузки сделки:', error);
+      // Убираем параметр из URL если сделка не найдена
+      const url = new URL(window.location.href);
+      url.searchParams.delete('deal');
+      window.history.replaceState({}, '', url.toString());
+    }
+  };
+
+  const handleSelectDeal = (deal: EscrowDeal) => {
+    setSelectedDeal(deal);
+    // Сохраняем ID сделки в URL
+    const url = new URL(window.location.href);
+    url.searchParams.set('deal', deal.id.toString());
+    window.history.pushState({}, '', url.toString());
+  };
+
+  const handleCloseDeal = () => {
+    setSelectedDeal(null);
+    // Убираем параметр из URL
+    const url = new URL(window.location.href);
+    url.searchParams.delete('deal');
+    window.history.replaceState({}, '', url.toString());
   };
 
   const createDeal = async () => {
@@ -395,7 +437,7 @@ export const EscrowView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Esc
             <Card
               key={deal.id}
               className={`p-3 sm:p-4 transition-all cursor-pointer ${getStatusColor(deal.status)}`}
-              onClick={() => setSelectedDeal(deal)}
+              onClick={() => handleSelectDeal(deal)}
             >
               <div className="space-y-3">
                 <div className="flex items-start justify-between gap-2 sm:gap-3">
@@ -587,7 +629,7 @@ export const EscrowView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Esc
         <DealDetailDialog
           deal={selectedDeal}
           user={user}
-          onClose={() => setSelectedDeal(null)}
+          onClose={handleCloseDeal}
           onUpdate={fetchDeals}
           onRefreshUserBalance={onRefreshUserBalance}
         />
