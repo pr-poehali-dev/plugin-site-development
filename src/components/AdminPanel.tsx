@@ -92,6 +92,26 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
   }, [activeTab]);
 
   useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'admin_mock_tickets') {
+        fetchTickets();
+        fetchAllCounts();
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    
+    const interval = setInterval(() => {
+      fetchTickets();
+    }, 3000);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      clearInterval(interval);
+    };
+  }, []);
+
+  useEffect(() => {
     const loadInitialData = async () => {
       await Promise.all([
         fetchAdminNotifications(),
@@ -108,7 +128,10 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
       if (activeTab === 'users') {
         fetchUsers();
       }
-    }, 10000);
+      if (activeTab === 'tickets') {
+        fetchTickets();
+      }
+    }, 5000);
     
     return () => clearInterval(interval);
   }, [activeTab]);
@@ -197,13 +220,21 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
   };
 
   const fetchTickets = async () => {
-    const savedTickets = localStorage.getItem('admin_mock_tickets');
-    if (savedTickets) {
-      const tickets = JSON.parse(savedTickets);
-      setTickets(tickets.sort((a: any, b: any) => 
-        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-      ));
-    } else {
+    try {
+      const savedTickets = localStorage.getItem('admin_mock_tickets');
+      console.log('Загрузка тикетов из localStorage:', savedTickets);
+      if (savedTickets) {
+        const tickets = JSON.parse(savedTickets);
+        console.log('Найдено тикетов:', tickets.length, tickets);
+        setTickets(tickets.sort((a: any, b: any) => 
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        ));
+      } else {
+        console.log('Тикеты не найдены в localStorage');
+        setTickets([]);
+      }
+    } catch (error) {
+      console.error('Ошибка загрузки тикетов:', error);
       setTickets([]);
     }
   };

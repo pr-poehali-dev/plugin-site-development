@@ -76,8 +76,15 @@ const SupportPage = ({ user, onShowAuthDialog }: SupportPageProps) => {
         created_at: new Date().toISOString()
       };
       
+      console.log('Создание нового тикета:', newTicket);
       tickets.push(newTicket);
       localStorage.setItem('admin_mock_tickets', JSON.stringify(tickets));
+      console.log('Тикет сохранен. Всего тикетов:', tickets.length);
+      
+      window.dispatchEvent(new StorageEvent('storage', {
+        key: 'admin_mock_tickets',
+        newValue: JSON.stringify(tickets)
+      }));
       
       toast({
         title: 'Тикет создан!',
