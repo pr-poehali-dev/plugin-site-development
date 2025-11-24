@@ -21,11 +21,26 @@ const AboutPage = () => {
           </div>
           <div>
             <h2 className="text-xl font-bold mb-2">Более 8 лет на рынке криптовалют</h2>
-            <p className="text-muted-foreground leading-relaxed">
+            <p className="text-muted-foreground leading-relaxed mb-3">
               Git Crypto — это команда профессионалов с многолетним опытом работы в сфере блокчейн-технологий 
               и криптовалют. С 2016 года мы успешно развиваемся и помогаем нашим клиентам достигать их целей 
               в быстро меняющемся мире цифровых активов.
             </p>
+            <div className="flex items-start gap-3 mt-4 pt-4 border-t border-primary/20">
+              <div className="w-10 h-10 rounded-lg bg-red-500/20 flex items-center justify-center shrink-0">
+                <Icon name="MapPin" size={20} className="text-red-400" />
+              </div>
+              <div>
+                <h3 className="font-bold text-base mb-1">Наше расположение</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  Компания Git Crypto базируется в Макао, Китай — одном из ведущих финансовых и технологических 
+                  центров Азии. Наш офис расположен в специальной экономической зоне: провинция Гуандун, 
+                  город Чжухай, остров Малый Хэнцинь (Small Hengqin Island). Это стратегическое расположение 
+                  позволяет нам быть в эпицентре инноваций в сфере блокчейна и криптовалют, а также обеспечивает 
+                  доступ к передовым технологиям и высококвалифицированным специалистам региона.
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </Card>
