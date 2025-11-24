@@ -142,6 +142,7 @@ export interface EscrowDeal {
   title: string;
   description: string;
   price: number;
+  category: 'coins' | 'contracts' | 'programs' | 'other';
   status: 'open' | 'in_progress' | 'completed' | 'cancelled' | 'dispute';
   buyer_paid: boolean;
   seller_confirmed: boolean;

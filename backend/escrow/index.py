@@ -49,27 +49,42 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             
             if action == 'list':
                 status_filter = params.get('status', 'all')
+                category_filter = params.get('category', 'all')
                 cursor = conn.cursor(cursor_factory=RealDictCursor)
                 
                 # НОВАЯ ПРОСТАЯ ЛОГИКА:
-                # open - сделки БЕЗ покупателя (все видят)
+                # open - товары БЕЗ покупателя (все видят)
                 # in_progress - сделки С покупателем и status='in_progress' (только участники)
                 # completed - сделки status='completed' (только участники)
                 # dispute - сделки status='dispute' (только участники)
+                # + фильтр по категориям: coins, contracts, programs, other
                 
                 if status_filter == 'open':
-                    # Открытые сделки БЕЗ покупателя - видят все
-                    query = """
-                        SELECT ed.*, 
-                            seller.username as seller_name, seller.avatar_url as seller_avatar,
-                            buyer.username as buyer_name, buyer.avatar_url as buyer_avatar
-                        FROM escrow_deals ed
-                        LEFT JOIN users seller ON ed.seller_id = seller.id
-                        LEFT JOIN users buyer ON ed.buyer_id = buyer.id
-                        WHERE ed.buyer_id IS NULL
-                        ORDER BY ed.created_at DESC
-                    """
-                    cursor.execute(query)
+                    # Открытые товары БЕЗ покупателя - видят все
+                    if category_filter and category_filter != 'all':
+                        query = """
+                            SELECT ed.*, 
+                                seller.username as seller_name, seller.avatar_url as seller_avatar,
+                                buyer.username as buyer_name, buyer.avatar_url as buyer_avatar
+                            FROM escrow_deals ed
+                            LEFT JOIN users seller ON ed.seller_id = seller.id
+                            LEFT JOIN users buyer ON ed.buyer_id = buyer.id
+                            WHERE ed.buyer_id IS NULL AND ed.category = %s
+                            ORDER BY ed.created_at DESC
+                        """
+                        cursor.execute(query, (category_filter,))
+                    else:
+                        query = """
+                            SELECT ed.*, 
+                                seller.username as seller_name, seller.avatar_url as seller_avatar,
+                                buyer.username as buyer_name, buyer.avatar_url as buyer_avatar
+                            FROM escrow_deals ed
+                            LEFT JOIN users seller ON ed.seller_id = seller.id
+                            LEFT JOIN users buyer ON ed.buyer_id = buyer.id
+                            WHERE ed.buyer_id IS NULL
+                            ORDER BY ed.created_at DESC
+                        """
+                        cursor.execute(query)
                     
                 elif status_filter == 'in_progress':
                     # Незавершенные сделки - только участники видят свои
@@ -282,6 +297,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 title = body.get('title')
                 description = body.get('description')
                 price = body.get('price')
+                category = body.get('category', 'other')
                 
                 if not all([title, description, price]):
                     cursor.close()
@@ -292,12 +308,17 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                         'isBase64Encoded': False
                     }
                 
+                # Валидация категории
+                valid_categories = ['coins', 'contracts', 'programs', 'other']
+                if category not in valid_categories:
+                    category = 'other'
+                
                 query = """
-                    INSERT INTO escrow_deals (seller_id, title, description, price, status)
-                    VALUES (%s, %s, %s, %s, 'open')
+                    INSERT INTO escrow_deals (seller_id, title, description, price, category, status)
+                    VALUES (%s, %s, %s, %s, %s, 'open')
                     RETURNING id
                 """
-                cursor.execute(query, (user_id, title, description, price))
+                cursor.execute(query, (user_id, title, description, price, category))
                 deal_id = cursor.fetchone()['id']
                 
                 msg_query = """

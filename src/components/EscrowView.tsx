@@ -12,6 +12,7 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { getAvatarGradient } from '@/utils/avatarColors';
 import { useToast } from '@/hooks/use-toast';
 import UserRankBadge from '@/components/UserRankBadge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const ESCROW_URL = 'https://functions.poehali.dev/82c75fbc-83e4-4448-9ff8-1c8ef9bbec09';
 
@@ -21,6 +22,13 @@ interface EscrowViewProps {
   onRefreshUserBalance?: () => void;
 }
 
+const CATEGORIES = [
+  { id: 'coins', label: 'Монеты', icon: 'Coins', color: 'text-yellow-400', bg: 'bg-yellow-800/20' },
+  { id: 'contracts', label: 'Контракты', icon: 'FileText', color: 'text-blue-400', bg: 'bg-blue-800/20' },
+  { id: 'programs', label: 'Программы', icon: 'Code', color: 'text-purple-400', bg: 'bg-purple-800/20' },
+  { id: 'other', label: 'Другое', icon: 'Package', color: 'text-gray-400', bg: 'bg-gray-800/20' }
+];
+
 export const EscrowView = ({ user, onShowAuthDialog, onRefreshUserBalance }: EscrowViewProps) => {
   const { toast } = useToast();
   const [deals, setDeals] = useState<EscrowDeal[]>([]);
@@ -28,7 +36,6 @@ export const EscrowView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Esc
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [selectedDeal, setSelectedDeal] = useState<EscrowDeal | null>(null);
   
-  // Восстанавливаем последнюю выбранную вкладку из localStorage
   const [statusFilter, setStatusFilter] = useState<'open' | 'in_progress' | 'completed' | 'dispute'>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('escrow_filter');
@@ -39,20 +46,21 @@ export const EscrowView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Esc
     return 'open';
   });
   
+  const [categoryFilter, setCategoryFilter] = useState<string>('all');
+  
   const [newDeal, setNewDeal] = useState({
     title: '',
     description: '',
-    price: ''
+    price: '',
+    category: 'other' as 'coins' | 'contracts' | 'programs' | 'other'
   });
   
-  // Сохраняем выбранную вкладку в localStorage
   useEffect(() => {
     if (typeof window !== 'undefined') {
       localStorage.setItem('escrow_filter', statusFilter);
     }
   }, [statusFilter]);
 
-  // Восстановление открытой сделки из URL при загрузке
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const dealId = urlParams.get('deal');
@@ -67,7 +75,7 @@ export const EscrowView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Esc
     if (user) {
       checkDisputeNotifications();
     }
-  }, [statusFilter, user]);
+  }, [statusFilter, categoryFilter, user]);
 
   useEffect(() => {
     if (!user) return;
@@ -123,13 +131,20 @@ export const EscrowView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Esc
   const fetchDeals = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${ESCROW_URL}?action=list&status=${statusFilter}`);
+      const url = new URL(`${ESCROW_URL}`);
+      url.searchParams.set('action', 'list');
+      url.searchParams.set('status', statusFilter);
+      if (categoryFilter !== 'all') {
+        url.searchParams.set('category', categoryFilter);
+      }
+      
+      const response = await fetch(url.toString());
       const data = await response.json();
       if (data.deals) {
         setDeals(data.deals);
       }
     } catch (error) {
-      console.error('Ошибка загрузки сделок:', error);
+      console.error('Ошибка загрузки товаров:', error);
     } finally {
       setLoading(false);
     }
@@ -147,7 +162,6 @@ export const EscrowView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Esc
       if (data.deal) {
         setSelectedDeal(data.deal);
         
-        // Автоматически переключаемся на нужную вкладку
         if (!data.deal.buyer_id) {
           setStatusFilter('open');
         } else if (data.deal.status === 'in_progress') {
@@ -158,14 +172,12 @@ export const EscrowView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Esc
           setStatusFilter('dispute');
         }
       } else {
-        // Убираем параметр из URL если сделка не найдена
         const url = new URL(window.location.href);
         url.searchParams.delete('deal');
         window.history.replaceState({}, '', url.toString());
       }
     } catch (error) {
       console.error('Ошибка загрузки сделки:', error);
-      // Убираем параметр из URL если сделка не найдена
       const url = new URL(window.location.href);
       url.searchParams.delete('deal');
       window.history.replaceState({}, '', url.toString());
@@ -174,7 +186,6 @@ export const EscrowView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Esc
 
   const handleSelectDeal = (deal: EscrowDeal) => {
     setSelectedDeal(deal);
-    // Сохраняем ID сделки в URL
     const url = new URL(window.location.href);
     url.searchParams.set('deal', deal.id.toString());
     window.history.pushState({}, '', url.toString());
@@ -182,11 +193,9 @@ export const EscrowView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Esc
 
   const handleCloseDeal = () => {
     setSelectedDeal(null);
-    // Убираем параметр из URL
     const url = new URL(window.location.href);
     url.searchParams.delete('deal');
     window.history.replaceState({}, '', url.toString());
-    // Обновляем список сделок после закрытия диалога
     fetchDeals();
   };
 
@@ -216,28 +225,28 @@ export const EscrowView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Esc
           action: 'create_deal',
           title: newDeal.title,
           description: newDeal.description,
-          price: parseFloat(newDeal.price)
+          price: parseFloat(newDeal.price),
+          category: newDeal.category
         })
       });
 
       const data = await response.json();
       if (data.success) {
         setShowCreateDialog(false);
-        setNewDeal({ title: '', description: '', price: '' });
+        setNewDeal({ title: '', description: '', price: '', category: 'other' });
         toast({
           title: 'Успешно',
-          description: 'Сделка создана и ждёт покупателя!'
+          description: 'Товар выставлен на продажу!'
         });
         
-        // Переключаемся на вкладку "Открытые" где появится новая сделка
         setStatusFilter('open');
         fetchDeals();
       }
     } catch (error) {
-      console.error('Ошибка создания сделки:', error);
+      console.error('Ошибка создания товара:', error);
       toast({
         title: 'Ошибка',
-        description: 'Ошибка создания сделки',
+        description: 'Ошибка создания товара',
         variant: 'destructive'
       });
     }
@@ -245,7 +254,7 @@ export const EscrowView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Esc
 
   const getStatusBadge = (status: string) => {
     const badges: Record<string, { text: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
-      open: { text: 'Открыта', variant: 'default' },
+      open: { text: 'В продаже', variant: 'default' },
       in_progress: { text: 'В процессе', variant: 'secondary' },
       completed: { text: 'Завершена', variant: 'outline' },
       cancelled: { text: 'Отменена', variant: 'destructive' },
@@ -266,40 +275,27 @@ export const EscrowView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Esc
     return colors[status] || colors.open;
   };
 
-  const getStageComment = (status: string, isSeller: boolean) => {
-    const comments: Record<string, { seller: string; buyer: string }> = {
-      open: {
-        seller: '💰 Сделка открыта. Ожидается покупатель, который примет ваше предложение.',
-        buyer: '🔍 Вы можете принять эту сделку. После принятия ваши средства будут заблокированы для безопасности.'
-      },
-      in_progress: {
-        seller: '🔄 Покупатель внес средства в гарант. Отправьте криптовалюту покупателю. После получения он подтвердит сделку.',
-        buyer: '✅ Ваши средства заблокированы в гаранте. Ожидайте получение криптовалюты от продавца. После получения подтвердите сделку.'
-      },
-      completed: {
-        seller: '✅ Сделка завершена успешно! Средства переведены на ваш баланс.',
-        buyer: '✅ Сделка завершена успешно! Продавец получил оплату, вы получили криптовалюту.'
-      },
-      dispute: {
-        seller: '⚠️ Открыт спор по сделке. Администрация рассмотрит ситуацию и примет решение.',
-        buyer: '⚠️ Открыт спор по сделке. Администрация рассмотрит ситуацию и примет решение.'
-      },
-      cancelled: {
-        seller: '❌ Сделка отменена.',
-        buyer: '❌ Сделка отменена. Ваши средства возвращены на баланс.'
-      }
-    };
-    const comment = comments[status] || comments.open;
-    return isSeller ? comment.seller : comment.buyer;
+  const getCategoryIcon = (category: string) => {
+    const cat = CATEGORIES.find(c => c.id === category) || CATEGORIES[3];
+    return (
+      <div className={`w-8 h-8 ${cat.bg} rounded-lg flex items-center justify-center`}>
+        <Icon name={cat.icon as any} size={16} className={cat.color} />
+      </div>
+    );
+  };
+
+  const getCategoryLabel = (category: string) => {
+    const cat = CATEGORIES.find(c => c.id === category);
+    return cat ? cat.label : 'Другое';
   };
 
   return (
     <div className="space-y-3 sm:space-y-4 md:space-y-6 animate-fade-in">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-1 sm:mb-2">Гарант-сервис</h1>
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-1 sm:mb-2">Маркетплейс</h1>
           <p className="text-xs sm:text-sm md:text-base text-muted-foreground">
-            Безопасный обмен криптовалют с гарантией платформы
+            Покупайте и продавайте с защитой гаранта
           </p>
         </div>
         <Button
@@ -307,140 +303,33 @@ export const EscrowView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Esc
           className="bg-gradient-to-r from-green-800 to-green-900 hover:from-green-700 hover:to-green-800 w-full sm:w-auto text-xs sm:text-sm h-9 sm:h-10"
         >
           <Icon name="Plus" size={16} className="mr-1.5 sm:mr-2 sm:w-[18px] sm:h-[18px]" />
-          Создать сделку
+          Разместить товар
         </Button>
       </div>
 
       <Card className="p-3 sm:p-4 md:p-6 bg-gradient-to-br from-green-800/10 to-green-900/5 border-green-800/20">
-        <div className="space-y-3 sm:space-y-4 md:space-y-6">
-          <div className="flex items-start gap-2 sm:gap-3 md:gap-4">
+        <div className="space-y-3 sm:space-y-4">
+          <div className="flex items-start gap-2 sm:gap-3">
             <div className="w-10 h-10 sm:w-12 sm:h-12 bg-green-800/20 rounded-lg sm:rounded-xl flex items-center justify-center flex-shrink-0">
               <Icon name="ShieldCheck" size={20} className="text-green-400 sm:w-6 sm:h-6" />
             </div>
             <div>
-              <h3 className="text-base sm:text-lg font-semibold mb-1 sm:mb-2">Как это работает?</h3>
+              <h3 className="text-base sm:text-lg font-semibold mb-1 sm:mb-2">Как работает маркетплейс?</h3>
               <p className="text-xs sm:text-sm text-muted-foreground">
-                Мы блокируем криптовалюту покупателя до тех пор, пока он не получит свои монеты. Продавец получает оплату только после подтверждения покупателем. Это защищает обе стороны от обмана.
+                Мы блокируем средства покупателя до получения товара. Продавец получает деньги только после подтверждения покупателем. Это защищает обе стороны от обмана.
               </p>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 md:gap-6">
-            <div className="space-y-4">
-              <h4 className="font-semibold text-green-400 flex items-center gap-2">
-                <Icon name="Coins" size={18} />
-                Продаю криптовалюту
-              </h4>
-              <div className="space-y-3">
-                <div className="flex gap-3">
-                  <div className="w-8 h-8 bg-green-800/30 rounded-full flex items-center justify-center flex-shrink-0">
-                    <span className="text-xs font-bold text-green-400">1</span>
-                  </div>
-                  <div>
-                    <p className="font-medium text-sm">Создаю объявление</p>
-                    <p className="text-xs text-muted-foreground">
-                      Указываю, какую криптовалюту меняю и курс
-                    </p>
-                  </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3">
+            {CATEGORIES.map((cat) => (
+              <div key={cat.id} className="flex items-center gap-2 p-2 bg-background/50 rounded-lg">
+                <div className={`w-8 h-8 ${cat.bg} rounded-lg flex items-center justify-center flex-shrink-0`}>
+                  <Icon name={cat.icon as any} size={16} className={cat.color} />
                 </div>
-                <div className="flex gap-3">
-                  <div className="w-8 h-8 bg-green-800/30 rounded-full flex items-center justify-center flex-shrink-0">
-                    <span className="text-xs font-bold text-green-400">2</span>
-                  </div>
-                  <div>
-                    <p className="font-medium text-sm">Жду покупателя</p>
-                    <p className="text-xs text-muted-foreground">
-                      Покупатель блокирует USDT на платформе
-                    </p>
-                  </div>
-                </div>
-                <div className="flex gap-3">
-                  <div className="w-8 h-8 bg-green-800/30 rounded-full flex items-center justify-center flex-shrink-0">
-                    <span className="text-xs font-bold text-green-400">3</span>
-                  </div>
-                  <div>
-                    <p className="font-medium text-sm">Отправляю монеты</p>
-                    <p className="text-xs text-muted-foreground">
-                      Перевожу криптовалюту покупателю
-                    </p>
-                  </div>
-                </div>
-                <div className="flex gap-3">
-                  <div className="w-8 h-8 bg-green-800/30 rounded-full flex items-center justify-center flex-shrink-0">
-                    <span className="text-xs font-bold text-green-400">4</span>
-                  </div>
-                  <div>
-                    <p className="font-medium text-sm">Получаю USDT</p>
-                    <p className="text-xs text-muted-foreground">
-                      Покупатель подтверждает — деньги поступают
-                    </p>
-                  </div>
-                </div>
+                <span className="text-xs sm:text-sm font-medium">{cat.label}</span>
               </div>
-            </div>
-
-            <div className="space-y-4">
-              <h4 className="font-semibold text-blue-400 flex items-center gap-2">
-                <Icon name="ArrowRightLeft" size={18} />
-                Покупаю криптовалюту
-              </h4>
-              <div className="space-y-3">
-                <div className="flex gap-3">
-                  <div className="w-8 h-8 bg-blue-500/30 rounded-full flex items-center justify-center flex-shrink-0">
-                    <span className="text-xs font-bold text-blue-400">1</span>
-                  </div>
-                  <div>
-                    <p className="font-medium text-sm">Выбираю обмен</p>
-                    <p className="text-xs text-muted-foreground">
-                      Нахожу выгодный курс обмена
-                    </p>
-                  </div>
-                </div>
-                <div className="flex gap-3">
-                  <div className="w-8 h-8 bg-blue-500/30 rounded-full flex items-center justify-center flex-shrink-0">
-                    <span className="text-xs font-bold text-blue-400">2</span>
-                  </div>
-                  <div>
-                    <p className="font-medium text-sm">Блокирую USDT</p>
-                    <p className="text-xs text-muted-foreground">
-                      USDT замораживаются до получения монет
-                    </p>
-                  </div>
-                </div>
-                <div className="flex gap-3">
-                  <div className="w-8 h-8 bg-blue-500/30 rounded-full flex items-center justify-center flex-shrink-0">
-                    <span className="text-xs font-bold text-blue-400">3</span>
-                  </div>
-                  <div>
-                    <p className="font-medium text-sm">Получаю монеты</p>
-                    <p className="text-xs text-muted-foreground">
-                      Продавец переводит криптовалюту
-                    </p>
-                  </div>
-                </div>
-                <div className="flex gap-3">
-                  <div className="w-8 h-8 bg-blue-500/30 rounded-full flex items-center justify-center flex-shrink-0">
-                    <span className="text-xs font-bold text-blue-400">4</span>
-                  </div>
-                  <div>
-                    <p className="font-medium text-sm">Подтверждаю</p>
-                    <p className="text-xs text-muted-foreground">
-                      Если монеты пришли — USDT уходят продавцу
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex items-start gap-2 sm:gap-3 p-3 sm:p-4 bg-orange-500/10 border border-orange-500/20 rounded-lg">
-            <Icon name="AlertCircle" size={18} className="text-orange-400 flex-shrink-0 mt-0.5 sm:w-5 sm:h-5" />
-            <div className="space-y-1 text-xs sm:text-sm">
-              <p className="font-semibold text-orange-400">Что делать при проблеме?</p>
-              <p className="text-muted-foreground">
-                Если монеты не пришли или возникли проблемы — открывайте спор. Администрация разберётся и решит, кому вернуть средства.
-              </p>
-            </div>
+            ))}
           </div>
         </div>
       </Card>
@@ -448,8 +337,8 @@ export const EscrowView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Esc
       <div className="space-y-2">
         <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto pb-2 -mx-1 px-1">
           {[
-            { id: 'open', label: 'Открытые', icon: 'Clock', desc: 'Сделки без покупателя' },
-            { id: 'in_progress', label: 'Незавершенные', icon: 'Loader2', desc: 'Ваши активные сделки' },
+            { id: 'open', label: 'В продаже', icon: 'Store', desc: 'Доступные товары' },
+            { id: 'in_progress', label: 'Мои покупки', icon: 'ShoppingCart', desc: 'Активные сделки' },
             { id: 'completed', label: 'Завершенные', icon: 'Check', desc: 'Успешные сделки' },
             { id: 'dispute', label: 'Споры', icon: 'AlertTriangle', desc: 'Требуют решения админа' }
           ].map((filter) => (
@@ -466,12 +355,42 @@ export const EscrowView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Esc
             </Button>
           ))}
         </div>
+
+        {statusFilter === 'open' && (
+          <Card className="p-2 sm:p-3">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-xs font-medium text-muted-foreground">Категория:</span>
+              <div className="flex items-center gap-1.5">
+                <Button
+                  variant={categoryFilter === 'all' ? 'default' : 'outline'}
+                  size="sm"
+                  className={`text-xs h-7 ${categoryFilter === 'all' ? 'bg-green-800 hover:bg-green-700' : ''}`}
+                  onClick={() => setCategoryFilter('all')}
+                >
+                  Все
+                </Button>
+                {CATEGORIES.map((cat) => (
+                  <Button
+                    key={cat.id}
+                    variant={categoryFilter === cat.id ? 'default' : 'outline'}
+                    size="sm"
+                    className={`text-xs h-7 ${categoryFilter === cat.id ? 'bg-green-800 hover:bg-green-700' : ''}`}
+                    onClick={() => setCategoryFilter(cat.id)}
+                  >
+                    <Icon name={cat.icon as any} size={14} className="mr-1" />
+                    {cat.label}
+                  </Button>
+                ))}
+              </div>
+            </div>
+          </Card>
+        )}
         
         {statusFilter === 'open' && !user && (
           <Card className="p-2 sm:p-3 bg-blue-500/5 border-blue-500/20">
             <p className="text-xs text-blue-400 flex items-center gap-2">
               <Icon name="Info" size={14} />
-              <span>Войдите, чтобы принять сделку и начать обмен</span>
+              <span>Войдите, чтобы покупать товары</span>
             </p>
           </Card>
         )}
@@ -480,7 +399,7 @@ export const EscrowView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Esc
           <Card className="p-2 sm:p-3 bg-orange-500/5 border-orange-500/20">
             <p className="text-xs text-orange-400 flex items-center gap-2">
               <Icon name="Lock" size={14} />
-              <span>Войдите, чтобы увидеть свои сделки</span>
+              <span>Войдите, чтобы увидеть свои покупки</span>
             </p>
           </Card>
         )}
@@ -494,8 +413,8 @@ export const EscrowView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Esc
         <Card className="p-6 sm:p-8 md:p-12 text-center space-y-3">
           <Icon name="Package" size={36} className="mx-auto mb-4 text-muted-foreground sm:w-12 sm:h-12" />
           <p className="text-muted-foreground font-medium">
-            {statusFilter === 'open' && 'Нет открытых сделок'}
-            {statusFilter === 'in_progress' && 'У вас нет активных сделок'}
+            {statusFilter === 'open' && 'Нет товаров в продаже'}
+            {statusFilter === 'in_progress' && 'У вас нет активных покупок'}
             {statusFilter === 'completed' && 'У вас нет завершенных сделок'}
             {statusFilter === 'dispute' && 'У вас нет споров'}
           </p>
@@ -505,12 +424,12 @@ export const EscrowView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Esc
               className="bg-gradient-to-r from-green-800 to-green-900 hover:from-green-700 hover:to-green-800"
             >
               <Icon name="Plus" size={16} className="mr-2" />
-              Создать первую сделку
+              Разместить первый товар
             </Button>
           )}
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
           {deals.map((deal) => (
             <Card
               key={deal.id}
@@ -518,14 +437,17 @@ export const EscrowView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Esc
               onClick={() => handleSelectDeal(deal)}
             >
               <div className="space-y-3">
-                <div className="flex items-start justify-between gap-2 sm:gap-3">
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-base sm:text-lg truncate">{deal.title}</h3>
-                    <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
-                      {deal.description}
-                    </p>
-                  </div>
+                <div className="flex items-start justify-between gap-2">
+                  {getCategoryIcon(deal.category)}
                   {getStatusBadge(deal.status)}
+                </div>
+
+                <div>
+                  <h3 className="font-semibold text-base sm:text-lg truncate">{deal.title}</h3>
+                  <p className="text-xs text-muted-foreground mt-1">{getCategoryLabel(deal.category)}</p>
+                  <p className="text-sm text-muted-foreground line-clamp-2 mt-2">
+                    {deal.description}
+                  </p>
                 </div>
 
                 <div className="flex items-center justify-between pt-3 border-t border-border/50">
@@ -536,16 +458,13 @@ export const EscrowView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Esc
                         {deal.seller_name?.[0].toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
-                    <div className="text-sm">
+                    <div className="text-xs">
                       <p className="font-medium">{deal.seller_name}</p>
-                      <p className="text-xs text-muted-foreground">Продавец</p>
+                      <p className="text-muted-foreground">Продавец</p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-base sm:text-lg font-bold text-green-400">{deal.price} USDT</p>
-                    <p className="text-xs text-muted-foreground">
-                      {new Date(deal.created_at).toLocaleDateString('ru-RU')}
-                    </p>
+                    <p className="text-lg font-bold text-green-400">{deal.price} USDT</p>
                   </div>
                 </div>
 
@@ -570,44 +489,62 @@ export const EscrowView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Esc
 
       <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
         <DialogContent className="max-w-[95vw] sm:max-w-md md:max-w-lg p-0 gap-0 overflow-hidden">
-          {/* Красивый градиентный заголовок */}
           <div className="relative overflow-hidden bg-gradient-to-br from-green-800/20 via-green-900/10 to-background border-b border-green-800/30 p-4 sm:p-5 md:p-6">
             <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-green-500/10 to-transparent rounded-full blur-3xl"></div>
             <div className="relative z-10">
               <div className="flex items-center gap-2 sm:gap-3 mb-2">
                 <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-green-600 to-green-800 rounded-xl flex items-center justify-center shadow-lg">
-                  <Icon name="ShieldCheck" size={20} className="text-white sm:w-6 sm:h-6" />
+                  <Icon name="Store" size={20} className="text-white sm:w-6 sm:h-6" />
                 </div>
                 <div>
-                  <DialogTitle className="text-lg sm:text-xl md:text-2xl font-bold">Создать обмен</DialogTitle>
+                  <DialogTitle className="text-lg sm:text-xl md:text-2xl font-bold">Разместить товар</DialogTitle>
                   <DialogDescription className="text-xs sm:text-sm text-muted-foreground">
-                    Безопасный обмен криптовалют с гарантией
+                    Продавайте с защитой гаранта
                   </DialogDescription>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Форма */}
           <div className="p-4 sm:p-5 md:p-6 space-y-3 sm:space-y-4 max-h-[60vh] sm:max-h-[70vh] overflow-y-auto">
-            {/* Название */}
             <div className="space-y-1.5 sm:space-y-2">
               <Label className="text-xs sm:text-sm font-semibold flex items-center gap-1.5">
-                <Icon name="ArrowRightLeft" size={14} className="text-green-400 sm:w-4 sm:h-4" />
-                Название обмена
+                <Icon name="Package" size={14} className="text-green-400 sm:w-4 sm:h-4" />
+                Название товара
               </Label>
               <Input
                 value={newDeal.title}
                 onChange={(e) => setNewDeal({ ...newDeal, title: e.target.value })}
-                placeholder="Например: BTC → USDT TRC20"
+                placeholder="Например: Bitcoin 0.01 BTC"
                 className="text-sm sm:text-base h-10 sm:h-11"
               />
-              <p className="text-[10px] sm:text-xs text-muted-foreground">
-                Краткое название обмена (какую валюту меняете)
-              </p>
             </div>
 
-            {/* Описание */}
+            <div className="space-y-1.5 sm:space-y-2">
+              <Label className="text-xs sm:text-sm font-semibold flex items-center gap-1.5">
+                <Icon name="Tag" size={14} className="text-green-400 sm:w-4 sm:h-4" />
+                Категория
+              </Label>
+              <Select 
+                value={newDeal.category} 
+                onValueChange={(value: any) => setNewDeal({ ...newDeal, category: value })}
+              >
+                <SelectTrigger className="text-sm sm:text-base h-10 sm:h-11">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {CATEGORIES.map((cat) => (
+                    <SelectItem key={cat.id} value={cat.id}>
+                      <div className="flex items-center gap-2">
+                        <Icon name={cat.icon as any} size={14} className={cat.color} />
+                        {cat.label}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
             <div className="space-y-1.5 sm:space-y-2">
               <Label className="text-xs sm:text-sm font-semibold flex items-center gap-1.5">
                 <Icon name="FileText" size={14} className="text-green-400 sm:w-4 sm:h-4" />
@@ -616,15 +553,11 @@ export const EscrowView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Esc
               <Textarea
                 value={newDeal.description}
                 onChange={(e) => setNewDeal({ ...newDeal, description: e.target.value })}
-                placeholder="Подробно опишите условия обмена...\n\nУкажите:\n• Какую криптовалюту отдаёте\n• Какую криптовалюту получите\n• Сеть и курс обмена"
+                placeholder="Подробное описание товара..."
                 className="min-h-[100px] sm:min-h-[120px] text-sm sm:text-base resize-none"
               />
-              <p className="text-[10px] sm:text-xs text-muted-foreground">
-                Чем подробнее описание, тем больше доверия
-              </p>
             </div>
 
-            {/* Цена */}
             <div className="space-y-1.5 sm:space-y-2">
               <Label className="text-xs sm:text-sm font-semibold flex items-center gap-1.5">
                 <Icon name="DollarSign" size={14} className="text-green-400 sm:w-4 sm:h-4" />
@@ -644,35 +577,23 @@ export const EscrowView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Esc
                   <Icon name="Coins" size={16} className="sm:w-[18px] sm:h-[18px]" />
                 </div>
               </div>
-              <p className="text-[10px] sm:text-xs text-muted-foreground">
-                Покупатель заблокирует эту сумму до завершения сделки
-              </p>
             </div>
 
-            {/* Информационная карточка */}
             <Card className="bg-green-800/5 border-green-800/20 p-3 sm:p-4">
               <div className="flex items-start gap-2 sm:gap-3">
                 <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-green-800/20 flex items-center justify-center flex-shrink-0">
                   <Icon name="Info" size={14} className="text-green-400 sm:w-4 sm:h-4" />
                 </div>
                 <div className="space-y-1">
-                  <p className="text-xs sm:text-sm font-medium">Как работает гарант?</p>
+                  <p className="text-xs sm:text-sm font-medium">Защита гаранта</p>
                   <ul className="space-y-1 text-[10px] sm:text-xs text-muted-foreground">
                     <li className="flex items-start gap-1.5">
                       <Icon name="Check" size={12} className="mt-0.5 text-green-400 flex-shrink-0" />
-                      <span>Покупатель блокирует USDT на платформе</span>
+                      <span>Деньги блокируются до получения товара</span>
                     </li>
                     <li className="flex items-start gap-1.5">
                       <Icon name="Check" size={12} className="mt-0.5 text-green-400 flex-shrink-0" />
-                      <span>Вы отправляете криптовалюту покупателю</span>
-                    </li>
-                    <li className="flex items-start gap-1.5">
-                      <Icon name="Check" size={12} className="mt-0.5 text-green-400 flex-shrink-0" />
-                      <span>Покупатель подтверждает получение монет</span>
-                    </li>
-                    <li className="flex items-start gap-1.5">
-                      <Icon name="Check" size={12} className="mt-0.5 text-green-400 flex-shrink-0" />
-                      <span>USDT поступают на ваш баланс</span>
+                      <span>Вы получите оплату после подтверждения покупателя</span>
                     </li>
                   </ul>
                 </div>
@@ -680,7 +601,6 @@ export const EscrowView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Esc
             </Card>
           </div>
 
-          {/* Кнопки */}
           <div className="border-t border-border p-3 sm:p-4 md:p-5 bg-muted/30">
             <div className="flex gap-2 sm:gap-3">
               <Button
@@ -695,8 +615,8 @@ export const EscrowView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Esc
                 onClick={createDeal}
                 className="flex-1 bg-gradient-to-r from-green-600 to-green-800 hover:from-green-700 hover:to-green-900 shadow-lg shadow-green-500/20 h-10 sm:h-11 text-xs sm:text-sm font-semibold"
               >
-                <Icon name="ShieldCheck" size={14} className="mr-1.5 sm:mr-2 sm:w-4 sm:h-4" />
-                Создать обмен
+                <Icon name="Store" size={14} className="mr-1.5 sm:mr-2 sm:w-4 sm:h-4" />
+                Разместить товар
               </Button>
             </div>
           </div>
@@ -763,26 +683,19 @@ const DealDetailDialog = ({ deal, user, onClose, onUpdate, onRefreshUserBalance,
         
         setCurrentDeal(data.deal);
         
-        // Если статус изменился или появился покупатель - переключаем вкладку и обновляем список
         if (oldStatus !== newStatus || (oldBuyerId === null && newBuyerId !== null)) {
-          // КРИТИЧЕСКИ ВАЖНО: СНАЧАЛА переключаем вкладку, ПОТОМ обновляем список
-          
-          // Автоматически переключаем вкладку в зависимости от нового статуса
           if (newStatus === 'in_progress' && newBuyerId !== null) {
-            // 1. Переключаем вкладку
             onStatusChange?.('in_progress');
             
-            // 2. Показываем уведомление продавцу только один раз
             if (user?.id === data.deal.seller_id && oldBuyerId === null && !hasShownBuyerJoinedToast.current) {
               hasShownBuyerJoinedToast.current = true;
               toast({
-                title: '🎉 Покупатель присоединился!',
-                description: 'Сделка перемещена в "Незавершенные". Ожидайте подтверждения от покупателя.',
+                title: '🎉 Товар куплен!',
+                description: 'Покупатель оплатил товар. Сделка перемещена в "Мои покупки".',
                 duration: 5000
               });
             }
             
-            // 3. Даём React время обновить state (300ms)
             setTimeout(() => {
               onUpdate();
             }, 300);
@@ -835,11 +748,10 @@ const DealDetailDialog = ({ deal, user, onClose, onUpdate, onRefreshUserBalance,
   const joinDeal = async () => {
     if (!user) return;
     
-    // Проверка баланса перед присоединением
     if ((user.balance || 0) < currentDeal.price) {
       toast({
         title: 'Недостаточно средств',
-        description: `У вас: ${(user.balance || 0).toFixed(2)} USDT, требуется: ${currentDeal.price} USDT. Пополните баланс для участия в сделке.`,
+        description: `У вас: ${(user.balance || 0).toFixed(2)} USDT, требуется: ${currentDeal.price} USDT. Пополните баланс.`,
         variant: 'destructive'
       });
       return;
@@ -864,37 +776,25 @@ const DealDetailDialog = ({ deal, user, onClose, onUpdate, onRefreshUserBalance,
       if (data.success) {
         toast({
           title: 'Успешно',
-          description: 'Вы присоединились к сделке! Средства заблокированы до завершения.'
+          description: 'Вы купили товар! Средства заблокированы до получения.'
         });
         
-        // КРИТИЧЕСКИ ВАЖНЫЙ ПОРЯДОК:
-        // 1. Обновляем баланс пользователя
         onRefreshUserBalance?.();
-        
-        // 2. Обновляем детали СНАЧАЛА (чтобы диалог показал новый статус)
         await fetchDealDetails();
-        
-        // 3. Переключаем вкладку (синхронно меняет state)
         onStatusChange?.('in_progress');
-        
-        // 4. Даём React полностью отрендерить компонент с новой вкладкой
-        // ВАЖНО: useState обновляется асинхронно, поэтому нужна задержка
         await new Promise(resolve => setTimeout(resolve, 300));
-        
-        // 5. Теперь fetchDeals() будет запрашивать правильную вкладку (in_progress)
         onUpdate();
         
-        // НЕ ЗАКРЫВАЕМ диалог - покупатель остается в сделке и видит новый статус
       } else if (data.error === 'Insufficient balance') {
         toast({
           title: 'Недостаточно средств',
-          description: `Требуется: ${currentDeal.price} USDT. Пополните баланс для участия в сделке.`,
+          description: `Требуется: ${currentDeal.price} USDT. Пополните баланс.`,
           variant: 'destructive'
         });
       } else {
         toast({
           title: 'Ошибка',
-          description: data.error || 'Ошибка присоединения к сделке',
+          description: data.error || 'Ошибка покупки',
           variant: 'destructive'
         });
       }
@@ -931,10 +831,9 @@ const DealDetailDialog = ({ deal, user, onClose, onUpdate, onRefreshUserBalance,
       if (data.success) {
         toast({
           title: 'Отлично!',
-          description: 'Ожидайте подтверждения от продавца о передаче криптовалюты.'
+          description: 'Ожидайте подтверждения от продавца.'
         });
         await fetchDealDetails();
-        // Не вызываем onUpdate() чтобы не закрывать окно
       }
     } catch (error) {
       console.error('Ошибка:', error);
@@ -964,10 +863,9 @@ const DealDetailDialog = ({ deal, user, onClose, onUpdate, onRefreshUserBalance,
       if (data.success) {
         toast({
           title: 'Отлично!',
-          description: 'Покупатель уведомлен о передаче криптовалюты. Ожидайте его подтверждения.'
+          description: 'Покупатель уведомлен о передаче товара. Ожидайте его подтверждения.'
         });
         await fetchDealDetails();
-        // Не вызываем onUpdate() чтобы не закрывать окно
       }
     } catch (error) {
       console.error('Ошибка:', error);
@@ -1001,27 +899,16 @@ const DealDetailDialog = ({ deal, user, onClose, onUpdate, onRefreshUserBalance,
       if (data.success) {
         toast({
           title: '🎉 Сделка успешно завершена!',
-          description: 'Средства переведены продавцу. Спасибо за использование гарант-сервиса!',
+          description: 'Средства переведены продавцу. Спасибо!',
           duration: 5000
         });
         
-        // КРИТИЧЕСКИ ВАЖНЫЙ ПОРЯДОК:
-        // 1. Обновляем баланс
         onRefreshUserBalance?.();
-        
-        // 2. Обновляем детали СНАЧАЛА
         await fetchDealDetails();
-        
-        // 3. Переключаем вкладку
         onStatusChange?.('completed');
-        
-        // 4. Даём React полностью обновить state
         await new Promise(resolve => setTimeout(resolve, 300));
-        
-        // 5. Обновляем список сделок (уже на правильной вкладке)
         onUpdate();
         
-        // 6. Закрываем диалог с задержкой
         setTimeout(() => {
           handleClose();
         }, 2000);
@@ -1064,24 +951,15 @@ const DealDetailDialog = ({ deal, user, onClose, onUpdate, onRefreshUserBalance,
       if (data.success) {
         toast({
           title: 'Спор открыт',
-          description: 'Администрация рассмотрит ситуацию и примет решение. Все сообщения в чате сохранены как доказательства.',
+          description: 'Администрация рассмотрит ситуацию и примет решение.',
           duration: 5000
         });
         
-        // КРИТИЧЕСКИ ВАЖНЫЙ ПОРЯДОК:
-        // 1. Обновляем детали СНАЧАЛА
         await fetchDealDetails();
-        
-        // 2. Переключаем вкладку
         onStatusChange?.('dispute');
-        
-        // 3. Даём React полностью обновить state
         await new Promise(resolve => setTimeout(resolve, 300));
-        
-        // 4. Обновляем список сделок (уже на правильной вкладке)
         onUpdate();
         
-        // НЕ ЗАКРЫВАЕМ диалог - пользователь остается в споре
       } else {
         toast({
           title: 'Ошибка',
@@ -1108,34 +986,47 @@ const DealDetailDialog = ({ deal, user, onClose, onUpdate, onRefreshUserBalance,
   const getStageComment = (status: string, isSeller: boolean) => {
     const comments: Record<string, { seller: string; buyer: string }> = {
       open: {
-        seller: '💰 Сделка открыта. Ожидается покупатель, который примет ваше предложение.',
-        buyer: '🔍 Вы можете принять эту сделку. После принятия ваши средства будут заблокированы для безопасности.'
+        seller: '💰 Товар в продаже. Ожидается покупатель.',
+        buyer: '🛒 Вы можете купить этот товар. Средства будут заблокированы до получения.'
       },
       in_progress: {
-        seller: '🔄 Покупатель внес средства в гарант. Отправьте криптовалюту покупателю. После получения он подтвердит сделку.',
-        buyer: '✅ Ваши средства заблокированы в гаранте. Ожидайте получение криптовалюты от продавца. После получения подтвердите сделку.'
+        seller: '📦 Покупатель оплатил товар. Передайте товар покупателю.',
+        buyer: '⏳ Средства заблокированы. Ожидайте получение товара от продавца.'
       },
       completed: {
-        seller: '✅ Сделка завершена успешно! Средства переведены на ваш баланс.',
-        buyer: '✅ Сделка завершена успешно! Продавец получил оплату, вы получили криптовалюту.'
+        seller: '✅ Сделка завершена! Средства на вашем балансе.',
+        buyer: '✅ Сделка завершена! Продавец получил оплату.'
       },
       dispute: {
-        seller: '⚠️ Открыт спор по сделке. Администрация рассмотрит ситуацию и примет решение.',
-        buyer: '⚠️ Открыт спор по сделке. Администрация рассмотрит ситуацию и примет решение.'
+        seller: '⚠️ Открыт спор. Администрация примет решение.',
+        buyer: '⚠️ Открыт спор. Администрация примет решение.'
       },
       cancelled: {
         seller: '❌ Сделка отменена.',
-        buyer: '❌ Сделка отменена. Ваши средства возвращены на баланс.'
+        buyer: '❌ Сделка отменена. Средства возвращены.'
       }
     };
     const comment = comments[status] || comments.open;
     return isSeller ? comment.seller : comment.buyer;
   };
 
+  const getCategoryIcon = (category: string) => {
+    const cat = CATEGORIES.find(c => c.id === category) || CATEGORIES[3];
+    return (
+      <div className={`w-10 h-10 ${cat.bg} rounded-lg flex items-center justify-center`}>
+        <Icon name={cat.icon as any} size={20} className={cat.color} />
+      </div>
+    );
+  };
+
+  const getCategoryLabel = (category: string) => {
+    const cat = CATEGORIES.find(c => c.id === category);
+    return cat ? cat.label : 'Другое';
+  };
+
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && handleClose()}>
       <DialogContent className="max-w-[95vw] sm:max-w-2xl max-h-[90vh] overflow-y-auto p-0 gap-0">
-        {/* Кнопка закрытия */}
         <button
           onClick={handleClose}
           className="absolute right-4 top-4 w-8 h-8 rounded-full bg-background/80 hover:bg-destructive/20 flex items-center justify-center transition-colors z-50 border border-border shadow-lg backdrop-blur-sm"
@@ -1144,12 +1035,15 @@ const DealDetailDialog = ({ deal, user, onClose, onUpdate, onRefreshUserBalance,
           <Icon name="X" size={18} className="text-foreground hover:text-destructive transition-colors" />
         </button>
 
-        {/* Красивый градиентный заголовок */}
         <div className="relative overflow-hidden bg-gradient-to-br from-green-800/20 via-green-900/10 to-background border-b border-green-800/30 p-4 sm:p-5 pr-14">
           <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-green-500/10 to-transparent rounded-full blur-3xl"></div>
           <div className="relative z-10">
-            <div className="flex items-start justify-between gap-2 sm:gap-3 mb-2">
+            <div className="flex items-start justify-between gap-2 sm:gap-3 mb-3">
               <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-2">
+                  {getCategoryIcon(currentDeal.category)}
+                  <Badge variant="outline" className="text-xs">{getCategoryLabel(currentDeal.category)}</Badge>
+                </div>
                 <DialogTitle className="text-base sm:text-lg md:text-xl truncate pr-2">{currentDeal.title}</DialogTitle>
                 <DialogDescription className="mt-1 text-xs sm:text-sm line-clamp-2 pr-2">
                   {currentDeal.description}
@@ -1158,7 +1052,7 @@ const DealDetailDialog = ({ deal, user, onClose, onUpdate, onRefreshUserBalance,
             </div>
             <div className="mt-2">
               {currentDeal.status === 'open' && (
-                <Badge variant="default" className="bg-green-800 text-[10px] sm:text-xs">Открыта</Badge>
+                <Badge variant="default" className="bg-green-800 text-[10px] sm:text-xs">В продаже</Badge>
               )}
               {currentDeal.status === 'in_progress' && (
                 <Badge variant="secondary" className="text-[10px] sm:text-xs">В процессе</Badge>
@@ -1174,7 +1068,6 @@ const DealDetailDialog = ({ deal, user, onClose, onUpdate, onRefreshUserBalance,
         </div>
 
         <div className="p-3 sm:p-4 md:p-5 space-y-3 sm:space-y-4">
-          {/* Системная информация о текущем этапе */}
           {user && (isSeller || isBuyer) && (
             <Card className={`p-3 sm:p-4 border-2 ${
               currentDeal.status === 'dispute' ? 'bg-orange-800/10 border-orange-500/30' :
@@ -1202,7 +1095,7 @@ const DealDetailDialog = ({ deal, user, onClose, onUpdate, onRefreshUserBalance,
                 />
                 <div className="flex-1 min-w-0">
                   <p className="text-xs sm:text-sm font-semibold mb-1">
-                    {isSeller ? 'Ваша роль: Продавец' : 'Ваша роль: Покупатель'}
+                    {isSeller ? 'Вы - продавец' : 'Вы - покупатель'}
                   </p>
                   <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
                     {getStageComment(currentDeal.status, isSeller)}
@@ -1219,9 +1112,9 @@ const DealDetailDialog = ({ deal, user, onClose, onUpdate, onRefreshUserBalance,
                   <Icon name="CheckCircle2" size={20} className="text-green-400 sm:w-6 sm:h-6" />
                 </div>
                 <div className="min-w-0">
-                  <h4 className="font-semibold text-green-400 text-sm sm:text-base">Сделка успешно завершена!</h4>
+                  <h4 className="font-semibold text-green-400 text-sm sm:text-base">Сделка завершена!</h4>
                   <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1">
-                    {isSeller ? 'Средства зачислены на ваш баланс' : 'Монеты получены, средства переведены продавцу'}
+                    {isSeller ? 'Средства зачислены на ваш баланс' : 'Товар получен, средства переведены продавцу'}
                   </p>
                 </div>
               </div>
@@ -1341,7 +1234,7 @@ const DealDetailDialog = ({ deal, user, onClose, onUpdate, onRefreshUserBalance,
                 className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 h-9 sm:h-10 text-xs sm:text-sm"
               >
                 <Icon name="CreditCard" size={16} className="mr-1.5 sm:mr-2 sm:w-[18px] sm:h-[18px]" />
-                Я отправил криптовалюту
+                Я оплатил
               </Button>
             )}
 
@@ -1352,7 +1245,7 @@ const DealDetailDialog = ({ deal, user, onClose, onUpdate, onRefreshUserBalance,
                 className="w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-500 hover:to-purple-600 h-9 sm:h-10 text-xs sm:text-sm"
               >
                 <Icon name="Package" size={16} className="mr-1.5 sm:mr-2 sm:w-[18px] sm:h-[18px]" />
-                Монеты переданы покупателю
+                Товар передан покупателю
               </Button>
             )}
 
@@ -1361,7 +1254,7 @@ const DealDetailDialog = ({ deal, user, onClose, onUpdate, onRefreshUserBalance,
                 <div className="flex items-start gap-2">
                   <Icon name="AlertCircle" size={18} className="text-green-400 flex-shrink-0 mt-0.5" />
                   <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-                    <strong className="text-green-400">⚠️ Внимание!</strong> Нажимайте эту кнопку только если вы реально получили криптовалюту от продавца. После подтверждения средства будут переведены продавцу и отменить операцию будет невозможно.
+                    <strong className="text-green-400">⚠️ Внимание!</strong> Нажимайте только если получили товар. Средства будут переведены продавцу.
                   </p>
                 </div>
                 <Button
@@ -1370,7 +1263,7 @@ const DealDetailDialog = ({ deal, user, onClose, onUpdate, onRefreshUserBalance,
                   className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-500 hover:to-green-600 h-9 sm:h-10 text-xs sm:text-sm"
                 >
                   <Icon name="Check" size={16} className="mr-1.5 sm:mr-2 sm:w-[18px] sm:h-[18px]" />
-                  {loading ? 'Обработка...' : 'Подтвердить получение криптовалюты'}
+                  {loading ? 'Обработка...' : 'Подтвердить получение товара'}
                 </Button>
               </Card>
             )}
@@ -1380,7 +1273,7 @@ const DealDetailDialog = ({ deal, user, onClose, onUpdate, onRefreshUserBalance,
                 <div className="flex items-start gap-2">
                   <Icon name="AlertTriangle" size={18} className="text-orange-400 flex-shrink-0 mt-0.5" />
                   <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-                    ⚠️ Открывайте спор, если {isSeller ? 'покупатель не оплачивает или' : 'продавец не отправляет криптовалюту или'} возникли другие проблемы. Администрация рассмотрит вашу заявку и все сообщения в чате.
+                    ⚠️ Открывайте спор при проблемах с передачей товара. Администрация рассмотрит ситуацию.
                   </p>
                 </div>
                 <Button
@@ -1402,7 +1295,7 @@ const DealDetailDialog = ({ deal, user, onClose, onUpdate, onRefreshUserBalance,
                   <div className="min-w-0">
                     <h4 className="font-semibold text-orange-400 text-sm sm:text-base">Спор открыт</h4>
                     <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1">
-                      Администрация рассматривает ситуацию. Все сообщения сохранены.
+                      Администрация рассматривает ситуацию.
                     </p>
                   </div>
                 </div>
