@@ -33,6 +33,7 @@ export const EscrowView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Esc
   const { toast } = useToast();
   const [deals, setDeals] = useState<EscrowDeal[]>([]);
   const [loading, setLoading] = useState(true);
+  const [creating, setCreating] = useState(false);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [selectedDeal, setSelectedDeal] = useState<EscrowDeal | null>(null);
   
@@ -214,6 +215,9 @@ export const EscrowView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Esc
       return;
     }
 
+    if (creating) return;
+    setCreating(true);
+
     try {
       const response = await fetch(ESCROW_URL, {
         method: 'POST',
@@ -241,6 +245,12 @@ export const EscrowView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Esc
         
         setStatusFilter('open');
         fetchDeals();
+      } else {
+        toast({
+          title: 'Ошибка',
+          description: data.error || 'Ошибка создания товара',
+          variant: 'destructive'
+        });
       }
     } catch (error) {
       console.error('Ошибка создания товара:', error);
@@ -249,6 +259,8 @@ export const EscrowView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Esc
         description: 'Ошибка создания товара',
         variant: 'destructive'
       });
+    } finally {
+      setCreating(false);
     }
   };
 
@@ -613,10 +625,11 @@ export const EscrowView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Esc
               </Button>
               <Button
                 onClick={createDeal}
+                disabled={creating}
                 className="flex-1 bg-gradient-to-r from-green-600 to-green-800 hover:from-green-700 hover:to-green-900 shadow-lg shadow-green-500/20 h-10 sm:h-11 text-xs sm:text-sm font-semibold"
               >
-                <Icon name="Store" size={14} className="mr-1.5 sm:mr-2 sm:w-4 sm:h-4" />
-                Разместить товар
+                <Icon name={creating ? "Loader2" : "Store"} size={14} className={`mr-1.5 sm:mr-2 sm:w-4 sm:h-4 ${creating ? 'animate-spin' : ''}`} />
+                {creating ? 'Размещаем...' : 'Разместить товар'}
               </Button>
             </div>
           </div>
@@ -747,6 +760,8 @@ const DealDetailDialog = ({ deal, user, onClose, onUpdate, onRefreshUserBalance,
 
   const joinDeal = async () => {
     if (!user) return;
+    
+    if (loading) return;
     
     if ((user.balance || 0) < currentDeal.price) {
       toast({
@@ -1222,8 +1237,8 @@ const DealDetailDialog = ({ deal, user, onClose, onUpdate, onRefreshUserBalance,
                 disabled={loading}
                 className="w-full bg-gradient-to-r from-green-800 to-green-900 hover:from-green-700 hover:to-green-800 h-9 sm:h-10 text-xs sm:text-sm"
               >
-                <Icon name="ShoppingCart" size={16} className="mr-1.5 sm:mr-2 sm:w-[18px] sm:h-[18px]" />
-                Купить за {currentDeal.price} USDT
+                <Icon name={loading ? "Loader2" : "ShoppingCart"} size={16} className={`mr-1.5 sm:mr-2 sm:w-[18px] sm:h-[18px] ${loading ? 'animate-spin' : ''}`} />
+                {loading ? 'Покупаем...' : `Купить за ${currentDeal.price} USDT`}
               </Button>
             )}
 
