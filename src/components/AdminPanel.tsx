@@ -776,6 +776,7 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
           onRefreshEscrow={fetchAllEscrowDeals}
           onRefreshFlashUsdt={fetchFlashUsdtOrders}
           onRefreshTickets={fetchTickets}
+          onRefreshTopics={fetchTopics}
         />
 
         <AdminBalanceDialog 

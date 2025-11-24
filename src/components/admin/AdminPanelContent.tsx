@@ -9,6 +9,7 @@ import AdminTicketsTab from '@/components/admin/AdminTicketsTab';
 import AdminVerificationTab from '@/components/admin/AdminVerificationTab';
 import AdminBtcWithdrawalsTab from '@/components/admin/AdminBtcWithdrawalsTab';
 import ForumCategoriesManager from '@/components/admin/ForumCategoriesManager';
+import AdminForumModeration from '@/components/admin/AdminForumModeration';
 
 interface AdminPanelContentProps {
   activeTab: 'users' | 'topics' | 'disputes' | 'deposits' | 'withdrawals' | 'btc-withdrawals' | 'escrow' | 'flash-usdt' | 'tickets' | 'verification' | 'forum-categories';
@@ -35,6 +36,7 @@ interface AdminPanelContentProps {
   onRefreshEscrow: () => void;
   onRefreshFlashUsdt: () => void;
   onRefreshTickets: () => void;
+  onRefreshTopics: () => void;
 }
 
 const AdminPanelContent = ({
@@ -61,7 +63,8 @@ const AdminPanelContent = ({
   onRefreshBtcWithdrawals,
   onRefreshEscrow,
   onRefreshFlashUsdt,
-  onRefreshTickets
+  onRefreshTickets,
+  onRefreshTopics
 }: AdminPanelContentProps) => {
   return (
     <div className="bg-card/30 backdrop-blur-sm border border-border/50 rounded-2xl p-3 sm:p-6 animate-fade-in">
@@ -77,11 +80,9 @@ const AdminPanelContent = ({
       )}
 
       {activeTab === 'topics' && (
-        <AdminTopicsTab 
+        <AdminForumModeration 
           topics={topics}
-          onEditTopic={onEditTopic}
-          onDeleteTopic={onDeleteTopic}
-          onUpdateViews={onUpdateViews}
+          onRefresh={onRefreshTopics}
         />
       )}
 

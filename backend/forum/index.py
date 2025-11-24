@@ -1,8 +1,8 @@
 '''
-Business: Управление темами форума и комментариями для авторизованных пользователей
+Business: Управление темами форума и комментариями для авторизованных пользователей, модерация для администраторов
 Args: event - dict с httpMethod, body, headers (X-User-Id), queryStringParameters
       context - объект с атрибутами: request_id, function_name
-Returns: HTTP response dict с темами/комментариями или результатом создания
+Returns: HTTP response dict с темами/комментариями или результатом создания/модерации
 '''
 
 import json
@@ -25,6 +25,12 @@ def serialize_datetime(obj):
         return obj.isoformat()
     return str(obj)
 
+def is_admin(cur, user_id: str) -> bool:
+    """Проверка является ли пользователь администратором"""
+    cur.execute("SELECT role FROM users WHERE id = %s", (user_id,))
+    user = cur.fetchone()
+    return user and user['role'] == 'admin'
+
 def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     method: str = event.get('httpMethod', 'GET')
     
@@ -33,7 +39,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             'statusCode': 200,
             'headers': {
                 'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+                'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
                 'Access-Control-Allow-Headers': 'Content-Type, X-User-Id, X-Auth-Token',
                 'Access-Control-Max-Age': '86400'
             },
@@ -349,6 +355,276 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                         'success': True,
                         'categories': parent_categories
                     }, default=serialize_datetime),
+                    'isBase64Encoded': False
+                }
+            
+            elif action == 'admin_update_topic':
+                if not is_admin(cur, user_id):
+                    return {
+                        'statusCode': 403,
+                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({'error': 'Доступ запрещен'}),
+                        'isBase64Encoded': False
+                    }
+                
+                topic_id = body_data.get('topic_id')
+                title = body_data.get('title', '').strip()
+                content = body_data.get('content', '').strip()
+                category_id = body_data.get('category_id')
+                is_pinned = body_data.get('is_pinned', False)
+                is_closed = body_data.get('is_closed', False)
+                
+                if not topic_id:
+                    return {
+                        'statusCode': 400,
+                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({'error': 'Не указан ID темы'}),
+                        'isBase64Encoded': False
+                    }
+                
+                update_fields = []
+                update_values = []
+                
+                if title:
+                    update_fields.append('title = %s')
+                    update_values.append(title)
+                if content:
+                    update_fields.append('content = %s')
+                    update_values.append(content)
+                if category_id:
+                    update_fields.append('category_id = %s')
+                    update_values.append(category_id)
+                
+                update_fields.append('is_pinned = %s')
+                update_values.append(is_pinned)
+                update_fields.append('is_closed = %s')
+                update_values.append(is_closed)
+                update_fields.append('updated_at = CURRENT_TIMESTAMP')
+                
+                update_values.append(topic_id)
+                
+                cur.execute(f"""
+                    UPDATE forum_topics 
+                    SET {', '.join(update_fields)}
+                    WHERE id = %s
+                    RETURNING id, title, content, is_pinned, is_closed, category_id, updated_at
+                """, update_values)
+                
+                updated_topic = cur.fetchone()
+                conn.commit()
+                
+                return {
+                    'statusCode': 200,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({
+                        'success': True,
+                        'topic': dict(updated_topic)
+                    }, default=serialize_datetime),
+                    'isBase64Encoded': False
+                }
+            
+            elif action == 'admin_delete_topic':
+                if not is_admin(cur, user_id):
+                    return {
+                        'statusCode': 403,
+                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({'error': 'Доступ запрещен'}),
+                        'isBase64Encoded': False
+                    }
+                
+                topic_id = body_data.get('topic_id')
+                
+                if not topic_id:
+                    return {
+                        'statusCode': 400,
+                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({'error': 'Не указан ID темы'}),
+                        'isBase64Encoded': False
+                    }
+                
+                cur.execute("""
+                    UPDATE forum_topics 
+                    SET removed_at = CURRENT_TIMESTAMP
+                    WHERE id = %s
+                """, (topic_id,))
+                
+                conn.commit()
+                
+                return {
+                    'statusCode': 200,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'success': True}),
+                    'isBase64Encoded': False
+                }
+            
+            elif action == 'admin_delete_comment':
+                if not is_admin(cur, user_id):
+                    return {
+                        'statusCode': 403,
+                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({'error': 'Доступ запрещен'}),
+                        'isBase64Encoded': False
+                    }
+                
+                comment_id = body_data.get('comment_id')
+                
+                if not comment_id:
+                    return {
+                        'statusCode': 400,
+                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({'error': 'Не указан ID комментария'}),
+                        'isBase64Encoded': False
+                    }
+                
+                cur.execute("""
+                    UPDATE forum_comments 
+                    SET removed_at = CURRENT_TIMESTAMP
+                    WHERE id = %s
+                """, (comment_id,))
+                
+                conn.commit()
+                
+                return {
+                    'statusCode': 200,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'success': True}),
+                    'isBase64Encoded': False
+                }
+            
+            elif action == 'admin_manage_categories':
+                if not is_admin(cur, user_id):
+                    return {
+                        'statusCode': 403,
+                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({'error': 'Доступ запрещен'}),
+                        'isBase64Encoded': False
+                    }
+                
+                category_action = body_data.get('category_action')
+                
+                if category_action == 'create':
+                    name = body_data.get('name', '').strip()
+                    slug = body_data.get('slug', '').strip()
+                    description = body_data.get('description', '').strip()
+                    icon = body_data.get('icon', 'Folder')
+                    color = body_data.get('color', '#3b82f6')
+                    parent_id = body_data.get('parent_id')
+                    display_order = body_data.get('display_order', 0)
+                    
+                    if not name or not slug:
+                        return {
+                            'statusCode': 400,
+                            'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                            'body': json.dumps({'error': 'Заполните название и slug'}),
+                            'isBase64Encoded': False
+                        }
+                    
+                    cur.execute("""
+                        INSERT INTO forum_categories (name, slug, description, icon, color, parent_id, display_order)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s)
+                        RETURNING id, name, slug, description, icon, color, parent_id, display_order, created_at
+                    """, (name, slug, description, icon, color, parent_id, display_order))
+                    
+                    new_category = cur.fetchone()
+                    conn.commit()
+                    
+                    return {
+                        'statusCode': 200,
+                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({
+                            'success': True,
+                            'category': dict(new_category)
+                        }, default=serialize_datetime),
+                        'isBase64Encoded': False
+                    }
+                
+                elif category_action == 'update':
+                    category_id = body_data.get('category_id')
+                    name = body_data.get('name', '').strip()
+                    description = body_data.get('description', '').strip()
+                    icon = body_data.get('icon')
+                    color = body_data.get('color')
+                    display_order = body_data.get('display_order')
+                    
+                    if not category_id:
+                        return {
+                            'statusCode': 400,
+                            'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                            'body': json.dumps({'error': 'Не указан ID категории'}),
+                            'isBase64Encoded': False
+                        }
+                    
+                    update_fields = []
+                    update_values = []
+                    
+                    if name:
+                        update_fields.append('name = %s')
+                        update_values.append(name)
+                    if description:
+                        update_fields.append('description = %s')
+                        update_values.append(description)
+                    if icon:
+                        update_fields.append('icon = %s')
+                        update_values.append(icon)
+                    if color:
+                        update_fields.append('color = %s')
+                        update_values.append(color)
+                    if display_order is not None:
+                        update_fields.append('display_order = %s')
+                        update_values.append(display_order)
+                    
+                    update_values.append(category_id)
+                    
+                    cur.execute(f"""
+                        UPDATE forum_categories 
+                        SET {', '.join(update_fields)}
+                        WHERE id = %s
+                        RETURNING id, name, slug, description, icon, color, parent_id, display_order
+                    """, update_values)
+                    
+                    updated_category = cur.fetchone()
+                    conn.commit()
+                    
+                    return {
+                        'statusCode': 200,
+                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({
+                            'success': True,
+                            'category': dict(updated_category)
+                        }, default=serialize_datetime),
+                        'isBase64Encoded': False
+                    }
+                
+                elif category_action == 'delete':
+                    category_id = body_data.get('category_id')
+                    
+                    if not category_id:
+                        return {
+                            'statusCode': 400,
+                            'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                            'body': json.dumps({'error': 'Не указан ID категории'}),
+                            'isBase64Encoded': False
+                        }
+                    
+                    cur.execute("""
+                        UPDATE forum_categories 
+                        SET removed_at = CURRENT_TIMESTAMP
+                        WHERE id = %s
+                    """, (category_id,))
+                    
+                    conn.commit()
+                    
+                    return {
+                        'statusCode': 200,
+                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({'success': True}),
+                        'isBase64Encoded': False
+                    }
+                
+                return {
+                    'statusCode': 400,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'error': 'Неизвестное действие с категорией'}),
                     'isBase64Encoded': False
                 }
             
