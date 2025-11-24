@@ -1,18 +1,10 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { User, ForumTopic, EscrowDeal } from '@/types';
-import Icon from '@/components/ui/icon';
-import { Button } from '@/components/ui/button';
-import AdminUsersTab from '@/components/admin/AdminUsersTab';
-import AdminTopicsTab from '@/components/admin/AdminTopicsTab';
+import AdminPanelHeader from '@/components/admin/AdminPanelHeader';
+import AdminPanelTabs from '@/components/admin/AdminPanelTabs';
+import AdminPanelContent from '@/components/admin/AdminPanelContent';
 import AdminBalanceDialog from '@/components/admin/AdminBalanceDialog';
 import AdminTopicEditDialog from '@/components/admin/AdminTopicEditDialog';
-import AdminDisputesTab from '@/components/admin/AdminDisputesTab';
-import AdminWithdrawalsTab from '@/components/admin/AdminWithdrawalsTab';
-import AdminDepositsTab from '@/components/admin/AdminDepositsTab';
-import AdminEscrowTab from '@/components/admin/AdminEscrowTab';
-import AdminTicketsTab from '@/components/admin/AdminTicketsTab';
-import AdminVerificationTab from '@/components/admin/AdminVerificationTab';
-import AdminBtcWithdrawalsTab from '@/components/admin/AdminBtcWithdrawalsTab';
 import { useToast } from '@/hooks/use-toast';
 
 interface AdminPanelProps {
@@ -24,7 +16,6 @@ const FORUM_URL = 'https://functions.poehali.dev/045d6571-633c-4239-ae69-8d76c93
 const ADMIN_URL = 'https://functions.poehali.dev/d4678b1c-2acd-40bb-b8c5-cefe8d14fad4';
 const ESCROW_URL = 'https://functions.poehali.dev/82c75fbc-83e4-4448-9ff8-1c8ef9bbec09';
 const WITHDRAWAL_URL = 'https://functions.poehali.dev/09f16983-ec42-41fe-a7bd-695752ee11c5';
-const NOTIFICATIONS_URL = 'https://functions.poehali.dev/6c968792-7d48-41a9-af0a-c92adb047acb';
 const CRYPTO_URL = 'https://functions.poehali.dev/8caa3b76-72e5-42b5-9415-91d1f9b05210';
 const FLASH_USDT_URL = 'https://functions.poehali.dev/9d93686d-9a6f-47bc-85a8-7b7c28e4edd7';
 
@@ -49,7 +40,6 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
   const [balanceLoading, setBalanceLoading] = useState(false);
   const [adminNotifications, setAdminNotifications] = useState<any[]>([]);
   const [showNotifications, setShowNotifications] = useState(false);
-  const notificationsRef = useRef<HTMLDivElement>(null);
   const [notificationCounts, setNotificationCounts] = useState<Record<string, number>>({
     balance_topup: 0,
     verification_request: 0,
@@ -78,7 +68,6 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
   const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   useEffect(() => {
-    // Загружаем данные для активной вкладки
     if (activeTab === 'users') {
       fetchUsers();
     } else if (activeTab === 'topics') {
@@ -101,19 +90,16 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
   }, [activeTab]);
 
   useEffect(() => {
-    // Загружаем уведомления и счётчики сразу при открытии админ-панели
     const loadInitialData = async () => {
       await Promise.all([
         fetchAdminNotifications(),
         fetchAllCounts()
       ]);
-      // После первой загрузки отключаем флаг
       setTimeout(() => setIsInitialLoad(false), 100);
     };
     
     loadInitialData();
     
-    // Обновляем каждые 10 секунд для быстрой реакции
     const interval = setInterval(() => {
       fetchAdminNotifications();
       fetchAllCounts();
@@ -121,22 +107,6 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
     
     return () => clearInterval(interval);
   }, []);
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (notificationsRef.current && !notificationsRef.current.contains(event.target as Node)) {
-        setShowNotifications(false);
-      }
-    };
-
-    if (showNotifications) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [showNotifications]);
 
   const fetchUsers = async () => {
     try {
@@ -276,7 +246,6 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
 
   const fetchAllCounts = async () => {
     try {
-      // Параллельно загружаем данные всех разделов
       const [
         usersRes,
         topicsRes,
@@ -308,13 +277,11 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
         btcWithdrawalsRes.json()
       ]);
 
-      // Подсчитываем новых пользователей (за последние 24 часа)
       const newUsers = (usersData.users || []).filter((u: any) => {
         const createdAt = new Date(u.created_at);
         return (Date.now() - createdAt.getTime()) < 24 * 60 * 60 * 1000;
       }).length;
 
-      // Подсчитываем новые темы (за последние 24 часа)
       const newTopics = (topicsData.topics || []).filter((t: any) => {
         const createdAt = new Date(t.created_at);
         return (Date.now() - createdAt.getTime()) < 24 * 60 * 60 * 1000;
@@ -333,7 +300,6 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
         verification: notificationCounts.verification_request
       };
 
-      // Если счётчик увеличился, сбрасываем статус "прочитано" и показываем toast
       const sectionsToUnread = new Set<string>();
       const sectionNames: Record<string, string> = {
         users: 'Новый пользователь',
@@ -354,7 +320,6 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
         if (newCount > oldCount && oldCount !== undefined && !isInitialLoad) {
           sectionsToUnread.add(key);
           
-          // Показываем toast для каждого нового элемента
           const diff = newCount - oldCount;
           toast({
             title: '🔔 ' + sectionNames[key],
@@ -362,7 +327,6 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
             duration: 5000
           });
         } else if (newCount > oldCount && oldCount !== undefined && isInitialLoad) {
-          // При первой загрузке только отмечаем разделы как непрочитанные, но не показываем toast
           sectionsToUnread.add(key);
         }
       });
@@ -376,7 +340,6 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
         });
       }
 
-      // Сохраняем новые счётчики в localStorage
       localStorage.setItem('admin_section_counts', JSON.stringify(newCounts));
       setSectionCounts(newCounts);
     } catch (error) {
@@ -395,7 +358,6 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
           (notif: any) => !notif.is_read
         );
         
-        // Показываем toast для новых уведомлений (не при первой загрузке)
         const prevCount = adminNotifications.length;
         const newCount = unreadNotifications.length;
         
@@ -412,7 +374,6 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
         
         setAdminNotifications(unreadNotifications);
         
-        // Подсчитываем уведомления по типам
         const counts = {
           balance_topup: 0,
           verification_request: 0,
@@ -748,12 +709,10 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
     }
   };
 
-  // Функция для получения счётчика с учётом прочитанных разделов
   const getVisibleCount = (section: string, count: number) => {
     return readSections.has(section) ? 0 : count;
   };
 
-  // Функция для отметки раздела как прочитанного при клике
   const markSectionAsRead = (section: string) => {
     setReadSections(prev => {
       const newSet = new Set([...prev, section]);
@@ -762,7 +721,6 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
     });
   };
 
-  // Обработчик смены вкладки
   const handleTabChange = (tab: typeof activeTab) => {
     setActiveTab(tab);
     markSectionAsRead(tab);
@@ -771,358 +729,68 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
   return (
     <div className="fixed inset-0 bg-background/95 z-50 overflow-auto animate-fade-in">
       <div className="container max-w-7xl mx-auto p-3 sm:p-6 animate-slide-up">
-        <div className="flex items-center justify-between mb-4 sm:mb-6">
-          <div className="flex items-center gap-2 sm:gap-3">
-            <Icon name="Shield" size={24} className="text-primary sm:w-7 sm:h-7" />
-            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold">Админ-панель</h1>
-          </div>
-          <div className="flex items-center gap-2 sm:gap-3">
-            <Button
-              onClick={() => setShowBalanceDialog(true)}
-              className="bg-gradient-to-r from-green-800 to-green-900 hover:from-green-700 hover:to-green-800"
-            >
-              <Icon name="Plus" size={18} className="mr-2" />
-              <span className="hidden sm:inline">Пополнить баланс</span>
-              <span className="sm:hidden">Баланс</span>
-            </Button>
-            <div className="relative" ref={notificationsRef}>
-              <Button 
-                onClick={() => setShowNotifications(!showNotifications)} 
-                variant="ghost"
-                className="relative px-2 sm:px-3"
-              >
-                <Icon name="Bell" size={18} className="sm:w-5 sm:h-5" />
-                {adminNotifications.length > 0 && (
-                  <span className="absolute -top-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 bg-orange-500 text-white text-[10px] sm:text-xs rounded-full flex items-center justify-center">
-                    {adminNotifications.length}
-                  </span>
-                )}
-              </Button>
-              {showNotifications && adminNotifications.length > 0 && (
-                <div className="absolute right-0 mt-2 w-80 bg-card border border-border rounded-lg shadow-lg p-4 z-50 max-h-96 overflow-y-auto animate-fade-in">
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="font-semibold">Уведомления</h3>
-                    <Button size="sm" variant="ghost" onClick={markNotificationsRead}>
-                      <Icon name="Check" size={16} />
-                    </Button>
-                  </div>
-                  <div className="space-y-2">
-                    {adminNotifications.map((notif) => (
-                      <div key={notif.id} className="p-3 bg-orange-500/10 border border-orange-500/20 rounded-lg">
-                        <p className="font-semibold text-sm">{notif.title}</p>
-                        <p className="text-xs text-muted-foreground mt-1">{notif.message}</p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {new Date(notif.created_at).toLocaleString('ru-RU')}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-            <Button onClick={onClose} variant="ghost" className="px-2 sm:px-3">
-              <Icon name="X" size={18} className="sm:w-5 sm:h-5" />
-            </Button>
-          </div>
-        </div>
-
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-3">
-          <div className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-xl p-1 inline-flex overflow-x-auto w-full sm:w-auto">
-            <button
-              onClick={() => handleTabChange('users')}
-              className={`px-3 sm:px-6 py-2 rounded-lg transition-all text-xs sm:text-sm whitespace-nowrap relative ${
-                activeTab === 'users'
-                  ? 'bg-primary text-primary-foreground'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              Пользователи
-              {getVisibleCount('users', sectionCounts.users) > 0 && (
-                <span className="absolute -top-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 bg-red-500 text-white text-[9px] sm:text-[10px] rounded-full flex items-center justify-center font-semibold">
-                  {getVisibleCount('users', sectionCounts.users)}
-                </span>
-              )}
-            </button>
-            <button
-              onClick={() => handleTabChange('topics')}
-              className={`px-3 sm:px-6 py-2 rounded-lg transition-all text-xs sm:text-sm whitespace-nowrap relative ${
-                activeTab === 'topics'
-                  ? 'bg-primary text-primary-foreground'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              Темы форума
-              {getVisibleCount('topics', sectionCounts.topics) > 0 && (
-                <span className="absolute -top-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 bg-red-500 text-white text-[9px] sm:text-[10px] rounded-full flex items-center justify-center font-semibold">
-                  {getVisibleCount('topics', sectionCounts.topics)}
-                </span>
-              )}
-            </button>
-            <button
-              onClick={() => handleTabChange('disputes')}
-              className={`px-3 sm:px-6 py-2 rounded-lg transition-all text-xs sm:text-sm whitespace-nowrap relative ${
-                activeTab === 'disputes'
-                  ? 'bg-primary text-primary-foreground'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              Споры
-              {getVisibleCount('disputes', sectionCounts.disputes) > 0 && (
-                <span className="absolute -top-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 bg-red-500 text-white text-[9px] sm:text-[10px] rounded-full flex items-center justify-center font-semibold">
-                  {getVisibleCount('disputes', sectionCounts.disputes)}
-                </span>
-              )}
-            </button>
-            <button
-              onClick={() => handleTabChange('deposits')}
-              className={`px-3 sm:px-6 py-2 rounded-lg transition-all text-xs sm:text-sm whitespace-nowrap relative ${
-                activeTab === 'deposits'
-                  ? 'bg-primary text-primary-foreground'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              Ввод
-              {getVisibleCount('deposits', sectionCounts.deposits) > 0 && (
-                <span className="absolute -top-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 bg-red-500 text-white text-[9px] sm:text-[10px] rounded-full flex items-center justify-center font-semibold">
-                  {getVisibleCount('deposits', sectionCounts.deposits)}
-                </span>
-              )}
-            </button>
-            <button
-              onClick={() => handleTabChange('withdrawals')}
-              className={`px-3 sm:px-6 py-2 rounded-lg transition-all text-xs sm:text-sm whitespace-nowrap relative ${
-                activeTab === 'withdrawals'
-                  ? 'bg-primary text-primary-foreground'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              Вывод
-              {getVisibleCount('withdrawals', sectionCounts.withdrawals) > 0 && (
-                <span className="absolute -top-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 bg-red-500 text-white text-[9px] sm:text-[10px] rounded-full flex items-center justify-center font-semibold">
-                  {getVisibleCount('withdrawals', sectionCounts.withdrawals)}
-                </span>
-              )}
-            </button>
-            <button
-              onClick={() => handleTabChange('escrow')}
-              className={`px-3 sm:px-6 py-2 rounded-lg transition-all text-xs sm:text-sm whitespace-nowrap relative ${
-                activeTab === 'escrow'
-                  ? 'bg-primary text-primary-foreground'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              Гарант
-              {getVisibleCount('escrow', sectionCounts.escrow) > 0 && (
-                <span className="absolute -top-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 bg-red-500 text-white text-[9px] sm:text-[10px] rounded-full flex items-center justify-center font-semibold">
-                  {getVisibleCount('escrow', sectionCounts.escrow)}
-                </span>
-              )}
-            </button>
-            <button
-              onClick={() => handleTabChange('flash-usdt')}
-              className={`px-3 sm:px-6 py-2 rounded-lg transition-all text-xs sm:text-sm whitespace-nowrap relative ${
-                activeTab === 'flash-usdt'
-                  ? 'bg-primary text-primary-foreground'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              Flash USDT
-              {getVisibleCount('flash-usdt', sectionCounts.flashUsdt) > 0 && (
-                <span className="absolute -top-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 bg-red-500 text-white text-[9px] sm:text-[10px] rounded-full flex items-center justify-center font-semibold">
-                  {getVisibleCount('flash-usdt', sectionCounts.flashUsdt)}
-                </span>
-              )}
-            </button>
-            <button
-              onClick={() => handleTabChange('btc-withdrawals')}
-              className={`px-3 sm:px-6 py-2 rounded-lg transition-all text-xs sm:text-sm whitespace-nowrap relative ${
-                activeTab === 'btc-withdrawals'
-                  ? 'bg-primary text-primary-foreground'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              BTC Вывод
-              {getVisibleCount('btc-withdrawals', sectionCounts.btcWithdrawals) > 0 && (
-                <span className="absolute -top-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 bg-red-500 text-white text-[9px] sm:text-[10px] rounded-full flex items-center justify-center font-semibold">
-                  {getVisibleCount('btc-withdrawals', sectionCounts.btcWithdrawals)}
-                </span>
-              )}
-            </button>
-            <button
-              onClick={() => handleTabChange('tickets')}
-              className={`px-3 sm:px-6 py-2 rounded-lg transition-all text-xs sm:text-sm whitespace-nowrap relative ${
-                activeTab === 'tickets'
-                  ? 'bg-primary text-primary-foreground'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              Тикеты
-              {getVisibleCount('tickets', sectionCounts.tickets) > 0 && (
-                <span className="absolute -top-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 bg-red-500 text-white text-[9px] sm:text-[10px] rounded-full flex items-center justify-center font-semibold">
-                  {getVisibleCount('tickets', sectionCounts.tickets)}
-                </span>
-              )}
-            </button>
-            <button
-              onClick={() => handleTabChange('verification')}
-              className={`px-3 sm:px-6 py-2 rounded-lg transition-all text-xs sm:text-sm whitespace-nowrap relative ${
-                activeTab === 'verification'
-                  ? 'bg-primary text-primary-foreground'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              Верификация
-              {getVisibleCount('verification', sectionCounts.verification) > 0 && (
-                <span className="absolute -top-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 bg-red-500 text-white text-[9px] sm:text-[10px] rounded-full flex items-center justify-center font-semibold">
-                  {getVisibleCount('verification', sectionCounts.verification)}
-                </span>
-              )}
-            </button>
-          </div>
-        </div>
-
-        {activeTab === 'users' && (
-          <AdminUsersTab
-            users={users}
-            currentUser={currentUser}
-            onBlockUser={handleBlockUser}
-            onUnblockUser={handleUnblockUser}
-            onChangeForumRole={handleChangeForumRole}
-            onDeleteUser={handleDeleteUser}
-          />
-        )}
-
-        {activeTab === 'topics' && (
-          <AdminTopicsTab
-            topics={topics}
-            onEditTopic={handleEditTopic}
-            onDeleteTopic={handleDeleteTopic}
-            onUpdateViews={handleUpdateViews}
-          />
-        )}
-
-        {activeTab === 'disputes' && (
-          <AdminDisputesTab
-            disputes={disputes}
-            currentUser={currentUser}
-            onUpdate={fetchDisputes}
-          />
-        )}
-
-        {activeTab === 'deposits' && (
-          <AdminDepositsTab
-            deposits={deposits}
-            currentUser={currentUser}
-            onUpdate={fetchDeposits}
-          />
-        )}
-
-        {activeTab === 'withdrawals' && (
-          <AdminWithdrawalsTab
-            withdrawals={withdrawals}
-            currentUser={currentUser}
-            onUpdate={fetchWithdrawals}
-          />
-        )}
-
-        {activeTab === 'btc-withdrawals' && (
-          <AdminBtcWithdrawalsTab
-            withdrawals={btcWithdrawals}
-            currentUserId={currentUser.id}
-            onRefresh={fetchBtcWithdrawals}
-          />
-        )}
-
-        {activeTab === 'escrow' && (
-          <AdminEscrowTab
-            deals={escrowDeals}
-            currentUser={currentUser}
-            onUpdate={fetchAllEscrowDeals}
-          />
-        )}
-
-        {activeTab === 'tickets' && (
-          <AdminTicketsTab
-            tickets={tickets}
-            currentUser={currentUser}
-            onRefresh={fetchTickets}
-          />
-        )}
-
-        {activeTab === 'verification' && (
-          <AdminVerificationTab user={currentUser} />
-        )}
-
-        {activeTab === 'flash-usdt' && (
-          <div className="space-y-4">
-            <div className="bg-card border border-border rounded-lg overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="bg-muted/50">
-                      <th className="px-4 py-3 text-left text-sm font-semibold">ID</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold">Пользователь</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold">Количество</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold">Цена</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold">Кошелек</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold">Статус</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold">Дата</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {flashUsdtOrders.map((order) => (
-                      <tr key={order.id} className="border-t border-border hover:bg-muted/30">
-                        <td className="px-4 py-3 text-sm">#{order.id}</td>
-                        <td className="px-4 py-3 text-sm font-medium">{order.username || `User #${order.user_id}`}</td>
-                        <td className="px-4 py-3 text-sm">{Number(order.amount).toLocaleString('ru-RU')} Flash USDT</td>
-                        <td className="px-4 py-3 text-sm font-bold text-green-400">${Number(order.price).toLocaleString('ru-RU')}</td>
-                        <td className="px-4 py-3 text-sm font-mono text-xs">{order.wallet_address}</td>
-                        <td className="px-4 py-3">
-                          <span className={`px-2 py-1 rounded text-xs font-medium ${
-                            order.status === 'completed' ? 'bg-green-500/20 text-green-400' :
-                            order.status === 'pending' ? 'bg-yellow-500/20 text-yellow-400' :
-                            'bg-red-500/20 text-red-400'
-                          }`}>
-                            {order.status === 'completed' ? 'Выполнен' : order.status === 'pending' ? 'Ожидает' : 'Отменен'}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 text-sm text-muted-foreground">
-                          {new Date(order.created_at).toLocaleString('ru-RU')}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-            {flashUsdtOrders.length === 0 && (
-              <div className="text-center py-12 text-muted-foreground">
-                <Icon name="Package" size={48} className="mx-auto mb-4 opacity-50" />
-                <p>Заказов Flash USDT пока нет</p>
-              </div>
-            )}
-          </div>
-        )}
-
-        <AdminTopicEditDialog
-          topic={editingTopic}
-          editTitle={editTitle}
-          editContent={editContent}
-          onTitleChange={setEditTitle}
-          onContentChange={setEditContent}
-          onClose={() => setEditingTopic(null)}
-          onSave={handleSaveEdit}
+        <AdminPanelHeader 
+          onClose={onClose}
+          onShowBalanceDialog={() => setShowBalanceDialog(true)}
+          showNotifications={showNotifications}
+          setShowNotifications={setShowNotifications}
+          adminNotifications={adminNotifications}
+          onMarkNotificationsRead={markNotificationsRead}
         />
 
-        <AdminBalanceDialog
+        <AdminPanelTabs 
+          activeTab={activeTab}
+          onTabChange={handleTabChange}
+          sectionCounts={sectionCounts}
+          getVisibleCount={getVisibleCount}
+        />
+
+        <AdminPanelContent 
+          activeTab={activeTab}
+          users={users}
+          topics={topics}
+          disputes={disputes}
+          withdrawals={withdrawals}
+          deposits={deposits}
+          btcWithdrawals={btcWithdrawals}
+          escrowDeals={escrowDeals}
+          flashUsdtOrders={flashUsdtOrders}
+          tickets={tickets}
+          currentUser={currentUser}
+          onBlockUser={handleBlockUser}
+          onUnblockUser={handleUnblockUser}
+          onDeleteUser={handleDeleteUser}
+          onChangeForumRole={handleChangeForumRole}
+          onEditTopic={handleEditTopic}
+          onDeleteTopic={handleDeleteTopic}
+          onUpdateViews={handleUpdateViews}
+          onRefreshWithdrawals={fetchWithdrawals}
+          onRefreshDeposits={fetchDeposits}
+          onRefreshBtcWithdrawals={fetchBtcWithdrawals}
+          onRefreshEscrow={fetchAllEscrowDeals}
+          onRefreshFlashUsdt={fetchFlashUsdtOrders}
+          onRefreshTickets={fetchTickets}
+        />
+
+        <AdminBalanceDialog 
           open={showBalanceDialog}
           onOpenChange={setShowBalanceDialog}
           balanceUsername={balanceUsername}
+          setBalanceUsername={setBalanceUsername}
           balanceAmount={balanceAmount}
+          setBalanceAmount={setBalanceAmount}
           balanceLoading={balanceLoading}
-          onUsernameChange={setBalanceUsername}
-          onAmountChange={setBalanceAmount}
           onAddBalance={handleAddBalance}
+        />
+
+        <AdminTopicEditDialog 
+          open={editingTopic !== null}
+          onOpenChange={(open) => !open && setEditingTopic(null)}
+          editTitle={editTitle}
+          setEditTitle={setEditTitle}
+          editContent={editContent}
+          setEditContent={setEditContent}
+          onSave={handleSaveEdit}
         />
       </div>
     </div>
