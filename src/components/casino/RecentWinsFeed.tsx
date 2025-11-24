@@ -40,7 +40,8 @@ const RecentWinsFeed = () => {
       if (data.success && data.wins) {
         setWins(data.wins.map((win: any) => ({
           ...win,
-          timestamp: new Date(win.timestamp)
+          amount: parseFloat(win.amount),
+          timestamp: new Date(win.created_at)
         })));
       }
     } catch (error) {
