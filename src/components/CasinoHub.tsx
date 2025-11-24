@@ -19,7 +19,7 @@ type GameType = 'menu' | 'blackjack' | 'baccarat' | 'dice' | 'lottery';
 const CasinoHub = ({ user, onShowAuthDialog, onRefreshUserBalance }: CasinoHubProps) => {
   const [selectedGame, setSelectedGame] = useState<GameType>('menu');
   
-  const canPlay = user && user.forum_role === 'member';
+  const canPlay = user && user.forum_role && ['member', 'verified', 'moderator', 'admin', 'vip', 'legend'].includes(user.forum_role);
 
   const games = [
     {
