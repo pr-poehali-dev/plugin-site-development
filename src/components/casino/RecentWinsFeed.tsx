@@ -127,12 +127,12 @@ const RecentWinsFeed = () => {
         <h3 className="text-sm font-semibold">Последние выигрыши</h3>
       </div>
       
-      <Card className="p-4 bg-gradient-to-br from-yellow-950/20 via-yellow-900/10 to-orange-950/20 border-yellow-800/20">
-        <div className="flex items-center justify-center gap-4 flex-wrap">
+      <Card className="p-4 bg-gradient-to-br from-yellow-950/20 via-yellow-900/10 to-orange-950/20 border-yellow-800/20 overflow-hidden relative">
+        <div className="flex items-center gap-4 overflow-x-auto scrollbar-hide pb-2" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
           {wins.slice(0, 9).map((win) => (
             <div
               key={win.id}
-              className="flex flex-col items-center gap-2 group"
+              className="flex flex-col items-center gap-2 group flex-shrink-0"
             >
               <div className="relative">
                 {win.avatar_url ? (
@@ -158,6 +158,7 @@ const RecentWinsFeed = () => {
             </div>
           ))}
         </div>
+        <div className="absolute top-0 right-0 h-full w-16 bg-gradient-to-l from-yellow-950/40 to-transparent pointer-events-none"></div>
       </Card>
     </div>
   );
