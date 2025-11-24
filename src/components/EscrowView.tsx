@@ -75,7 +75,6 @@ export const EscrowView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Esc
     fetchDeals();
     if (user) {
       checkDisputeNotifications();
-      checkUserActivePurchases();
     }
   }, [statusFilter, categoryFilter, user]);
 
@@ -89,29 +88,30 @@ export const EscrowView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Esc
     return () => clearInterval(interval);
   }, [user]);
 
-  const checkUserActivePurchases = async () => {
+  useEffect(() => {
     if (!user) return;
     
-    // Проверяем есть ли у пользователя активные покупки
-    try {
-      const response = await fetch(`${ESCROW_URL}?action=list&status=in_progress`, {
-        headers: {
-          'X-User-Id': user.id.toString()
+    const checkUserActivePurchases = async () => {
+      try {
+        const response = await fetch(`${ESCROW_URL}?action=list&status=in_progress`, {
+          headers: {
+            'X-User-Id': user.id.toString()
+          }
+        });
+        const data = await response.json();
+        
+        if (data.deals && data.deals.length > 0) {
+          if (statusFilter === 'open') {
+            setStatusFilter('in_progress');
+          }
         }
-      });
-      const data = await response.json();
-      
-      if (data.deals && data.deals.length > 0) {
-        // Если есть активные покупки и пользователь на вкладке "В продаже"
-        // автоматически переключаем на "Мои покупки"
-        if (statusFilter === 'open') {
-          setStatusFilter('in_progress');
-        }
+      } catch (error) {
+        console.error('Ошибка проверки активных покупок:', error);
       }
-    } catch (error) {
-      console.error('Ошибка проверки активных покупок:', error);
-    }
-  };
+    };
+    
+    checkUserActivePurchases();
+  }, [user]);
 
   const checkDisputeNotifications = async () => {
     if (!user) return;
