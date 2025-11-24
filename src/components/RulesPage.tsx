@@ -197,6 +197,73 @@ const RulesPage = () => {
         <div className="border-t border-border pt-6">
           <section>
             <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 bg-purple-800/20 rounded-lg flex items-center justify-center">
+                <Icon name="DollarSign" className="text-purple-400" size={20} />
+              </div>
+              <h2 className="text-xl sm:text-2xl font-bold text-purple-400">Условия использования сервиса</h2>
+            </div>
+            
+            <div className="space-y-3 text-sm sm:text-base">
+              <div className="flex items-start gap-3">
+                <div className="w-6 h-6 rounded-full bg-purple-800/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <span className="text-xs text-purple-400 font-bold">1</span>
+                </div>
+                <p className="text-foreground/90">
+                  <span className="font-semibold text-foreground">Верификация для вывода:</span> Для вывода средств свыше 100 USDT необходимо пройти верификацию личности
+                </p>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <div className="w-6 h-6 rounded-full bg-purple-800/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <span className="text-xs text-purple-400 font-bold">2</span>
+                </div>
+                <p className="text-foreground/90">
+                  <span className="font-semibold text-foreground">Комиссии платформы:</span> При использовании гарант-сервиса взимается комиссия 3% от суммы сделки
+                </p>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <div className="w-6 h-6 rounded-full bg-purple-800/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <span className="text-xs text-purple-400 font-bold">3</span>
+                </div>
+                <p className="text-foreground/90">
+                  <span className="font-semibold text-foreground">Сроки обработки:</span> Заявки на вывод обрабатываются в течение 24-48 часов в рабочие дни
+                </p>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <div className="w-6 h-6 rounded-full bg-purple-800/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <span className="text-xs text-purple-400 font-bold">4</span>
+                </div>
+                <p className="text-foreground/90">
+                  <span className="font-semibold text-foreground">AML-политика:</span> Платформа соблюдает правила по борьбе с отмыванием денег. Подозрительные транзакции блокируются
+                </p>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <div className="w-6 h-6 rounded-full bg-purple-800/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <span className="text-xs text-purple-400 font-bold">5</span>
+                </div>
+                <p className="text-foreground/90">
+                  <span className="font-semibold text-foreground">Конфиденциальность:</span> Мы защищаем ваши данные и не передаём их третьим лицам без вашего согласия
+                </p>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <div className="w-6 h-6 rounded-full bg-purple-800/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <span className="text-xs text-purple-400 font-bold">6</span>
+                </div>
+                <p className="text-foreground/90">
+                  <span className="font-semibold text-foreground">Реферальные средства:</span> Деньги, полученные через реферальную программу, можно вывести только после увеличения суммы в 5 раз через игры казино. Альтернативно, реферальными средствами можно оплачивать любые товары и услуги на платформе
+                </p>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <div className="border-t border-border pt-6">
+          <section>
+            <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 bg-red-800/20 rounded-lg flex items-center justify-center">
                 <Icon name="Ban" className="text-red-400" size={20} />
               </div>
