@@ -763,15 +763,16 @@ const DealDetailDialog = ({ deal, user, onClose, onUpdate, onRefreshUserBalance,
         
         setCurrentDeal(data.deal);
         
-        // Если статус изменился или появился покупатель - обновляем список и переключаем вкладку
+        // Если статус изменился или появился покупатель - переключаем вкладку и обновляем список
         if (oldStatus !== newStatus || (oldBuyerId === null && newBuyerId !== null)) {
-          onUpdate();
+          // КРИТИЧЕСКИ ВАЖНО: СНАЧАЛА переключаем вкладку, ПОТОМ обновляем список
           
           // Автоматически переключаем вкладку в зависимости от нового статуса
           if (newStatus === 'in_progress' && newBuyerId !== null) {
+            // 1. Переключаем вкладку
             onStatusChange?.('in_progress');
             
-            // Показываем уведомление продавцу только один раз
+            // 2. Показываем уведомление продавцу только один раз
             if (user?.id === data.deal.seller_id && oldBuyerId === null && !hasShownBuyerJoinedToast.current) {
               hasShownBuyerJoinedToast.current = true;
               toast({
@@ -780,10 +781,23 @@ const DealDetailDialog = ({ deal, user, onClose, onUpdate, onRefreshUserBalance,
                 duration: 5000
               });
             }
+            
+            // 3. Даём React время обновить state (300ms)
+            setTimeout(() => {
+              onUpdate();
+            }, 300);
+            
           } else if (newStatus === 'completed') {
             onStatusChange?.('completed');
+            setTimeout(() => {
+              onUpdate();
+            }, 300);
+            
           } else if (newStatus === 'dispute') {
             onStatusChange?.('dispute');
+            setTimeout(() => {
+              onUpdate();
+            }, 300);
           }
         }
       }
