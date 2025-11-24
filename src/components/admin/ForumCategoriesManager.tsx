@@ -115,6 +115,49 @@ const ForumCategoriesManager = ({ userId }: ForumCategoriesManagerProps) => {
     }
   };
 
+  const handleDeleteCategory = async (categoryId: number, categoryName: string) => {
+    if (!confirm(`Вы уверены что хотите удалить категорию "${categoryName}"?\n\nУдаление возможно только если в категории нет тем.`)) {
+      return;
+    }
+
+    try {
+      const response = await fetch(ADMIN_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-User-Id': userId.toString()
+        },
+        body: JSON.stringify({
+          action: 'delete_forum_category',
+          category_id: categoryId
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        toast({
+          title: 'Успешно',
+          description: 'Категория удалена'
+        });
+        fetchCategories();
+      } else {
+        toast({
+          title: 'Ошибка',
+          description: data.error || 'Не удалось удалить категорию',
+          variant: 'destructive'
+        });
+      }
+    } catch (error) {
+      console.error('Ошибка удаления категории:', error);
+      toast({
+        title: 'Ошибка',
+        description: 'Ошибка соединения с сервером',
+        variant: 'destructive'
+      });
+    }
+  };
+
   const generateSlug = (name: string) => {
     return name
       .toLowerCase()
@@ -292,6 +335,14 @@ const ForumCategoriesManager = ({ userId }: ForumCategoriesManagerProps) => {
                     <span>Порядок: {category.display_order}</span>
                   </div>
                 </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleDeleteCategory(category.id, category.name)}
+                  className="text-red-500 hover:text-red-600 hover:bg-red-500/10"
+                >
+                  <Icon name="Trash2" size={18} />
+                </Button>
               </div>
             </Card>
           ))}

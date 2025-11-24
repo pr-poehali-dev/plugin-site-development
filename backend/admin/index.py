@@ -693,6 +693,52 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                         'isBase64Encoded': False
                     }
             
+            elif action == 'delete_forum_category':
+                category_id = body_data.get('category_id')
+                
+                if not category_id:
+                    return {
+                        'statusCode': 400,
+                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({'error': 'category_id обязателен'}),
+                        'isBase64Encoded': False
+                    }
+                
+                cur.execute(f"SELECT name FROM {SCHEMA}.forum_categories WHERE id = %s", (category_id,))
+                category = cur.fetchone()
+                
+                if not category:
+                    return {
+                        'statusCode': 404,
+                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({'error': 'Категория не найдена'}),
+                        'isBase64Encoded': False
+                    }
+                
+                cur.execute(f"SELECT COUNT(*) as count FROM {SCHEMA}.forum_topics WHERE category_id = %s", (category_id,))
+                topics_count = cur.fetchone()['count']
+                
+                if topics_count > 0:
+                    return {
+                        'statusCode': 400,
+                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({
+                            'error': f'Невозможно удалить категорию. В ней {topics_count} тем. Сначала удалите темы или переместите их в другую категорию.'
+                        }),
+                        'isBase64Encoded': False
+                    }
+                
+                cur.execute(f"DELETE FROM {SCHEMA}.forum_categories WHERE id = %s", (category_id,))
+                log_admin_action(user_id, 'delete_category', 'forum_category', category_id, f'Category: {category["name"]}', cur)
+                conn.commit()
+                
+                return {
+                    'statusCode': 200,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'success': True, 'message': 'Категория удалена'}),
+                    'isBase64Encoded': False
+                }
+            
             else:
                 return {
                     'statusCode': 400,
