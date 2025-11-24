@@ -198,15 +198,11 @@ export const ForumTopicsList = ({
             <button
               key={category.id}
               onClick={() => setSelectedCategory(category.slug)}
-              className={`h-8 px-3 rounded-md text-xs font-medium transition-all flex items-center gap-1.5 ${
-                selectedCategory === category.slug
-                  ? 'border shadow-sm'
-                  : 'bg-zinc-900/40 border border-zinc-800/60 hover:bg-zinc-900/60 hover:border-zinc-700/80'
-              }`}
+              className="h-8 px-3 rounded-md text-xs font-medium transition-all flex items-center gap-1.5 border hover:brightness-110"
               style={{
-                backgroundColor: selectedCategory === category.slug ? `${category.color}20` : undefined,
-                borderColor: selectedCategory === category.slug ? `${category.color}60` : undefined,
-                color: selectedCategory === category.slug ? category.color : '#a1a1aa'
+                backgroundColor: selectedCategory === category.slug ? `${category.color}25` : `${category.color}12`,
+                borderColor: selectedCategory === category.slug ? `${category.color}50` : `${category.color}30`,
+                color: selectedCategory === category.slug ? category.color : `${category.color}cc`
               }}
             >
               <Icon name={category.icon as any} size={14} />
