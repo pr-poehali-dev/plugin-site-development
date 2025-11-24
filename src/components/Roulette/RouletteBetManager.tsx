@@ -62,7 +62,7 @@ const RouletteBetManager = ({
         <div className="text-right">
           <div className="text-sm text-muted-foreground mb-1">Ваш баланс</div>
           <div className="text-2xl font-bold text-primary">
-            {user ? `${user.balance.toFixed(2)} USDT` : '0.00 USDT'}
+            {user ? `${Number(user.balance || 0).toFixed(2)} USDT` : '0.00 USDT'}
           </div>
         </div>
       </div>

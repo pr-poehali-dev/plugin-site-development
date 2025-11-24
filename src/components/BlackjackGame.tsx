@@ -97,10 +97,10 @@ export const BlackjackGame = ({ user, onShowAuthDialog, onRefreshUserBalance }: 
       return;
     }
 
-    if (betAmount > (user.balance || 0)) {
+    if (betAmount > Number(user.balance || 0)) {
       toast({
         title: 'Недостаточно средств',
-        description: `У вас: ${(user.balance || 0).toFixed(2)} USDT`,
+        description: `У вас: ${Number(user.balance || 0).toFixed(2)} USDT`,
         variant: 'destructive'
       });
       return;
@@ -518,7 +518,7 @@ export const BlackjackGame = ({ user, onShowAuthDialog, onRefreshUserBalance }: 
                 <div className="text-right">
                   <div className="text-sm text-muted-foreground mb-1">Ваш баланс</div>
                   <div className="text-2xl font-bold text-primary">
-                    {user ? `${user.balance.toFixed(2)} USDT` : '0.00 USDT'}
+                    {user ? `${Number(user.balance || 0).toFixed(2)} USDT` : '0.00 USDT'}
                   </div>
                 </div>
               </div>
