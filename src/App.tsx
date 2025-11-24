@@ -12,6 +12,7 @@ import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient();
 
 const CRYPTO_CHECKER_URL = 'https://functions.poehali.dev/c6ecf062-a0e0-47bd-8e8e-694cf7eb952b';
+const ROLE_UPDATER_URL = 'https://functions.poehali.dev/c31a74a8-f1ec-40ca-8eda-a5dce42fc8dc';
 
 const CryptoChecker = () => {
   useEffect(() => {
@@ -29,10 +30,26 @@ const CryptoChecker = () => {
       }
     };
 
-    checkPendingPayments();
-    const interval = setInterval(checkPendingPayments, 30000);
+    const updateUserRoles = async () => {
+      try {
+        await fetch(ROLE_UPDATER_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        });
+      } catch (error) {
+        // Silently handle connection errors for background task
+      }
+    };
 
-    return () => clearInterval(interval);
+    checkPendingPayments();
+    updateUserRoles();
+    const interval = setInterval(checkPendingPayments, 30000);
+    const roleInterval = setInterval(updateUserRoles, 60000);
+
+    return () => {
+      clearInterval(interval);
+      clearInterval(roleInterval);
+    };
   }, []);
 
   return null;
