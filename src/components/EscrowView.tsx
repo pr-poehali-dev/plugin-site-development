@@ -27,7 +27,7 @@ export const EscrowView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Esc
   const [loading, setLoading] = useState(true);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [selectedDeal, setSelectedDeal] = useState<EscrowDeal | null>(null);
-  const [statusFilter, setStatusFilter] = useState<'open' | 'completed' | 'dispute'>('open');
+  const [statusFilter, setStatusFilter] = useState<'open' | 'in_progress' | 'completed' | 'dispute'>('open');
   
   const [newDeal, setNewDeal] = useState({
     title: '',
@@ -415,6 +415,7 @@ export const EscrowView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Esc
       <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto pb-2 -mx-1 px-1">
         {[
           { id: 'open', label: 'Открытые', icon: 'Clock' },
+          { id: 'in_progress', label: 'Незавершенные', icon: 'Loader2' },
           { id: 'completed', label: 'Завершенные', icon: 'Check' },
           { id: 'dispute', label: 'Споры', icon: 'AlertTriangle' }
         ].map((filter) => (
@@ -422,9 +423,8 @@ export const EscrowView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Esc
             key={filter.id}
             variant={statusFilter === filter.id ? 'default' : 'outline'}
             size="sm"
-            className="text-xs sm:text-sm whitespace-nowrap"
+            className={`text-xs sm:text-sm whitespace-nowrap ${statusFilter === filter.id ? 'bg-green-800 hover:bg-green-700' : ''}`}
             onClick={() => setStatusFilter(filter.id as any)}
-            className={statusFilter === filter.id ? 'bg-green-800 hover:bg-green-700' : ''}
           >
             <Icon name={filter.icon as any} size={16} className="mr-2" />
             {filter.label}

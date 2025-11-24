@@ -82,6 +82,30 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                             ORDER BY ed.created_at DESC
                         """
                         cursor.execute(query)
+                # Для незавершенных (в процессе) - только участники видят свои сделки
+                elif status_filter == 'in_progress':
+                    if user_id:
+                        query = """
+                            SELECT ed.*, 
+                                seller.username as seller_name, seller.avatar_url as seller_avatar,
+                                buyer.username as buyer_name, buyer.avatar_url as buyer_avatar
+                            FROM escrow_deals ed
+                            LEFT JOIN users seller ON ed.seller_id = seller.id
+                            LEFT JOIN users buyer ON ed.buyer_id = buyer.id
+                            WHERE ed.status = 'in_progress' AND (ed.seller_id = %s OR ed.buyer_id = %s)
+                            ORDER BY ed.created_at DESC
+                        """
+                        cursor.execute(query, (user_id, user_id))
+                    else:
+                        # Неавторизованные пользователи не видят незавершенные сделки
+                        deals = []
+                        cursor.close()
+                        return {
+                            'statusCode': 200,
+                            'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                            'body': json.dumps({'deals': deals}, default=serialize_datetime),
+                            'isBase64Encoded': False
+                        }
                 # Для завершенных и споров - только участники видят сделки
                 elif status_filter == 'completed' or status_filter == 'dispute':
                     if user_id:
