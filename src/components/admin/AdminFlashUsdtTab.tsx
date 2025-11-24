@@ -3,6 +3,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
 import { User } from '@/types';
+import { useToast } from '@/hooks/use-toast';
 
 interface FlashUsdtOrder {
   id: number;
@@ -24,6 +25,7 @@ interface AdminFlashUsdtTabProps {
 }
 
 const AdminFlashUsdtTab = ({ orders, currentUser, onRefresh }: AdminFlashUsdtTabProps) => {
+  const { toast } = useToast();
   const [selectedOrder, setSelectedOrder] = useState<FlashUsdtOrder | null>(null);
   const [expandedOrderId, setExpandedOrderId] = useState<number | null>(null);
 
@@ -149,19 +151,34 @@ const AdminFlashUsdtTab = ({ orders, currentUser, onRefresh }: AdminFlashUsdtTab
                   </div>
 
                   {expandedOrderId === order.id && (
-                    <div className="mt-4 pt-4 border-t border-border space-y-3">
+                    <div 
+                      className="mt-4 pt-4 border-t border-border space-y-3"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <div>
                         <p className="text-xs text-muted-foreground mb-1">Кошелек получателя:</p>
                         <div className="flex items-center gap-2">
-                          <code className="flex-1 bg-muted/50 px-3 py-2 rounded text-xs font-mono break-all">
+                          <code className="flex-1 bg-muted/50 px-3 py-2 rounded text-xs font-mono break-all select-all">
                             {order.wallet_address}
                           </code>
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={(e) => {
+                            onClick={async (e) => {
                               e.stopPropagation();
-                              navigator.clipboard.writeText(order.wallet_address);
+                              try {
+                                await navigator.clipboard.writeText(order.wallet_address);
+                                toast({
+                                  title: 'Скопировано!',
+                                  description: 'Адрес кошелька скопирован в буфер обмена'
+                                });
+                              } catch (error) {
+                                toast({
+                                  title: 'Ошибка',
+                                  description: 'Не удалось скопировать адрес',
+                                  variant: 'destructive'
+                                });
+                              }
                             }}
                           >
                             <Icon name="Copy" size={14} />
