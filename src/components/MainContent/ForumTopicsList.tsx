@@ -67,12 +67,36 @@ export const ForumTopicsList = ({
   const [forumSortBy, setForumSortBy] = useState<'newest' | 'hot' | 'views'>('newest');
   const [searchQuery, setSearchQuery] = useState('');
   const [categories, setCategories] = useState<ForumCategory[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [selectedParentCategory, setSelectedParentCategory] = useState<number | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(() => {
+    const saved = localStorage.getItem('forumSelectedCategory');
+    return saved || null;
+  });
+  const [selectedParentCategory, setSelectedParentCategory] = useState<number | null>(() => {
+    const saved = localStorage.getItem('forumSelectedParentCategory');
+    return saved ? parseInt(saved) : null;
+  });
 
   useEffect(() => {
     fetchCategories();
   }, []);
+
+  useEffect(() => {
+    if (selectedCategory) {
+      localStorage.setItem('forumSelectedCategory', selectedCategory);
+      localStorage.removeItem('forumSelectedParentCategory');
+    } else {
+      localStorage.removeItem('forumSelectedCategory');
+    }
+  }, [selectedCategory]);
+
+  useEffect(() => {
+    if (selectedParentCategory !== null) {
+      localStorage.setItem('forumSelectedParentCategory', selectedParentCategory.toString());
+      localStorage.removeItem('forumSelectedCategory');
+    } else {
+      localStorage.removeItem('forumSelectedParentCategory');
+    }
+  }, [selectedParentCategory]);
 
   const fetchCategories = async () => {
     try {
