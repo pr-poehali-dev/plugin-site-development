@@ -535,13 +535,19 @@ export const DealsView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Deal
                 variant="outline"
                 onClick={() => setShowCreateDialog(false)}
                 className="flex-1"
+                type="button"
               >
                 Отмена
               </Button>
               <Button
-                onClick={createDeal}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  createDeal();
+                }}
                 disabled={creating}
                 className="flex-1 bg-gradient-to-r from-green-600 to-green-800"
+                type="button"
               >
                 <Icon name={creating ? "Loader2" : "Plus"} size={16} className={`mr-2 ${creating ? 'animate-spin' : ''}`} />
                 {creating ? 'Создаем...' : 'Создать'}
