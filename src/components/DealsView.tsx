@@ -254,12 +254,18 @@ export const DealsView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Deal
   };
 
   const confirmBuyerConfirm = async () => {
-    if (!user || !selectedDeal || actionLoading) return;
+    console.log('🟢 confirmBuyerConfirm НАЧАЛО');
+    if (!user || !selectedDeal || actionLoading) {
+      console.log('🔴 Прервано:', { hasUser: !!user, hasDeal: !!selectedDeal, isLoading: actionLoading });
+      return;
+    }
     
     setShowConfirmDialog(false);
     setActionLoading(true);
 
     try {
+      console.log('🟡 Отправка запроса:', { action: 'buyer_confirm', deal_id: selectedDeal.id, user_id: user.id });
+      
       const response = await fetch(DEALS_URL, {
         method: 'POST',
         headers: {
@@ -272,7 +278,11 @@ export const DealsView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Deal
         })
       });
       
+      console.log('🟡 Response status:', response.status);
+      
       const data = await response.json();
+      console.log('🟡 Response data:', data);
+      
       if (data.success) {
         toast({
           title: '🎉 Сделка завершена!',
@@ -288,9 +298,16 @@ export const DealsView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Deal
         setTimeout(() => {
           setSelectedDeal(null);
         }, 2000);
+      } else {
+        console.error('🔴 Ошибка от сервера:', data.error);
+        toast({
+          title: 'Ошибка',
+          description: data.error || 'Ошибка завершения сделки',
+          variant: 'destructive'
+        });
       }
     } catch (error) {
-      console.error('Ошибка:', error);
+      console.error('🔴 Exception:', error);
       toast({
         title: 'Ошибка',
         description: 'Ошибка завершения сделки',
