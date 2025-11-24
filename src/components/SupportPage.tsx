@@ -61,16 +61,41 @@ const SupportPage = ({ user, onShowAuthDialog }: SupportPageProps) => {
 
     setIsSubmitting(true);
 
-    setTimeout(() => {
+    try {
+      const savedTickets = localStorage.getItem('admin_mock_tickets');
+      const tickets = savedTickets ? JSON.parse(savedTickets) : [];
+      
+      const newTicket = {
+        id: Date.now(),
+        user_id: user.id,
+        username: user.username,
+        category: category,
+        subject: subject.trim(),
+        message: message.trim(),
+        status: 'open',
+        created_at: new Date().toISOString()
+      };
+      
+      tickets.push(newTicket);
+      localStorage.setItem('admin_mock_tickets', JSON.stringify(tickets));
+      
       toast({
         title: 'Тикет создан!',
         description: 'Мы получили ваше обращение и ответим в ближайшее время'
       });
+      
       setCategory('');
       setSubject('');
       setMessage('');
+    } catch (error) {
+      toast({
+        title: 'Ошибка',
+        description: 'Не удалось создать тикет',
+        variant: 'destructive'
+      });
+    } finally {
       setIsSubmitting(false);
-    }, 500);
+    }
   };
 
   return (

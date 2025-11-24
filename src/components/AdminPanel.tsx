@@ -199,45 +199,12 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
   const fetchTickets = async () => {
     const savedTickets = localStorage.getItem('admin_mock_tickets');
     if (savedTickets) {
-      setTickets(JSON.parse(savedTickets));
+      const tickets = JSON.parse(savedTickets);
+      setTickets(tickets.sort((a: any, b: any) => 
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      ));
     } else {
-      const mockTickets = [
-        {
-          id: 1,
-          user_id: 2,
-          username: 'user123',
-          category: 'payment',
-          subject: 'Проблема с выводом средств',
-          message: 'Здравствуйте, не могу вывести средства на свой кошелек. Заявка висит в статусе "обработка" уже 2 дня.',
-          status: 'open',
-          created_at: new Date(Date.now() - 86400000).toISOString()
-        },
-        {
-          id: 2,
-          user_id: 3,
-          username: 'trader777',
-          category: 'games',
-          subject: 'Не зачислен выигрыш',
-          message: 'Выиграл в казино 500 USDT, но деньги не пришли на баланс.',
-          status: 'open',
-          created_at: new Date(Date.now() - 172800000).toISOString()
-        },
-        {
-          id: 3,
-          user_id: 4,
-          username: 'crypto_fan',
-          category: 'flash',
-          subject: 'Вопрос по Flash USDT',
-          message: 'Как работает Flash USDT? Можно ли использовать на биржах?',
-          status: 'answered',
-          created_at: new Date(Date.now() - 259200000).toISOString(),
-          admin_response: 'Flash USDT - это временные токены для тестирования. Они не работают на биржах и исчезают через 24 часа.',
-          answered_at: new Date(Date.now() - 172800000).toISOString(),
-          answered_by: currentUser.username
-        }
-      ];
-      setTickets(mockTickets);
-      localStorage.setItem('admin_mock_tickets', JSON.stringify(mockTickets));
+      setTickets([]);
     }
   };
 
@@ -298,6 +265,10 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
         return (Date.now() - createdAt.getTime()) < 24 * 60 * 60 * 1000;
       }).length;
 
+      const savedTickets = localStorage.getItem('admin_mock_tickets');
+      const allTickets = savedTickets ? JSON.parse(savedTickets) : [];
+      const openTicketsCount = allTickets.filter((t: any) => t.status === 'open').length;
+
       const newCounts = {
         users: newUsers,
         topics: newTopics,
@@ -307,7 +278,7 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
         btcWithdrawals: (btcWithdrawalsData.withdrawals || []).filter((w: any) => w.status === 'pending').length,
         escrow: (escrowData.deals || []).filter((d: any) => d.status === 'open' && !d.buyer_id).length,
         flashUsdt: (flashUsdtData.orders || []).filter((o: any) => o.status === 'pending').length,
-        tickets: 2,
+        tickets: openTicketsCount,
         verification: notificationCounts.verification_request
       };
 

@@ -36,9 +36,10 @@ const AdminTicketsTab = ({ tickets, currentUser, onRefresh, onUpdateTicketStatus
   const categoryLabels: Record<string, string> = {
     account: 'Аккаунт',
     payment: 'Платежи',
-    casino: 'Казино',
+    games: 'Игры',
     garant: 'Гарант сделка',
     flash: 'Flash USDT',
+    complaint: 'Жалобы, обман',
     forum: 'Форум',
     technical: 'Технические',
     other: 'Другое'

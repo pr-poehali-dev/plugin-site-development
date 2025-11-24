@@ -172,6 +172,7 @@ const Sidebar = ({
             { slug: 'referral-program', name: 'Реферальная система', icon: 'Users' },
             { slug: 'faq', name: 'FAQ', icon: 'HelpCircle' },
             { slug: 'support', name: 'Поддержка', icon: 'MessageCircle' },
+            ...(user ? [{ slug: 'my-tickets', name: 'Мои обращения', icon: 'Inbox' }] : []),
             { slug: 'terms', name: 'Условия пользования', icon: 'FileText' },
             { slug: 'about', name: 'О нас', icon: 'Info' }
           ].map(item => (
