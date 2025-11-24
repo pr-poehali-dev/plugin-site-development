@@ -24,9 +24,10 @@ const SupportPage = ({ user, onShowAuthDialog }: SupportPageProps) => {
   const categories = [
     { value: 'account', label: 'Проблемы с аккаунтом', icon: 'User' },
     { value: 'payment', label: 'Вопросы по платежам', icon: 'CreditCard' },
-    { value: 'casino', label: 'Казино', icon: 'Spade' },
+    { value: 'games', label: 'Игры', icon: 'Gamepad2' },
     { value: 'garant', label: 'Гарант сделка', icon: 'Shield' },
     { value: 'flash', label: 'Flash USDT', icon: 'Zap' },
+    { value: 'complaint', label: 'Жалобы, обман', icon: 'AlertTriangle' },
     { value: 'forum', label: 'Проблемы с форумом', icon: 'MessageSquare' },
     { value: 'technical', label: 'Технические проблемы', icon: 'Settings' },
     { value: 'other', label: 'Другое', icon: 'HelpCircle' }
@@ -86,7 +87,7 @@ const SupportPage = ({ user, onShowAuthDialog }: SupportPageProps) => {
           <Icon name="Clock" size={32} className="mx-auto mb-3 text-primary" />
           <h3 className="font-semibold mb-2">Время ответа</h3>
           <p className="text-sm text-muted-foreground">
-            Обычно отвечаем в течение 2-4 часов
+            От 3 минут до 2 часов в зависимости от сложности проблемы
           </p>
         </Card>
         <Card className="p-6 text-center">
