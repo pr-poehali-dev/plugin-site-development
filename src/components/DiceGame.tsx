@@ -65,31 +65,6 @@ const DiceGame = ({ user, onShowAuthDialog, onRefreshUserBalance }: DiceGameProp
     setGameState('rolling');
 
     try {
-      const response = await fetch(AUTH_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-User-Id': user.id.toString()
-        },
-        body: JSON.stringify({
-          action: 'place_bet',
-          amount: betAmount,
-          game_type: 'dice'
-        })
-      });
-
-      const data = await response.json();
-      if (!data.success) {
-        toast({
-          title: 'Ошибка',
-          description: data.message || 'Не удалось сделать ставку',
-          variant: 'destructive'
-        });
-        setIsProcessing(false);
-        setGameState('betting');
-        return;
-      }
-
       const result = Math.floor(Math.random() * 6) + 1;
       const spins = 3 + Math.random() * 2;
       setRotation(rotation + (360 * spins));
@@ -141,21 +116,45 @@ const DiceGame = ({ user, onShowAuthDialog, onRefreshUserBalance }: DiceGameProp
     const winAmount = won ? betAmount * multiplier : 0;
 
     try {
-      await fetch(AUTH_URL, {
+      const betResponse = await fetch(AUTH_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'X-User-Id': user!.id.toString()
         },
         body: JSON.stringify({
-          action: 'complete_game',
-          won: won,
-          amount: winAmount,
-          game_type: 'dice'
+          action: 'place_bet',
+          amount: betAmount,
+          game_type: 'Dice'
         })
       });
 
+      const betData = await betResponse.json();
+      if (!betData.success) {
+        toast({
+          title: 'Ошибка',
+          description: betData.message || 'Не удалось сделать ставку',
+          variant: 'destructive'
+        });
+        setIsProcessing(false);
+        resetGame();
+        return;
+      }
+
       if (won) {
+        await fetch(AUTH_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-User-Id': user!.id.toString()
+          },
+          body: JSON.stringify({
+            action: 'complete_game',
+            won: true,
+            amount: winAmount,
+            game_type: 'Dice'
+          })
+        });
         setResult(`🎲 Выпало ${dice}! Вы выиграли ${winAmount.toFixed(2)} USDT`);
       } else {
         setResult(`🎲 Выпало ${dice}. Вы проиграли ${betAmount.toFixed(2)} USDT`);

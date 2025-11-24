@@ -167,54 +167,103 @@ export const BlackjackGame = ({ user, onShowAuthDialog, onRefreshUserBalance }: 
     const betAmount = parseFloat(bet);
 
     let gameResult = '';
-    let winAmount = 0;
+    let won = false;
+    let winMultiplier = 0;
 
     if (playerValue > 21) {
       gameResult = 'Перебор! Дилер выиграл';
-      winAmount = -betAmount;
+      won = false;
     } else if (dealerValue > 21) {
       gameResult = 'Дилер перебрал! Вы выиграли!';
-      winAmount = betAmount;
+      won = true;
+      winMultiplier = 2;
     } else if (playerValue > dealerValue) {
       gameResult = 'Вы выиграли!';
-      winAmount = betAmount;
+      won = true;
+      winMultiplier = 2;
     } else if (playerValue < dealerValue) {
       gameResult = 'Дилер выиграл';
-      winAmount = -betAmount;
+      won = false;
     } else {
       gameResult = 'Ничья';
-      winAmount = 0;
+      won = false;
+      winMultiplier = 1;
     }
 
     setResult(gameResult);
 
-    if (user && winAmount !== 0) {
+    if (user) {
       try {
-        const response = await fetch(AUTH_URL, {
+        // Сначала списываем ставку
+        const betResponse = await fetch(AUTH_URL, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             'X-User-Id': user.id.toString()
           },
           body: JSON.stringify({
-            action: 'topup_balance',
-            amount: winAmount,
-            type: winAmount > 0 ? 'blackjack_win' : 'blackjack_loss',
-            description: winAmount > 0 ? 'Выигрыш в Блэкджек' : 'Проигрыш в Блэкджек'
+            action: 'place_bet',
+            amount: betAmount,
+            game_type: 'Blackjack'
           })
         });
 
-        const data = await response.json();
-        if (data.success) {
+        const betData = await betResponse.json();
+        if (!betData.success) {
+          toast({
+            title: 'Ошибка',
+            description: betData.message || 'Не удалось сделать ставку',
+            variant: 'destructive'
+          });
+          setIsProcessing(false);
+          resetGame();
+          return;
+        }
+
+        // Затем начисляем выигрыш если победил или возвращаем при ничьей
+        if (won || winMultiplier === 1) {
+          const winAmount = betAmount * winMultiplier;
+          const completeResponse = await fetch(AUTH_URL, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-User-Id': user.id.toString()
+            },
+            body: JSON.stringify({
+              action: 'complete_game',
+              won: won,
+              amount: winAmount,
+              game_type: 'Blackjack'
+            })
+          });
+
+          const completeData = await completeResponse.json();
+          if (completeData.success) {
+            onRefreshUserBalance?.();
+            if (won) {
+              toast({
+                title: '🎉 Победа!',
+                description: `+${winAmount.toFixed(2)} USDT`,
+                variant: 'default'
+              });
+            }
+          }
+        } else {
+          // Просто обновляем баланс при проигрыше
           onRefreshUserBalance?.();
           toast({
-            title: winAmount > 0 ? '🎉 Победа!' : '😔 Проигрыш',
-            description: `${winAmount > 0 ? '+' : ''}${winAmount.toFixed(2)} USDT`,
-            variant: winAmount > 0 ? 'default' : 'destructive'
+            title: '😔 Проигрыш',
+            description: `-${betAmount.toFixed(2)} USDT`,
+            variant: 'destructive'
           });
         }
       } catch (error) {
-        console.error('Ошибка обновления баланса:', error);
+        console.error('Ошибка при завершении игры:', error);
+        toast({
+          title: 'Ошибка',
+          description: 'Ошибка соединения с сервером',
+          variant: 'destructive'
+        });
       }
     }
 

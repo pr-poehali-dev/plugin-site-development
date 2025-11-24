@@ -102,30 +102,6 @@ const BaccaratGame = ({ user, onShowAuthDialog, onRefreshUserBalance }: Baccarat
     setIsProcessing(true);
 
     try {
-      const response = await fetch(AUTH_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-User-Id': user.id.toString()
-        },
-        body: JSON.stringify({
-          action: 'place_bet',
-          amount: betAmount,
-          game_type: 'baccarat'
-        })
-      });
-
-      const data = await response.json();
-      if (!data.success) {
-        toast({
-          title: 'Ошибка',
-          description: data.message || 'Не удалось сделать ставку',
-          variant: 'destructive'
-        });
-        setIsProcessing(false);
-        return;
-      }
-
       const newDeck = createDeck();
       const newPlayerHand = [newDeck[0], newDeck[2]];
       const newBankerHand = [newDeck[1], newDeck[3]];
@@ -195,7 +171,7 @@ const BaccaratGame = ({ user, onShowAuthDialog, onRefreshUserBalance }: Baccarat
           winAmount = betAmount;
         }
 
-        finishGame(won || (isTie && betType !== 'tie'), winAmount, winner);
+        finishGame(won || (isTie && betType !== 'tie'), winAmount, winner, betAmount);
       }, 1500);
 
     } catch (error) {
@@ -208,30 +184,57 @@ const BaccaratGame = ({ user, onShowAuthDialog, onRefreshUserBalance }: Baccarat
     }
   };
 
-  const finishGame = async (won: boolean, winAmount: number, winner: 'player' | 'banker' | 'tie') => {
+  const finishGame = async (won: boolean, winAmount: number, winner: 'player' | 'banker' | 'tie', betAmount: number) => {
     try {
-      const response = await fetch(AUTH_URL, {
+      const betResponse = await fetch(AUTH_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'X-User-Id': user!.id.toString()
         },
         body: JSON.stringify({
-          action: 'complete_game',
-          won: won,
-          amount: winAmount,
-          game_type: 'baccarat'
+          action: 'place_bet',
+          amount: betAmount,
+          game_type: 'Baccarat'
         })
       });
 
-      const data = await response.json();
+      const betData = await betResponse.json();
+      if (!betData.success) {
+        toast({
+          title: 'Ошибка',
+          description: betData.message || 'Не удалось сделать ставку',
+          variant: 'destructive'
+        });
+        setIsProcessing(false);
+        resetGame();
+        return;
+      }
+
+      if (won || (winner === 'tie' && betType !== 'tie')) {
+        const response = await fetch(AUTH_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-User-Id': user!.id.toString()
+          },
+          body: JSON.stringify({
+            action: 'complete_game',
+            won: won,
+            amount: winAmount,
+            game_type: 'Baccarat'
+          })
+        });
+
+        const data = await response.json();
+      }
       
       let resultText = '';
       if (winner === 'tie') {
         resultText = betType === 'tie' ? `Ничья! Вы выиграли ${winAmount.toFixed(2)} USDT` : 'Ничья! Ставка возвращена';
       } else {
         const winnerText = winner === 'player' ? 'Игрок' : 'Банкир';
-        resultText = won ? `${winnerText} победил! Вы выиграли ${winAmount.toFixed(2)} USDT` : `${winnerText} победил! Вы проиграли`;
+        resultText = won ? `${winnerText} победил! Вы выиграли ${winAmount.toFixed(2)} USDT` : `${winnerText} победил! Вы проиграли ${betAmount.toFixed(2)} USDT`;
       }
       
       setResult(resultText);
