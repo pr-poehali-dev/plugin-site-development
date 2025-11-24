@@ -852,12 +852,20 @@ const DealDetailDialog = ({ deal, user, onClose, onUpdate, onRefreshUserBalance,
           title: 'Успешно',
           description: 'Вы присоединились к сделке! Средства заблокированы до завершения.'
         });
-        await fetchDealDetails();
-        onRefreshUserBalance?.();
         
-        // Сразу переключаем на вкладку "Незавершенные" и закрываем диалог
+        // КРИТИЧЕСКИ ВАЖНЫЙ ПОРЯДОК:
+        // 1. Переключаем вкладку СРАЗУ (синхронно)
         onStatusChange?.('in_progress');
+        
+        // 2. Даём React отрендерить новую вкладку
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
+        // 3. Обновляем данные пользователя и список сделок
+        onRefreshUserBalance?.();
+        await fetchDealDetails();
         onUpdate();
+        
+        // 4. Закрываем диалог с задержкой
         setTimeout(() => {
           handleClose();
         }, 1500);
@@ -980,12 +988,20 @@ const DealDetailDialog = ({ deal, user, onClose, onUpdate, onRefreshUserBalance,
           description: 'Средства переведены продавцу. Спасибо за использование гарант-сервиса!',
           duration: 5000
         });
-        await fetchDealDetails();
-        onRefreshUserBalance?.();
         
-        // Сразу переключаем на вкладку "Завершенные" и закрываем диалог
+        // КРИТИЧЕСКИ ВАЖНЫЙ ПОРЯДОК:
+        // 1. Переключаем вкладку СРАЗУ
         onStatusChange?.('completed');
+        
+        // 2. Даём React отрендерить новую вкладку
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
+        // 3. Обновляем данные
+        onRefreshUserBalance?.();
+        await fetchDealDetails();
         onUpdate();
+        
+        // 4. Закрываем диалог
         setTimeout(() => {
           handleClose();
         }, 1500);
@@ -1031,11 +1047,19 @@ const DealDetailDialog = ({ deal, user, onClose, onUpdate, onRefreshUserBalance,
           description: 'Администрация рассмотрит ситуацию и примет решение. Все сообщения в чате сохранены как доказательства.',
           duration: 5000
         });
-        await fetchDealDetails();
         
-        // Сразу переключаем на вкладку "Споры" и закрываем диалог
+        // КРИТИЧЕСКИ ВАЖНЫЙ ПОРЯДОК:
+        // 1. Переключаем вкладку СРАЗУ
         onStatusChange?.('dispute');
+        
+        // 2. Даём React отрендерить новую вкладку
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
+        // 3. Обновляем данные
+        await fetchDealDetails();
         onUpdate();
+        
+        // 4. Закрываем диалог
         setTimeout(() => {
           handleClose();
         }, 1500);
