@@ -1,0 +1,33 @@
+{
+  "tests": [
+    {
+      "name": "Get active deals list",
+      "method": "GET",
+      "path": "/?action=list&status=active",
+      "expectedStatus": 200,
+      "expectedBody": {
+        "deals": "array"
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Create new deal",
+      "method": "POST",
+      "path": "/",
+      "headers": {
+        "X-User-Id": "1"
+      },
+      "body": {
+        "action": "create_deal",
+        "title": "Test Deal",
+        "description": "Test description",
+        "price": 100
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "success": true
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}

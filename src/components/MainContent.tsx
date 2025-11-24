@@ -4,6 +4,7 @@ import { ForumTopicsList } from './MainContent/ForumTopicsList';
 import { ForumTopicDetail } from './MainContent/ForumTopicDetail';
 import CasinoHub from './CasinoHub';
 import FlashUsdtShop from './FlashUsdtShop';
+import { DealsView } from './DealsView';
 import FAQPage from './FAQPage';
 import SupportPage from './SupportPage';
 import TermsPage from './TermsPage';
@@ -76,6 +77,12 @@ const MainContent = ({
           user ? <ReferralProgramPage user={user} /> : <div className="text-center py-12"><p className="text-muted-foreground">Требуется авторизация</p></div>
         ) : activeCategory === 'smart-contracts' ? (
           <SmartContractsPage user={user} />
+        ) : activeCategory === 'deals' ? (
+          <DealsView 
+            user={user} 
+            onShowAuthDialog={onShowAuthDialog}
+            onRefreshUserBalance={onRefreshUserBalance}
+          />
         ) : activeCategory === 'new' ? (
           <CasinoHub
             user={user}

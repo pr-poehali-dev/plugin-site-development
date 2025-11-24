@@ -1,4 +1,5 @@
 {
+  "deals": "https://functions.poehali.dev/8a665174-b0af-4138-82e0-a9422dbb8fc4",
   "support-tickets": "https://functions.poehali.dev/f2a5cbce-6afc-4ef1-91a6-f14075db8567",
   "user-role-updater": "https://functions.poehali.dev/c31a74a8-f1ec-40ca-8eda-a5dce42fc8dc",
   "rate-limiter": "https://functions.poehali.dev/09a6bdd6-9592-4225-a3e5-eac400cfdb5e",
@@ -9,7 +10,6 @@
   "flash-usdt": "https://functions.poehali.dev/9d93686d-9a6f-47bc-85a8-7b7c28e4edd7",
   "crypto-checker": "https://functions.poehali.dev/c6ecf062-a0e0-47bd-8e8e-694cf7eb952b",
   "withdrawal": "https://functions.poehali.dev/09f16983-ec42-41fe-a7bd-695752ee11c5",
-  "escrow": "https://functions.poehali.dev/82c75fbc-83e4-4448-9ff8-1c8ef9bbec09",
   "crypto": "https://functions.poehali.dev/8caa3b76-72e5-42b5-9415-91d1f9b05210",
   "notifications": "https://functions.poehali.dev/6c968792-7d48-41a9-af0a-c92adb047acb",
   "admin": "https://functions.poehali.dev/d4678b1c-2acd-40bb-b8c5-cefe8d14fad4",

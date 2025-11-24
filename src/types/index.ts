@@ -131,3 +131,31 @@ export interface Message {
   created_at: string;
 }
 
+export interface Deal {
+  id: number;
+  seller_id: number;
+  seller_name: string;
+  seller_avatar?: string;
+  buyer_id?: number;
+  buyer_name?: string;
+  buyer_avatar?: string;
+  title: string;
+  description: string;
+  price: number;
+  status: 'active' | 'in_progress' | 'completed' | 'cancelled';
+  step: 'waiting_buyer' | 'buyer_paid' | 'seller_sent' | 'completed';
+  commission: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface DealMessage {
+  id: number;
+  deal_id: number;
+  user_id: number;
+  username: string;
+  avatar_url?: string;
+  message: string;
+  is_system: boolean;
+  created_at: string;
+}
