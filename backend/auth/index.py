@@ -317,7 +317,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 }
             
             cur.execute(
-                f"SELECT id, username, avatar FROM {SCHEMA}.users WHERE LOWER(username) = LOWER(%s) AND is_blocked = FALSE",
+                f"SELECT id, username, avatar_url FROM {SCHEMA}.users WHERE LOWER(username) = LOWER(%s) AND is_blocked = FALSE",
                 (username,)
             )
             user = cur.fetchone()
@@ -329,7 +329,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'body': json.dumps({
                         'success': True,
                         'user': dict(user)
-                    }),
+                    }, default=str),
                     'isBase64Encoded': False
                 }
             else:
