@@ -358,73 +358,93 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             elif action == 'buyer_confirm':
                 deal_id = body.get('deal_id')
                 
-                # Получаем данные о сделке
-                cursor.execute("""
-                    SELECT seller_id, buyer_id, price, step, title
-                    FROM deals
-                    WHERE id = %s
-                """, (deal_id,))
-                deal = cursor.fetchone()
-                
-                if not deal or deal['buyer_id'] != int(user_id):
+                try:
+                    # Получаем данные о сделке
+                    cursor.execute("""
+                        SELECT seller_id, buyer_id, price, step, title
+                        FROM deals
+                        WHERE id = %s
+                    """, (deal_id,))
+                    deal = cursor.fetchone()
+                    
+                    if not deal or deal['buyer_id'] != int(user_id):
+                        cursor.close()
+                        return {
+                            'statusCode': 403,
+                            'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                            'body': json.dumps({'error': 'Access denied'}),
+                            'isBase64Encoded': False
+                        }
+                    
+                    if deal['step'] != 'seller_sent':
+                        cursor.close()
+                        return {
+                            'statusCode': 400,
+                            'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                            'body': json.dumps({'error': 'Invalid step'}),
+                            'isBase64Encoded': False
+                        }
+                    
+                    # Рассчитываем комиссию (1% с продавца)
+                    commission = float(deal['price']) * 0.01
+                    seller_amount = float(deal['price']) - commission
+                    
+                    print(f"DEBUG: commission={commission}, seller_amount={seller_amount}, price={deal['price']}")
+                    
+                    # Переводим средства продавцу (минус комиссия)
+                    cursor.execute('UPDATE users SET balance = balance + %s WHERE id = %s', (seller_amount, deal['seller_id']))
+                    print("DEBUG: Updated seller balance")
+                    
+                    # Транзакция продавца
+                    cursor.execute("""
+                        INSERT INTO transactions (user_id, amount, type, description)
+                        VALUES (%s, %s, 'deal_sale', %s)
+                    """, (deal['seller_id'], seller_amount, f'Продажа через гарант (сделка #{deal_id}, комиссия 1%)'))
+                    print("DEBUG: Inserted seller transaction")
+                    
+                    # Транзакция покупателя (0 USDT, просто запись о завершении)
+                    cursor.execute("""
+                        INSERT INTO transactions (user_id, amount, type, description)
+                        VALUES (%s, %s, 'deal_complete', %s)
+                    """, (deal['buyer_id'], 0, f'Покупка завершена: {deal["title"]}'))
+                    print("DEBUG: Inserted buyer transaction")
+                    
+                    # Обновляем сделку
+                    print(f"DEBUG: About to update deal with commission={commission}")
+                    cursor.execute("""
+                        UPDATE deals
+                        SET status = 'completed', step = 'completed', commission = %s, updated_at = CURRENT_TIMESTAMP
+                        WHERE id = %s
+                    """, (commission, deal_id))
+                    print("DEBUG: Updated deal")
+                    
+                    # Системное сообщение
+                    cursor.execute("""
+                        INSERT INTO deal_messages (deal_id, user_id, message, is_system)
+                        VALUES (%s, %s, %s, true)
+                    """, (deal_id, user_id, f'Сделка завершена! Продавец получил {seller_amount:.2f} USDT (комиссия {commission:.2f} USDT)'))
+                    print("DEBUG: Inserted system message")
+                    
+                    conn.commit()
+                    print("DEBUG: Committed transaction")
                     cursor.close()
+                    
                     return {
-                        'statusCode': 403,
+                        'statusCode': 200,
                         'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                        'body': json.dumps({'error': 'Access denied'}),
+                        'body': json.dumps({'success': True}),
                         'isBase64Encoded': False
                     }
-                
-                if deal['step'] != 'seller_sent':
+                except Exception as e:
+                    print(f"ERROR in buyer_confirm: {type(e).__name__}: {str(e)}")
+                    conn.rollback()
                     cursor.close()
                     return {
-                        'statusCode': 400,
+                        'statusCode': 500,
                         'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                        'body': json.dumps({'error': 'Invalid step'}),
+                        'body': json.dumps({'error': f'{type(e).__name__}: {str(e)}'}),
                         'isBase64Encoded': False
                     }
-                
-                # Рассчитываем комиссию (1% с продавца)
-                commission = float(deal['price']) * 0.01
-                seller_amount = float(deal['price']) - commission
-                
-                # Переводим средства продавцу (минус комиссия)
-                cursor.execute('UPDATE users SET balance = balance + %s WHERE id = %s', (seller_amount, deal['seller_id']))
-                
-                # Транзакция продавца
-                cursor.execute("""
-                    INSERT INTO transactions (user_id, amount, type, description)
-                    VALUES (%s, %s, 'deal_sale', %s)
-                """, (deal['seller_id'], seller_amount, f'Продажа через гарант (сделка #{deal_id}, комиссия 1%)'))
-                
-                # Транзакция покупателя (0 USDT, просто запись о завершении)
-                cursor.execute("""
-                    INSERT INTO transactions (user_id, amount, type, description)
-                    VALUES (%s, %s, 'deal_complete', %s)
-                """, (deal['buyer_id'], 0, f'Покупка завершена: {deal["title"]}'))
-                
-                # Обновляем сделку
-                cursor.execute("""
-                    UPDATE deals
-                    SET status = 'completed', step = 'completed', commission = %s, updated_at = CURRENT_TIMESTAMP
-                    WHERE id = %s
-                """, (commission, deal_id))
-                
-                # Системное сообщение
-                cursor.execute("""
-                    INSERT INTO deal_messages (deal_id, user_id, message, is_system)
-                    VALUES (%s, %s, %s, true)
-                """, (deal_id, user_id, f'Сделка завершена! Продавец получил {seller_amount:.2f} USDT (комиссия {commission:.2f} USDT)'))
-                
-                conn.commit()
-                cursor.close()
-                
-                return {
-                    'statusCode': 200,
-                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                    'body': json.dumps({'success': True}),
-                    'isBase64Encoded': False
-                }
             
             elif action == 'send_message':
                 deal_id = body.get('deal_id')
