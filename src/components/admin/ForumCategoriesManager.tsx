@@ -132,9 +132,24 @@ const ForumCategoriesManager = ({ userId }: ForumCategoriesManagerProps) => {
       .replace(/^-+|-+$/g, '');
   };
 
-  const popularIcons = [
-    'Folder', 'MessageSquare', 'Zap', 'Gamepad2', 'ShieldCheck', 
-    'HelpCircle', 'Trophy', 'Star', 'Flame', 'Heart'
+  const cryptoIcons = [
+    'Bitcoin', 'Coins', 'Wallet', 'CreditCard', 'DollarSign', 
+    'TrendingUp', 'TrendingDown', 'LineChart', 'BarChart3', 'PieChart',
+    'Zap', 'Sparkles', 'Gem', 'Diamond', 'Lock',
+    'Shield', 'ShieldCheck', 'Key', 'Fingerprint', 'ScanLine',
+    'CircleDollarSign', 'BadgeDollarSign', 'Landmark', 'Building2', 'Store',
+    'Ticket', 'Receipt', 'FileText', 'Scroll', 'BookOpen',
+    'Users', 'UserCheck', 'UserPlus', 'MessageSquare', 'MessageCircle',
+    'Send', 'ArrowLeftRight', 'ArrowRightLeft', 'Repeat', 'RefreshCw',
+    'Globe', 'Globe2', 'Network', 'Link', 'Link2',
+    'Target', 'Crosshair', 'Award', 'Trophy', 'Medal',
+    'Star', 'StarHalf', 'Sparkle', 'Flame', 'Zap',
+    'Rocket', 'Plane', 'TrendingUp', 'Activity', 'BarChart',
+    'Gamepad2', 'Dices', 'Spade', 'Club', 'Heart',
+    'ShoppingCart', 'ShoppingBag', 'Package', 'Gift', 'Tag',
+    'Settings', 'Sliders', 'Filter', 'Search', 'Eye',
+    'LockOpen', 'Unlock', 'ShieldAlert', 'AlertTriangle', 'AlertCircle',
+    'CheckCircle', 'XCircle', 'Info', 'HelpCircle', 'CircleHelp'
   ];
 
   return (
@@ -194,20 +209,21 @@ const ForumCategoriesManager = ({ userId }: ForumCategoriesManagerProps) => {
               />
             </div>
 
-            <div>
+            <div className="md:col-span-2">
               <label className="block text-sm font-medium mb-2">Иконка</label>
-              <div className="grid grid-cols-5 gap-2 mb-2">
-                {popularIcons.map((icon) => (
+              <div className="grid grid-cols-8 sm:grid-cols-10 md:grid-cols-12 gap-2 mb-2 max-h-96 overflow-y-auto p-2 border rounded-lg">
+                {cryptoIcons.map((icon) => (
                   <button
                     key={icon}
                     onClick={() => setNewCategory({ ...newCategory, icon })}
-                    className={`p-3 rounded-lg border-2 transition-all hover:scale-110 ${
+                    className={`p-2 sm:p-3 rounded-lg border-2 transition-all hover:scale-110 ${
                       newCategory.icon === icon
-                        ? 'border-primary bg-primary/10'
+                        ? 'border-primary bg-primary/10 ring-2 ring-primary'
                         : 'border-border hover:border-primary/50'
                     }`}
+                    title={icon}
                   >
-                    <Icon name={icon as any} size={20} />
+                    <Icon name={icon as any} size={18} />
                   </button>
                 ))}
               </div>
@@ -215,6 +231,7 @@ const ForumCategoriesManager = ({ userId }: ForumCategoriesManagerProps) => {
                 value={newCategory.icon}
                 onChange={(e) => setNewCategory({ ...newCategory, icon: e.target.value })}
                 placeholder="Или введите название иконки"
+                className="mt-2"
               />
             </div>
 
