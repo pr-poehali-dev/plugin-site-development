@@ -7,10 +7,10 @@ interface AdminBalanceDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   balanceUsername: string;
+  setBalanceUsername: (username: string) => void;
   balanceAmount: string;
+  setBalanceAmount: (amount: string) => void;
   balanceLoading: boolean;
-  onUsernameChange: (username: string) => void;
-  onAmountChange: (amount: string) => void;
   onAddBalance: () => void;
 }
 
@@ -18,10 +18,10 @@ const AdminBalanceDialog = ({
   open,
   onOpenChange,
   balanceUsername,
+  setBalanceUsername,
   balanceAmount,
+  setBalanceAmount,
   balanceLoading,
-  onUsernameChange,
-  onAmountChange,
   onAddBalance
 }: AdminBalanceDialogProps) => {
   const quickAmounts = [10, 50, 100, 500];
@@ -37,7 +37,7 @@ const AdminBalanceDialog = ({
             <label className="text-sm font-medium mb-2 block">Никнейм пользователя</label>
             <Input
               value={balanceUsername}
-              onChange={(e) => onUsernameChange(e.target.value)}
+              onChange={(e) => setBalanceUsername(e.target.value)}
               placeholder="Введите никнейм"
               disabled={balanceLoading}
             />
@@ -47,7 +47,7 @@ const AdminBalanceDialog = ({
             <Input
               type="number"
               value={balanceAmount}
-              onChange={(e) => onAmountChange(e.target.value)}
+              onChange={(e) => setBalanceAmount(e.target.value)}
               placeholder="Введите сумму"
               min="0.01"
               step="0.01"
@@ -60,7 +60,7 @@ const AdminBalanceDialog = ({
                 key={amount}
                 variant="outline"
                 size="sm"
-                onClick={() => onAmountChange(amount.toString())}
+                onClick={() => setBalanceAmount(amount.toString())}
                 disabled={balanceLoading}
                 className="flex-1"
               >
@@ -73,8 +73,8 @@ const AdminBalanceDialog = ({
               variant="ghost" 
               onClick={() => {
                 onOpenChange(false);
-                onUsernameChange('');
-                onAmountChange('');
+                setBalanceUsername('');
+                setBalanceAmount('');
               }}
               disabled={balanceLoading}
             >
