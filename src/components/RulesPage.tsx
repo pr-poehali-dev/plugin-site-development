@@ -2,8 +2,8 @@ import Icon from '@/components/ui/icon';
 
 const RulesPage = () => {
   return (
-    <div className="max-w-4xl mx-auto space-y-6 animate-slide-up">
-      <div className="mb-6">
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 animate-slide-up">
+      <div className="mb-6 text-center">
         <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2 bg-gradient-to-r from-green-400 via-teal-400 to-cyan-500 bg-clip-text text-transparent">
           Правила сообщества
         </h1>
