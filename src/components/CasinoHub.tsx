@@ -7,6 +7,7 @@ import BlackjackGame from './BlackjackGame';
 import BaccaratGame from './BaccaratGame';
 import DiceGame from './DiceGame';
 import LotteryGame from './LotteryGame';
+import RecentWinsFeed from './casino/RecentWinsFeed';
 
 interface CasinoHubProps {
   user: User | null;
@@ -149,6 +150,8 @@ const CasinoHub = ({ user, onShowAuthDialog, onRefreshUserBalance }: CasinoHubPr
           Выберите игру и испытайте удачу. Играйте на реальные USDT
         </p>
       </div>
+
+      <RecentWinsFeed />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {games.map((game) => (

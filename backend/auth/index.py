@@ -566,6 +566,17 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     (int(user_id), float(amount), 'win', f'Выигрыш в игре {game_type}')
                 )
                 
+                cur.execute(
+                    f"SELECT username, avatar_url FROM {SCHEMA}.users WHERE id = %s",
+                    (int(user_id),)
+                )
+                user_info = cur.fetchone()
+                
+                cur.execute(
+                    f"INSERT INTO {SCHEMA}.casino_wins (user_id, username, avatar_url, amount, game) VALUES (%s, %s, %s, %s, %s)",
+                    (int(user_id), user_info['username'], user_info.get('avatar_url'), float(amount), game_type)
+                )
+                
                 conn.commit()
                 
                 return {
@@ -1505,6 +1516,25 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 'body': json.dumps({
                     'success': True
                 }),
+                'isBase64Encoded': False
+            }
+        
+        elif action == 'get_recent_wins':
+            limit = body_data.get('limit', 10)
+            
+            cur.execute(
+                f"SELECT id, user_id, username, avatar_url, amount, game, created_at FROM {SCHEMA}.casino_wins ORDER BY created_at DESC LIMIT %s",
+                (int(limit),)
+            )
+            wins = cur.fetchall()
+            
+            return {
+                'statusCode': 200,
+                'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                'body': json.dumps({
+                    'success': True,
+                    'wins': [dict(w) for w in wins]
+                }, default=str),
                 'isBase64Encoded': False
             }
         
