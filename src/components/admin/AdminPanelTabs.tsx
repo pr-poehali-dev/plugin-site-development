@@ -1,5 +1,5 @@
 interface AdminPanelTabsProps {
-  activeTab: 'users' | 'topics' | 'disputes' | 'deposits' | 'withdrawals' | 'btc-withdrawals' | 'escrow' | 'flash-usdt' | 'tickets' | 'verification';
+  activeTab: 'users' | 'topics' | 'disputes' | 'deposits' | 'withdrawals' | 'btc-withdrawals' | 'escrow' | 'flash-usdt' | 'tickets' | 'verification' | 'forum-categories';
   onTabChange: (tab: AdminPanelTabsProps['activeTab']) => void;
   sectionCounts: {
     users: number;
@@ -25,6 +25,7 @@ const AdminPanelTabs = ({
   const tabs = [
     { id: 'users' as const, label: 'Пользователи', count: sectionCounts.users },
     { id: 'topics' as const, label: 'Темы форума', count: sectionCounts.topics },
+    { id: 'forum-categories' as const, label: 'Категории форума', count: 0 },
     { id: 'disputes' as const, label: 'Споры', count: sectionCounts.disputes },
     { id: 'deposits' as const, label: 'Ввод', count: sectionCounts.deposits },
     { id: 'withdrawals' as const, label: 'Вывод', count: sectionCounts.withdrawals },

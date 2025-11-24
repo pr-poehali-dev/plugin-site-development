@@ -28,7 +28,7 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
   const [withdrawals, setWithdrawals] = useState<any[]>([]);
   const [deposits, setDeposits] = useState<any[]>([]);
   const [btcWithdrawals, setBtcWithdrawals] = useState<any[]>([]);
-  const [activeTab, setActiveTab] = useState<'users' | 'topics' | 'disputes' | 'deposits' | 'withdrawals' | 'btc-withdrawals' | 'escrow' | 'flash-usdt' | 'tickets' | 'verification'>('users');
+  const [activeTab, setActiveTab] = useState<'users' | 'topics' | 'disputes' | 'deposits' | 'withdrawals' | 'btc-withdrawals' | 'escrow' | 'flash-usdt' | 'tickets' | 'verification' | 'forum-categories'>('users');
   const [flashUsdtOrders, setFlashUsdtOrders] = useState<any[]>([]);
   const [tickets, setTickets] = useState<any[]>([]);
   const [editingTopic, setEditingTopic] = useState<ForumTopic | null>(null);

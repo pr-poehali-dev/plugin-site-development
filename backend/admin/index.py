@@ -648,6 +648,51 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'isBase64Encoded': False
                 }
             
+            elif action == 'create_forum_category':
+                name = body_data.get('name', '').strip()
+                slug = body_data.get('slug', '').strip()
+                description = body_data.get('description', '').strip()
+                icon = body_data.get('icon', 'Folder')
+                color = body_data.get('color', '#3b82f6')
+                display_order = body_data.get('display_order', 0)
+                
+                if not name or not slug:
+                    return {
+                        'statusCode': 400,
+                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({'error': 'Название и slug обязательны'}),
+                        'isBase64Encoded': False
+                    }
+                
+                try:
+                    cur.execute(f"""
+                        INSERT INTO {SCHEMA}.forum_categories (name, slug, description, icon, color, display_order)
+                        VALUES (%s, %s, %s, %s, %s, %s)
+                        RETURNING id, name, slug, description, icon, color, display_order, created_at
+                    """, (name, slug, description, icon, color, display_order))
+                    
+                    new_category = cur.fetchone()
+                    log_admin_action(user_id, 'create_category', 'forum_category', new_category['id'], f'Category: {name}', cur)
+                    conn.commit()
+                    
+                    return {
+                        'statusCode': 200,
+                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({
+                            'success': True,
+                            'category': dict(new_category)
+                        }, default=serialize_datetime),
+                        'isBase64Encoded': False
+                    }
+                except Exception as e:
+                    conn.rollback()
+                    return {
+                        'statusCode': 500,
+                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({'error': f'Ошибка создания категории: {str(e)}'}),
+                        'isBase64Encoded': False
+                    }
+            
             else:
                 return {
                     'statusCode': 400,

@@ -40,6 +40,17 @@ export interface User {
   last_seen_at?: string | null;
 }
 
+export interface ForumCategory {
+  id: number;
+  name: string;
+  slug: string;
+  description?: string;
+  icon?: string;
+  color?: string;
+  display_order: number;
+  created_at: string;
+}
+
 export interface ForumTopic {
   id: number;
   title: string;
@@ -55,6 +66,10 @@ export interface ForumTopic {
   author_last_seen?: string;
   author_is_verified?: boolean;
   comments_count: number;
+  category_id?: number;
+  category_name?: string;
+  category_slug?: string;
+  category_color?: string;
 }
 
 export interface ForumComment {

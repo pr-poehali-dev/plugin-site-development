@@ -8,9 +8,10 @@ import AdminEscrowTab from '@/components/admin/AdminEscrowTab';
 import AdminTicketsTab from '@/components/admin/AdminTicketsTab';
 import AdminVerificationTab from '@/components/admin/AdminVerificationTab';
 import AdminBtcWithdrawalsTab from '@/components/admin/AdminBtcWithdrawalsTab';
+import ForumCategoriesManager from '@/components/admin/ForumCategoriesManager';
 
 interface AdminPanelContentProps {
-  activeTab: 'users' | 'topics' | 'disputes' | 'deposits' | 'withdrawals' | 'btc-withdrawals' | 'escrow' | 'flash-usdt' | 'tickets' | 'verification';
+  activeTab: 'users' | 'topics' | 'disputes' | 'deposits' | 'withdrawals' | 'btc-withdrawals' | 'escrow' | 'flash-usdt' | 'tickets' | 'verification' | 'forum-categories';
   users: User[];
   topics: ForumTopic[];
   disputes: EscrowDeal[];
@@ -178,6 +179,12 @@ const AdminPanelContent = ({
       {activeTab === 'verification' && (
         <AdminVerificationTab 
           currentUser={currentUser}
+        />
+      )}
+
+      {activeTab === 'forum-categories' && (
+        <ForumCategoriesManager 
+          userId={currentUser.id}
         />
       )}
     </div>

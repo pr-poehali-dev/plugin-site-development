@@ -53,14 +53,16 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 cur.execute("""
                     SELECT 
                         ft.id, ft.title, ft.content, ft.views, ft.is_pinned, ft.is_closed,
-                        ft.created_at, ft.updated_at,
+                        ft.created_at, ft.updated_at, ft.category_id,
                         u.id as author_id, u.username as author_name, u.avatar_url as author_avatar,
                         u.forum_role as author_forum_role, u.last_seen_at as author_last_seen,
                         u.is_verified as author_is_verified,
-                        p.id as plugin_id, p.title as plugin_title
+                        p.id as plugin_id, p.title as plugin_title,
+                        fc.name as category_name, fc.slug as category_slug, fc.color as category_color
                     FROM forum_topics ft
                     LEFT JOIN users u ON ft.author_id = u.id
                     LEFT JOIN plugins p ON ft.plugin_id = p.id
+                    LEFT JOIN forum_categories fc ON ft.category_id = fc.id
                     WHERE ft.id = %s AND ft.removed_at IS NULL
                 """, (topic_id,))
                 topic = cur.fetchone()
@@ -100,16 +102,19 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 }
             else:
                 plugin_id = params.get('plugin_id')
+                category_slug = params.get('category')
                 query = """
                     SELECT 
-                        ft.id, ft.title, ft.views, ft.is_pinned, ft.created_at, ft.updated_at,
+                        ft.id, ft.title, ft.views, ft.is_pinned, ft.created_at, ft.updated_at, ft.category_id,
                         u.id as author_id, u.username as author_name, u.avatar_url as author_avatar, 
                         u.forum_role as author_forum_role, u.last_seen_at as author_last_seen,
                         u.is_verified as author_is_verified,
-                        COUNT(fc.id) as comments_count
+                        fcat.name as category_name, fcat.slug as category_slug, fcat.color as category_color,
+                        COUNT(fcom.id) as comments_count
                     FROM forum_topics ft
                     LEFT JOIN users u ON ft.author_id = u.id
-                    LEFT JOIN forum_comments fc ON ft.id = fc.topic_id AND fc.removed_at IS NULL
+                    LEFT JOIN forum_comments fcom ON ft.id = fcom.topic_id AND fcom.removed_at IS NULL
+                    LEFT JOIN forum_categories fcat ON ft.category_id = fcat.id
                     WHERE ft.removed_at IS NULL
                 """
                 query_params: List[Any] = []
@@ -118,7 +123,11 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     query += " AND ft.plugin_id = %s"
                     query_params.append(plugin_id)
                 
-                query += " GROUP BY ft.id, ft.updated_at, u.id, u.username, u.avatar_url, u.forum_role, u.last_seen_at ORDER BY ft.is_pinned DESC, ft.created_at DESC LIMIT 50"
+                if category_slug:
+                    query += " AND fcat.slug = %s"
+                    query_params.append(category_slug)
+                
+                query += " GROUP BY ft.id, ft.updated_at, u.id, u.username, u.avatar_url, u.forum_role, u.last_seen_at, fcat.id, fcat.name, fcat.slug, fcat.color ORDER BY ft.is_pinned DESC, ft.created_at DESC LIMIT 50"
                 
                 cur.execute(query, query_params)
                 topics = cur.fetchall()
@@ -151,6 +160,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 title = body_data.get('title', '').strip()
                 content = body_data.get('content', '').strip()
                 plugin_id = body_data.get('plugin_id')
+                category_id = body_data.get('category_id')
                 
                 if not title or not content:
                     return {
@@ -160,11 +170,19 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                         'isBase64Encoded': False
                     }
                 
+                if not category_id:
+                    return {
+                        'statusCode': 400,
+                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({'error': 'Выберите категорию'}),
+                        'isBase64Encoded': False
+                    }
+                
                 cur.execute("""
-                    INSERT INTO forum_topics (title, content, author_id, plugin_id)
-                    VALUES (%s, %s, %s, %s)
+                    INSERT INTO forum_topics (title, content, author_id, plugin_id, category_id)
+                    VALUES (%s, %s, %s, %s, %s)
                     RETURNING id, title, content, views, created_at
-                """, (title, content, user_id, plugin_id))
+                """, (title, content, user_id, plugin_id, category_id))
                 
                 new_topic = cur.fetchone()
                 conn.commit()
@@ -255,6 +273,24 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'body': json.dumps({
                         'success': True,
                         'comment': dict(new_comment)
+                    }, default=serialize_datetime),
+                    'isBase64Encoded': False
+                }
+            
+            elif action == 'get_categories':
+                cur.execute("""
+                    SELECT id, name, slug, description, icon, color, display_order, created_at
+                    FROM forum_categories
+                    ORDER BY display_order ASC, name ASC
+                """)
+                categories = cur.fetchall()
+                
+                return {
+                    'statusCode': 200,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({
+                        'success': True,
+                        'categories': [dict(c) for c in categories]
                     }, default=serialize_datetime),
                     'isBase64Encoded': False
                 }
