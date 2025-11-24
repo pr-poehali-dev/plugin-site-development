@@ -24,11 +24,12 @@ import { useToast } from '@/hooks/use-toast';
 interface AdminForumModerationProps {
   topics: ForumTopic[];
   onRefresh: () => void;
+  currentUserId: number;
 }
 
 const FORUM_URL = 'https://functions.poehali.dev/045d6571-633c-4239-ae69-8d76c933532c';
 
-export const AdminForumModeration = ({ topics, onRefresh }: AdminForumModerationProps) => {
+export const AdminForumModeration = ({ topics, onRefresh, currentUserId }: AdminForumModerationProps) => {
   const { toast } = useToast();
   const [editingTopic, setEditingTopic] = useState<ForumTopic | null>(null);
   const [editTitle, setEditTitle] = useState('');
@@ -68,7 +69,7 @@ export const AdminForumModeration = ({ topics, onRefresh }: AdminForumModeration
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-User-Id': '1'
+          'X-User-Id': currentUserId.toString()
         },
         body: JSON.stringify({
           action: 'admin_update_topic',
@@ -125,7 +126,7 @@ export const AdminForumModeration = ({ topics, onRefresh }: AdminForumModeration
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-User-Id': '1'
+          'X-User-Id': currentUserId.toString()
         },
         body: JSON.stringify({
           action: 'admin_update_topic',
@@ -168,7 +169,7 @@ export const AdminForumModeration = ({ topics, onRefresh }: AdminForumModeration
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-User-Id': '1'
+          'X-User-Id': currentUserId.toString()
         },
         body: JSON.stringify({
           action: 'admin_delete_topic',
@@ -289,11 +290,11 @@ export const AdminForumModeration = ({ topics, onRefresh }: AdminForumModeration
       </div>
 
       <Dialog open={movingTopicId !== null} onOpenChange={() => setMovingTopicId(null)}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md max-h-[80vh] flex flex-col">
           <DialogHeader>
             <DialogTitle>Переместить тему в категорию</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
+          <div className="overflow-y-auto flex-1 pr-2 space-y-4">
             <p className="text-sm text-muted-foreground">
               Выберите категорию, в которую хотите переместить тему
             </p>

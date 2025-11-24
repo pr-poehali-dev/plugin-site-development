@@ -83,6 +83,7 @@ const AdminPanelContent = ({
         <AdminForumModeration 
           topics={topics}
           onRefresh={onRefreshTopics}
+          currentUserId={currentUser.id}
         />
       )}
 
