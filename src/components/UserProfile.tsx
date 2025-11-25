@@ -242,33 +242,39 @@ const UserProfile = ({ user, isOwnProfile, onClose, onTopUpBalance, onUpdateProf
 
     const cleanText = String(text).trim();
     
-    const input = document.createElement('input');
-    input.value = cleanText;
-    input.style.position = 'fixed';
-    input.style.top = '0';
-    input.style.left = '0';
-    input.style.width = '2em';
-    input.style.height = '2em';
-    input.style.padding = '0';
-    input.style.border = 'none';
-    input.style.outline = 'none';
-    input.style.boxShadow = 'none';
-    input.style.background = 'transparent';
-    input.style.fontSize = '16px';
-    document.body.appendChild(input);
+    const textarea = document.createElement('textarea');
+    textarea.value = cleanText;
+    textarea.setAttribute('readonly', '');
+    textarea.style.position = 'absolute';
+    textarea.style.left = '-9999px';
+    textarea.style.top = '0';
+    textarea.style.opacity = '0';
+    textarea.style.pointerEvents = 'none';
+    document.body.appendChild(textarea);
     
-    input.focus();
-    input.select();
-    input.setSelectionRange(0, cleanText.length);
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    
+    if (isIOS) {
+      const range = document.createRange();
+      range.selectNodeContents(textarea);
+      const selection = window.getSelection();
+      if (selection) {
+        selection.removeAllRanges();
+        selection.addRange(range);
+      }
+      textarea.setSelectionRange(0, cleanText.length);
+    } else {
+      textarea.select();
+    }
     
     let success = false;
     try {
       success = document.execCommand('copy');
     } catch (err) {
-      console.error('Copy failed:', err);
+      console.error('Copy error:', err);
     }
     
-    document.body.removeChild(input);
+    document.body.removeChild(textarea);
     
     if (success) {
       toast({
