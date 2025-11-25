@@ -29,11 +29,12 @@ interface UserProfileDialogProps {
   userId: number | null;
   currentUserId?: number | null;
   onSendMessage?: (recipientId: number) => void;
+  onShowUserTopics?: (userId: number, username: string) => void;
 }
 
 const ADMIN_URL = 'https://functions.poehali.dev/d4678b1c-2acd-40bb-b8c5-cefe8d14fad4';
 
-const UserProfileDialog = ({ open, onOpenChange, userId, currentUserId, onSendMessage }: UserProfileDialogProps) => {
+const UserProfileDialog = ({ open, onOpenChange, userId, currentUserId, onSendMessage, onShowUserTopics }: UserProfileDialogProps) => {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -187,7 +188,15 @@ const UserProfileDialog = ({ open, onOpenChange, userId, currentUserId, onSendMe
 
                     {/* Статистика в плитках */}
                     <div className="grid grid-cols-2 gap-3">
-                      <Card className="p-4 sm:p-5 bg-background/60 backdrop-blur-sm border-border/50 hover:border-primary/50 transition-all">
+                      <Card 
+                        className="p-4 sm:p-5 bg-background/60 backdrop-blur-sm border-border/50 hover:border-primary/50 transition-all cursor-pointer hover:scale-105 active:scale-95"
+                        onClick={() => {
+                          if (onShowUserTopics && profile.topics_count > 0) {
+                            onOpenChange(false);
+                            onShowUserTopics(profile.id, profile.username);
+                          }
+                        }}
+                      >
                         <div className="text-3xl sm:text-4xl font-black text-primary mb-2">{profile.topics_count}</div>
                         <div className="text-xs sm:text-sm text-muted-foreground font-medium">Тем создано</div>
                       </Card>

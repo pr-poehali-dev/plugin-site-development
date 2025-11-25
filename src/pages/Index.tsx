@@ -222,6 +222,12 @@ const Index = () => {
                 userId={state.selectedUserId}
                 currentUserId={state.user?.id}
                 onSendMessage={handlers.handleSendMessage}
+                onShowUserTopics={(userId, username) => {
+                  state.setActiveView('forum');
+                  state.setActiveCategory('user-topics');
+                  localStorage.setItem('userTopicsFilter', JSON.stringify({ userId, username }));
+                  state.setShowUserProfile(false);
+                }}
               />
             )}
           </Suspense>

@@ -75,9 +75,25 @@ export const ForumTopicsList = ({
     const saved = localStorage.getItem('forumSelectedParentCategory');
     return saved ? parseInt(saved) : null;
   });
+  const [userTopicsFilter, setUserTopicsFilter] = useState<{ userId: number; username: string } | null>(null);
 
   useEffect(() => {
     fetchCategories();
+    
+    // Проверяем фильтр по пользователю
+    const savedFilter = localStorage.getItem('userTopicsFilter');
+    if (savedFilter) {
+      try {
+        const filter = JSON.parse(savedFilter);
+        setUserTopicsFilter(filter);
+        // Очищаем другие фильтры
+        setSelectedCategory(null);
+        setSelectedParentCategory(null);
+        localStorage.removeItem('userTopicsFilter');
+      } catch (e) {
+        console.error('Error parsing user topics filter:', e);
+      }
+    }
   }, []);
 
   useEffect(() => {
@@ -150,6 +166,11 @@ export const ForumTopicsList = ({
   };
 
   const filterTopicsByCategory = (topics: ForumTopic[]) => {
+    // Фильтр по автору
+    if (userTopicsFilter) {
+      return topics.filter(topic => topic.author_id === userTopicsFilter.userId);
+    }
+    
     if (selectedParentCategory !== null) {
       const parentCategory = categories.find(cat => cat.id === selectedParentCategory);
       if (parentCategory) {
@@ -171,9 +192,28 @@ export const ForumTopicsList = ({
   return (
     <>
       <div className="mb-3 sm:mb-4 md:mb-6 animate-slide-up">
-        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-1 sm:mb-2">Форум</h1>
+        <div className="flex items-center justify-between mb-1 sm:mb-2">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold">Форум</h1>
+          {userTopicsFilter && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setUserTopicsFilter(null);
+                setSelectedCategory(null);
+                setSelectedParentCategory(null);
+              }}
+              className="gap-2"
+            >
+              <Icon name="X" size={16} />
+              Сбросить фильтр
+            </Button>
+          )}
+        </div>
         <p className="text-xs sm:text-sm md:text-base text-muted-foreground">
-          {selectedCategory || searchQuery 
+          {userTopicsFilter 
+            ? `Темы пользователя ${userTopicsFilter.username}: ${filteredTopics.length} ${filteredTopics.length === 1 ? 'тема' : 'тем'}`
+            : selectedCategory || searchQuery 
             ? `${filteredTopics.length} из ${forumTopics.length} ${forumTopics.length === 1 ? 'темы' : 'тем'}` 
             : `${forumTopics.length} ${forumTopics.length === 1 ? 'тема' : 'тем'}`
           }
