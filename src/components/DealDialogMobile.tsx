@@ -37,9 +37,10 @@ export const DealDialogMobile = ({
   handleBuyerConfirm
 }: DealDialogMobileProps) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
   const portalRoot = useRef<HTMLDivElement | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const inputContainerRef = useRef<HTMLDivElement>(null);
 
   // Создание изолированного Portal контейнера
   useEffect(() => {
@@ -83,24 +84,43 @@ export const DealDialogMobile = ({
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [dealMessages]);
 
-  // Предотвращаем blur input при скролле контента
+  // Предотвращаем конфликт между скроллом и input
   useEffect(() => {
     const scrollContainer = scrollContainerRef.current;
-    if (!scrollContainer) return;
+    const inputContainer = inputContainerRef.current;
+    if (!scrollContainer || !inputContainer) return;
 
-    const handleTouchStart = (e: TouchEvent) => {
-      // Если касание НЕ на input - разрешаем скролл
-      const target = e.target as HTMLElement;
-      if (inputRef.current && !inputRef.current.contains(target)) {
-        // Принудительно снимаем фокус с input при начале скролла
-        if (document.activeElement === inputRef.current) {
-          inputRef.current.blur();
-        }
+    let isScrolling = false;
+
+    const handleScrollStart = () => {
+      isScrolling = true;
+      // Снимаем фокус с input при скролле
+      if (inputRef.current && document.activeElement === inputRef.current) {
+        inputRef.current.blur();
       }
     };
 
-    scrollContainer.addEventListener('touchstart', handleTouchStart, { passive: true });
-    return () => scrollContainer.removeEventListener('touchstart', handleTouchStart);
+    const handleScrollEnd = () => {
+      isScrolling = false;
+    };
+
+    const handleInputTouch = (e: TouchEvent) => {
+      if (isScrolling) {
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+      }
+    };
+
+    scrollContainer.addEventListener('touchstart', handleScrollStart, { passive: true });
+    scrollContainer.addEventListener('touchend', handleScrollEnd, { passive: true });
+    inputContainer.addEventListener('touchstart', handleInputTouch, { passive: false });
+
+    return () => {
+      scrollContainer.removeEventListener('touchstart', handleScrollStart);
+      scrollContainer.removeEventListener('touchend', handleScrollEnd);
+      inputContainer.removeEventListener('touchstart', handleInputTouch);
+    };
   }, []);
 
   // Весь контент диалога
@@ -319,42 +339,41 @@ export const DealDialogMobile = ({
         user &&
         (Number(user.id) === Number(deal.seller_id) || Number(user.id) === Number(deal.buyer_id)) && (
           <div 
-            className="flex-shrink-0 bg-background/95 backdrop-blur-sm border-t border-border/30 p-4"
-            style={{ touchAction: 'none' }}
+            ref={inputContainerRef}
+            className="flex-shrink-0 bg-background border-t border-border/30 p-4"
+            style={{ 
+              position: 'sticky',
+              bottom: 0,
+              zIndex: 100
+            }}
           >
-            <div className="flex items-center gap-2">
-              <input
+            <div className="flex items-start gap-2">
+              <textarea
                 ref={inputRef}
-                type="text"
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter' && newMessage.trim()) {
+                  if (e.key === 'Enter' && !e.shiftKey && newMessage.trim()) {
                     e.preventDefault();
                     sendMessage();
                   }
                 }}
                 onTouchStart={(e) => {
                   e.stopPropagation();
-                  // Принудительный фокус при касании
-                  setTimeout(() => inputRef.current?.focus(), 0);
                 }}
-                onTouchEnd={(e) => {
-                  e.stopPropagation();
-                }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  e.preventDefault();
-                  inputRef.current?.focus();
+                onFocus={() => {
+                  // При фокусе скроллим к последнему сообщению
+                  setTimeout(() => {
+                    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+                  }, 300);
                 }}
                 placeholder="Написать сообщение..."
-                className="flex-1 h-12 px-4 text-base rounded-xl border-2 border-input bg-background placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 transition-colors"
+                rows={1}
+                className="flex-1 min-h-[48px] max-h-[120px] px-4 py-3 text-base rounded-xl border-2 border-input bg-background placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 transition-colors resize-none"
                 autoComplete="off"
-                inputMode="text"
-                enterKeyHint="send"
                 style={{ 
-                  fontSize: '16px', 
-                  touchAction: 'none',
+                  fontSize: '16px',
+                  lineHeight: '1.5',
                   WebkitUserSelect: 'text', 
                   userSelect: 'text',
                   WebkitTapHighlightColor: 'transparent'
@@ -362,6 +381,12 @@ export const DealDialogMobile = ({
               />
               <Button
                 onClick={() => {
+                  if (newMessage.trim()) {
+                    sendMessage();
+                  }
+                }}
+                onTouchEnd={(e) => {
+                  e.preventDefault();
                   if (newMessage.trim()) {
                     sendMessage();
                   }
