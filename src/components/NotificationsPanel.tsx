@@ -178,72 +178,72 @@ const NotificationsPanel = ({ open, onOpenChange, userId }: NotificationsPanelPr
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col p-0 gap-0">
-        <DialogHeader className="px-6 pt-6 pb-4 border-b border-border/50 shrink-0">
-          <DialogTitle className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center">
-                <Icon name="Bell" size={20} className="text-blue-400" />
+      <DialogContent className="max-w-2xl max-h-[85vh] sm:max-h-[85vh] h-[100vh] sm:h-auto flex flex-col p-0 gap-0 sm:rounded-lg">
+        <DialogHeader className="px-4 sm:px-6 pt-4 sm:pt-6 pb-3 sm:pb-4 border-b border-border/50 shrink-0">
+          <DialogTitle className="flex items-center justify-between gap-2 sm:gap-4">
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center shrink-0">
+                <Icon name="Bell" size={18} className="sm:w-5 sm:h-5 text-blue-400" />
               </div>
-              <div>
-                <h2 className="text-xl font-bold">Уведомления</h2>
+              <div className="min-w-0">
+                <h2 className="text-base sm:text-xl font-bold truncate">Уведомления</h2>
                 {unreadCount > 0 && (
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-[10px] sm:text-xs text-muted-foreground">
                     {unreadCount} непрочитанных
                   </p>
                 )}
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              {unreadCount > 0 && (
-                <Button
-                  onClick={markAllRead}
-                  variant="outline"
-                  size="sm"
-                  className="shrink-0"
-                >
-                  <Icon name="CheckCheck" size={14} className="mr-1.5" />
-                  Прочитать все
-                </Button>
-              )}
+            <div className="flex items-center gap-1 sm:gap-3 shrink-0">
               {notifications.length > 0 && (
                 <Button
                   onClick={clearAll}
                   variant="ghost"
                   size="sm"
-                  className="shrink-0 text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                  className="h-8 px-2 sm:h-9 sm:px-3 text-red-400 hover:text-red-300 hover:bg-red-500/10"
                 >
-                  <Icon name="Trash2" size={14} className="mr-1.5" />
-                  Очистить
+                  <Icon name="Trash2" size={14} className="sm:mr-1.5" />
+                  <span className="hidden sm:inline">Очистить</span>
+                </Button>
+              )}
+              {unreadCount > 0 && (
+                <Button
+                  onClick={markAllRead}
+                  variant="outline"
+                  size="sm"
+                  className="h-8 px-2 sm:h-9 sm:px-3"
+                >
+                  <Icon name="CheckCheck" size={14} className="sm:mr-1.5" />
+                  <span className="hidden sm:inline">Прочитать все</span>
                 </Button>
               )}
             </div>
           </DialogTitle>
         </DialogHeader>
 
-        <div className="flex-1 overflow-y-auto px-6 py-4">
+        <div className="flex-1 overflow-y-auto px-3 sm:px-6 py-3 sm:py-4" style={{ WebkitOverflowScrolling: 'touch' }}>
           {loading ? (
             <div className="flex flex-col items-center justify-center py-12">
-              <Icon name="Loader2" size={32} className="animate-spin text-muted-foreground mb-3" />
-              <p className="text-sm text-muted-foreground">Загрузка уведомлений...</p>
+              <Icon name="Loader2" size={28} className="sm:w-8 sm:h-8 animate-spin text-muted-foreground mb-3" />
+              <p className="text-xs sm:text-sm text-muted-foreground">Загрузка уведомлений...</p>
             </div>
           ) : notifications.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12">
-              <div className="w-20 h-20 rounded-full bg-muted/50 flex items-center justify-center mb-4">
-                <Icon name="Bell" size={32} className="text-muted-foreground/50" />
+              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-muted/50 flex items-center justify-center mb-4">
+                <Icon name="Bell" size={28} className="sm:w-8 sm:h-8 text-muted-foreground/50" />
               </div>
-              <p className="text-lg font-semibold mb-1">Нет уведомлений</p>
-              <p className="text-sm text-muted-foreground">Вы получите уведомления о важных событиях</p>
+              <p className="text-base sm:text-lg font-semibold mb-1">Нет уведомлений</p>
+              <p className="text-xs sm:text-sm text-muted-foreground text-center px-4">Вы получите уведомления о важных событиях</p>
             </div>
           ) : (
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               {groupOrder.map(group => {
                 const groupNotifications = groupedNotifications[group];
                 if (!groupNotifications || groupNotifications.length === 0) return null;
                 
                 return (
                   <div key={group}>
-                    <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3 px-1">
+                    <h3 className="text-[10px] sm:text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2 sm:mb-3 px-0.5 sm:px-1">
                       {group}
                     </h3>
                     <div className="space-y-2">
@@ -252,7 +252,7 @@ const NotificationsPanel = ({ open, onOpenChange, userId }: NotificationsPanelPr
                         return (
                           <Card
                             key={notification.id}
-                            className={`group relative overflow-hidden transition-all duration-300 hover:shadow-md ${
+                            className={`group relative overflow-hidden transition-all duration-300 active:scale-[0.98] sm:hover:shadow-md ${
                               isDeleting ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
                             } ${
                               notification.is_read
@@ -265,9 +265,9 @@ const NotificationsPanel = ({ open, onOpenChange, userId }: NotificationsPanelPr
                             }`}
                             onClick={() => !notification.is_read && markNotificationRead(notification.id)}
                           >
-                            <div className="p-4">
-                              <div className="flex items-start gap-3">
-                                <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${
+                            <div className="p-3 sm:p-4">
+                              <div className="flex items-start gap-2 sm:gap-3">
+                                <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center shrink-0 ${
                                   notification.type === 'payment'
                                     ? 'bg-gradient-to-br from-green-500/30 to-emerald-500/20'
                                     : notification.type === 'message'
@@ -275,29 +275,29 @@ const NotificationsPanel = ({ open, onOpenChange, userId }: NotificationsPanelPr
                                     : 'bg-gradient-to-br from-primary/30 to-primary/20'
                                 }`}>
                                   {notification.type === 'payment' ? (
-                                    <Icon name="Wallet" size={18} className="text-green-400" />
+                                    <Icon name="Wallet" size={16} className="sm:w-[18px] sm:h-[18px] text-green-400" />
                                   ) : notification.type === 'message' ? (
-                                    <Icon name="Mail" size={18} className="text-blue-400" />
+                                    <Icon name="Mail" size={16} className="sm:w-[18px] sm:h-[18px] text-blue-400" />
                                   ) : (
-                                    <Icon name="Bell" size={18} className="text-primary" />
+                                    <Icon name="Bell" size={16} className="sm:w-[18px] sm:h-[18px] text-primary" />
                                   )}
                                 </div>
                                 
-                                <div className="flex-1 min-w-0">
+                                <div className="flex-1 min-w-0 pr-8 sm:pr-0">
                                   <div className="flex items-start justify-between gap-2 mb-1">
-                                    <h4 className="font-semibold text-sm leading-tight">
+                                    <h4 className="font-semibold text-xs sm:text-sm leading-tight">
                                       {notification.title}
                                     </h4>
                                     {!notification.is_read && (
-                                      <div className="w-2 h-2 rounded-full bg-primary shrink-0 mt-1.5 animate-pulse" />
+                                      <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-primary shrink-0 mt-1 sm:mt-1.5 animate-pulse" />
                                     )}
                                   </div>
-                                  <p className="text-sm text-muted-foreground leading-relaxed mb-2">
+                                  <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed mb-1.5 sm:mb-2">
                                     {notification.message}
                                   </p>
                                   <div className="flex items-center justify-between">
-                                    <p className="text-xs text-muted-foreground/70 flex items-center gap-1">
-                                      <Icon name="Clock" size={12} />
+                                    <p className="text-[10px] sm:text-xs text-muted-foreground/70 flex items-center gap-1">
+                                      <Icon name="Clock" size={10} className="sm:w-3 sm:h-3" />
                                       {formatDate(notification.created_at)}
                                     </p>
                                   </div>
@@ -307,10 +307,10 @@ const NotificationsPanel = ({ open, onOpenChange, userId }: NotificationsPanelPr
                                   onClick={(e) => deleteNotification(notification.id, e)}
                                   variant="ghost"
                                   size="icon"
-                                  className="h-8 w-8 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500/10 hover:text-red-400"
+                                  className="absolute top-2 right-2 sm:relative sm:top-auto sm:right-auto h-7 w-7 sm:h-8 sm:w-8 shrink-0 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity hover:bg-red-500/10 hover:text-red-400"
                                   disabled={isDeleting}
                                 >
-                                  <Icon name={isDeleting ? "Loader2" : "X"} size={16} className={isDeleting ? "animate-spin" : ""} />
+                                  <Icon name={isDeleting ? "Loader2" : "X"} size={14} className={`sm:w-4 sm:h-4 ${isDeleting ? "animate-spin" : ""}`} />
                                 </Button>
                               </div>
                             </div>
