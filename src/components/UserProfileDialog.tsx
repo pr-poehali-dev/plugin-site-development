@@ -125,16 +125,16 @@ const UserProfileDialog = ({ open, onOpenChange, userId, currentUserId, onSendMe
           <div className="flex flex-col">
             {/* Hero section с градиентами */}
             <div className="relative overflow-hidden">
-              {/* Градиентный фон */}
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-purple-500/10 to-blue-500/10" />
-              <div className="absolute top-0 right-0 w-72 h-72 bg-gradient-to-br from-primary/20 to-transparent rounded-full blur-3xl" />
-              <div className="absolute bottom-0 left-0 w-72 h-72 bg-gradient-to-tr from-purple-500/20 to-transparent rounded-full blur-3xl" />
+              {/* Тонкий градиентный фон */}
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-muted/10 to-background" />
+              <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl" />
+              <div className="absolute bottom-0 left-0 w-64 h-64 bg-muted/10 rounded-full blur-3xl" />
               
               <div className="relative p-6 sm:p-8 md:p-10">
                 <div className="flex flex-col items-center text-center space-y-6">
-                  {/* Большой аватар с пульсирующим свечением */}
+                  {/* Большой аватар с деликатным свечением */}
                   <div className="relative group">
-                    <div className="absolute -inset-2 bg-gradient-to-br from-primary via-purple-500 to-blue-500 rounded-full opacity-75 blur-xl group-hover:opacity-100 transition-opacity animate-pulse" />
+                    <div className="absolute -inset-2 bg-primary/20 rounded-full opacity-50 blur-lg group-hover:opacity-75 transition-opacity" />
                     <div className="relative">
                       <Avatar className="w-28 h-28 sm:w-36 sm:h-36 md:w-44 md:h-44 ring-4 ring-background shadow-2xl">
                         <AvatarImage src={profile.avatar_url} />
@@ -151,12 +151,12 @@ const UserProfileDialog = ({ open, onOpenChange, userId, currentUserId, onSendMe
                   </div>
 
                   <div className="space-y-4 max-w-2xl w-full">
-                    {/* Большое имя с градиентом */}
+                    {/* Стильное имя без градиента */}
                     <div>
-                      <h3 className="text-3xl sm:text-4xl md:text-5xl font-black bg-gradient-to-r from-foreground via-primary to-purple-500 bg-clip-text text-transparent mb-3 break-words">
+                      <h3 className="text-3xl sm:text-4xl md:text-5xl font-black text-foreground mb-3 break-words">
                         {profile.username}
                       </h3>
-                      <p className="text-xs sm:text-sm text-muted-foreground/60 font-medium">Профиль участника сообщества</p>
+                      <p className="text-xs sm:text-sm text-muted-foreground/70 font-medium">Профиль участника сообщества</p>
                     </div>
 
                     {/* Статус онлайн */}
@@ -173,9 +173,7 @@ const UserProfileDialog = ({ open, onOpenChange, userId, currentUserId, onSendMe
                     {/* Бейдж форума */}
                     {profile.forum_role && (
                       <div className="flex justify-center">
-                        <div className="scale-125">
-                          <UserRankBadge forumRole={profile.forum_role} size="lg" />
-                        </div>
+                        <UserRankBadge forumRole={profile.forum_role} size="lg" />
                       </div>
                     )}
 
@@ -188,12 +186,12 @@ const UserProfileDialog = ({ open, onOpenChange, userId, currentUserId, onSendMe
 
                     {/* Статистика в плитках */}
                     <div className="grid grid-cols-2 gap-3">
-                      <Card className="p-4 sm:p-5 bg-background/60 backdrop-blur-sm border-border/50 hover:border-primary/30 transition-all">
-                        <div className="text-3xl sm:text-4xl font-black bg-gradient-to-br from-primary to-purple-500 bg-clip-text text-transparent mb-2">{profile.topics_count}</div>
+                      <Card className="p-4 sm:p-5 bg-background/60 backdrop-blur-sm border-border/50 hover:border-primary/50 transition-all">
+                        <div className="text-3xl sm:text-4xl font-black text-primary mb-2">{profile.topics_count}</div>
                         <div className="text-xs sm:text-sm text-muted-foreground font-medium">Тем создано</div>
                       </Card>
-                      <Card className="p-4 sm:p-5 bg-background/60 backdrop-blur-sm border-border/50 hover:border-primary/30 transition-all">
-                        <div className="text-3xl sm:text-4xl font-black bg-gradient-to-br from-primary to-purple-500 bg-clip-text text-transparent mb-2">{profile.comments_count}</div>
+                      <Card className="p-4 sm:p-5 bg-background/60 backdrop-blur-sm border-border/50 hover:border-primary/50 transition-all">
+                        <div className="text-3xl sm:text-4xl font-black text-primary mb-2">{profile.comments_count}</div>
                         <div className="text-xs sm:text-sm text-muted-foreground font-medium">Сообщений</div>
                       </Card>
                     </div>
@@ -238,7 +236,7 @@ const UserProfileDialog = ({ open, onOpenChange, userId, currentUserId, onSendMe
                     {/* Кнопка написать сообщение */}
                     {currentUserId && currentUserId !== profile.id && (
                       <Button
-                        className="w-full gap-2 h-12 bg-gradient-to-r from-primary to-purple-500 hover:from-primary/90 hover:to-purple-500/90 shadow-lg shadow-primary/25 transition-all font-bold text-base"
+                        className="w-full gap-2 h-12 bg-primary hover:bg-primary/90 shadow-md hover:shadow-lg transition-all font-semibold text-base"
                         onClick={() => {
                           onOpenChange(false);
                           onSendMessage?.(profile.id);
