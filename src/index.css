@@ -298,8 +298,13 @@
     z-index: 9999 !important;
     overscroll-behavior: contain;
     -webkit-overflow-scrolling: touch;
-    contain: layout style paint;
-    will-change: transform;
+  }
+
+  @media (max-width: 768px) {
+    [data-radix-dialog-content] {
+      animation: none !important;
+      transition: none !important;
+    }
   }
 
   [data-radix-dialog-content] input,
