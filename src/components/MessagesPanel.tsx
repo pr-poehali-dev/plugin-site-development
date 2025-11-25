@@ -329,17 +329,33 @@ const MessagesPanel = ({ open, onOpenChange, userId, initialRecipientId, onUserC
   const getRoleBadge = (role: string | undefined) => {
     if (!role || role === 'user') return null;
     
-    const roleConfig: Record<string, { label: string; className: string }> = {
-      admin: { label: 'Админ', className: 'bg-red-500/20 text-red-400 border-red-500/30' },
-      moderator: { label: 'Модератор', className: 'bg-blue-500/20 text-blue-400 border-blue-500/30' },
-      vip: { label: 'VIP', className: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30' }
+    const roleConfig: Record<string, { label: string; icon: string; className: string; bgGradient: string }> = {
+      admin: { 
+        label: 'Admin', 
+        icon: '👑',
+        className: 'text-red-400 border-red-500/40',
+        bgGradient: 'bg-gradient-to-r from-red-500/10 via-red-500/20 to-red-500/10'
+      },
+      moderator: { 
+        label: 'Mod', 
+        icon: '🛡️',
+        className: 'text-blue-400 border-blue-500/40',
+        bgGradient: 'bg-gradient-to-r from-blue-500/10 via-blue-500/20 to-blue-500/10'
+      },
+      vip: { 
+        label: 'VIP', 
+        icon: '⭐',
+        className: 'text-yellow-400 border-yellow-500/40',
+        bgGradient: 'bg-gradient-to-r from-yellow-500/10 via-yellow-500/20 to-yellow-500/10'
+      }
     };
 
     const config = roleConfig[role];
     if (!config) return null;
 
     return (
-      <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold border ${config.className}`}>
+      <span className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-[9px] font-bold border backdrop-blur-sm ${config.className} ${config.bgGradient} shadow-sm`}>
+        <span className="text-[10px]">{config.icon}</span>
         {config.label}
       </span>
     );
@@ -526,21 +542,21 @@ const MessagesPanel = ({ open, onOpenChange, userId, initialRecipientId, onUserC
                     </div>
                     <div className="flex-1 min-w-0 text-left">
                       <div className="flex items-center justify-between mb-1">
-                        <div className="flex items-center gap-1.5 min-w-0">
-                          <p className="font-semibold truncate">{chat.username}</p>
+                        <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                          <p className="font-semibold truncate flex-shrink">{chat.username}</p>
                           {getRoleBadge(chat.role)}
                         </div>
                         <span className="text-xs text-muted-foreground ml-2 flex-shrink-0">
                           {formatTime(chat.lastMessageTime)}
                         </span>
                       </div>
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-center justify-between gap-2">
                         <p className="text-sm text-muted-foreground truncate flex-1">
                           {chat.lastMessage}
                         </p>
                         {chat.unreadCount > 0 && (
-                          <span className="ml-2 flex-shrink-0 bg-primary text-primary-foreground text-xs font-semibold rounded-full w-5 h-5 flex items-center justify-center">
-                            {chat.unreadCount}
+                          <span className="ml-1 flex-shrink-0 bg-primary text-primary-foreground text-xs font-semibold rounded-full min-w-[20px] h-5 px-1.5 flex items-center justify-center">
+                            {chat.unreadCount > 99 ? '99+' : chat.unreadCount}
                           </span>
                         )}
                       </div>
@@ -594,11 +610,11 @@ const MessagesPanel = ({ open, onOpenChange, userId, initialRecipientId, onUserC
                     className="flex-1 min-w-0 overflow-hidden py-1 cursor-pointer hover:opacity-80 transition-opacity"
                     onClick={() => selectedChat && handleOpenProfile(selectedChat)}
                   >
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1.5 mb-0.5">
                       <p className="font-semibold truncate text-sm sm:text-base">{selectedChatInfo?.username}</p>
                       {getRoleBadge(selectedChatUserRole)}
                     </div>
-                    <p className="text-xs text-muted-foreground/70 truncate">
+                    <p className="text-[11px] text-muted-foreground/70 truncate">
                       {getLastSeenText(selectedChatUserLastSeen)}
                     </p>
                   </div>
