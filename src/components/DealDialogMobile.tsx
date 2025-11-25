@@ -38,6 +38,29 @@ export const DealDialogMobile = ({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // Блокировка скролла body при открытии диалога
+  useEffect(() => {
+    const originalStyle = window.getComputedStyle(document.body).overflow;
+    const scrollY = window.scrollY;
+    
+    // Полная блокировка скролла фона
+    document.body.style.position = 'fixed';
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.left = '0';
+    document.body.style.right = '0';
+    document.body.style.overflow = 'hidden';
+    
+    return () => {
+      // Восстановление при закрытии
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.left = '';
+      document.body.style.right = '';
+      document.body.style.overflow = originalStyle;
+      window.scrollTo(0, scrollY);
+    };
+  }, []);
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [dealMessages]);
