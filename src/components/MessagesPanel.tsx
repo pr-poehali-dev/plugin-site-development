@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Card } from '@/components/ui/card';
+import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 import Icon from '@/components/ui/icon';
 import { Message } from '@/types';
 import { useToast } from '@/hooks/use-toast';
@@ -324,6 +325,9 @@ const MessagesPanel = ({ open, onOpenChange, userId, initialRecipientId }: Messa
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-full sm:max-w-4xl md:max-w-5xl h-[100vh] sm:h-[90vh] p-0 sm:rounded-lg overflow-hidden">
+        <VisuallyHidden>
+          <DialogTitle>Сообщения</DialogTitle>
+        </VisuallyHidden>
         <div className="flex h-full bg-background">
           {/* Список чатов - показывается на мобилке когда чат не выбран */}
           <div className={`${showChatList ? 'flex' : 'hidden sm:flex'} w-full sm:w-80 md:w-96 flex-col border-r border-border relative`}>
