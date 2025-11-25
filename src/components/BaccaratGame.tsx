@@ -233,10 +233,38 @@ const BaccaratGame = ({ user, onShowAuthDialog, onRefreshUserBalance }: Baccarat
       
       let resultText = '';
       if (winner === 'tie') {
-        resultText = betType === 'tie' ? `Ничья! Вы выиграли ${winAmount.toFixed(2)} USDT` : 'Ничья! Ставка возвращена';
+        if (betType === 'tie') {
+          resultText = `Ничья! Вы выиграли ${winAmount.toFixed(2)} USDT`;
+          toast({
+            title: '🎉 Победа!',
+            description: `+${winAmount.toFixed(2)} USDT`,
+            variant: 'default'
+          });
+        } else {
+          resultText = 'Ничья! Ставка возвращена';
+          toast({
+            title: '🤝 Ничья',
+            description: `Ставка возвращена: ${betAmount.toFixed(2)} USDT`,
+            variant: 'default'
+          });
+        }
       } else {
         const winnerText = winner === 'player' ? 'Игрок' : 'Банкир';
-        resultText = won ? `${winnerText} победил! Вы выиграли ${winAmount.toFixed(2)} USDT` : `${winnerText} победил! Вы проиграли ${betAmount.toFixed(2)} USDT`;
+        if (won) {
+          resultText = `${winnerText} победил! Вы выиграли ${winAmount.toFixed(2)} USDT`;
+          toast({
+            title: '🎉 Победа!',
+            description: `+${winAmount.toFixed(2)} USDT`,
+            variant: 'default'
+          });
+        } else {
+          resultText = `${winnerText} победил! Вы проиграли ${betAmount.toFixed(2)} USDT`;
+          toast({
+            title: '😔 Проигрыш',
+            description: `-${betAmount.toFixed(2)} USDT`,
+            variant: 'destructive'
+          });
+        }
       }
       
       setResult(resultText);

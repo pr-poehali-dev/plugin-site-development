@@ -159,8 +159,18 @@ const DiceGame = ({ user, onShowAuthDialog, onRefreshUserBalance }: DiceGameProp
           })
         });
         setResult(`🎲 Выпало ${dice}! Вы выиграли ${winAmount.toFixed(2)} USDT`);
+        toast({
+          title: '🎉 Победа!',
+          description: `+${winAmount.toFixed(2)} USDT`,
+          variant: 'default'
+        });
       } else {
         setResult(`🎲 Выпало ${dice}. Вы проиграли ${betAmount.toFixed(2)} USDT`);
+        toast({
+          title: '😔 Проигрыш',
+          description: `-${betAmount.toFixed(2)} USDT`,
+          variant: 'destructive'
+        });
       }
       
       setGameState('finished');
