@@ -10,33 +10,12 @@ const Dialog = (props: React.ComponentProps<typeof DialogPrimitive.Root>) => {
   React.useEffect(() => {
     if (!open) return;
 
-    const scrollY = window.scrollY;
-    const bodyWidth = document.body.offsetWidth;
-    
     document.body.style.setProperty('overflow', 'hidden', 'important');
-    document.body.style.setProperty('position', 'fixed', 'important');
-    document.body.style.setProperty('top', `-${scrollY}px`, 'important');
-    document.body.style.setProperty('width', `${bodyWidth}px`, 'important');
-    document.body.style.setProperty('left', '0', 'important');
-    document.body.style.setProperty('right', '0', 'important');
-    document.body.dataset.scrollY = String(scrollY);
-    
     document.documentElement.style.setProperty('overflow', 'hidden', 'important');
 
     return () => {
-      const savedScrollY = parseInt(document.body.dataset.scrollY || '0');
-      
       document.body.style.removeProperty('overflow');
-      document.body.style.removeProperty('position');
-      document.body.style.removeProperty('top');
-      document.body.style.removeProperty('width');
-      document.body.style.removeProperty('left');
-      document.body.style.removeProperty('right');
-      delete document.body.dataset.scrollY;
-      
       document.documentElement.style.removeProperty('overflow');
-      
-      window.scrollTo(0, savedScrollY);
     };
   }, [open]);
 

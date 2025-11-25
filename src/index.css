@@ -292,6 +292,9 @@
 
   [data-radix-dialog-content] {
     position: fixed !important;
+    left: 50% !important;
+    top: 50% !important;
+    transform: translate(-50%, -50%) !important;
     z-index: 9999 !important;
     overscroll-behavior: contain;
     -webkit-overflow-scrolling: touch;
