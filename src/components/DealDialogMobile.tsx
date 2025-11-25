@@ -39,10 +39,21 @@ export const DealDialogMobile = ({
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    window.scrollTo(0, 0);
+    const scrollY = window.scrollY;
+    
+    document.body.style.position = 'fixed';
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.left = '0';
+    document.body.style.right = '0';
     document.body.style.overflow = 'hidden';
+    
     return () => {
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.left = '';
+      document.body.style.right = '';
       document.body.style.overflow = '';
+      window.scrollTo(0, scrollY);
     };
   }, []);
 
@@ -53,8 +64,14 @@ export const DealDialogMobile = ({
   return (
     <div 
       ref={containerRef}
-      className="fixed inset-0 z-[100] bg-background overflow-y-auto overscroll-contain"
-      style={{ WebkitOverflowScrolling: 'touch' }}
+      className="fixed inset-0 z-[100] bg-background overflow-y-auto overscroll-none"
+      style={{ 
+        WebkitOverflowScrolling: 'touch',
+        touchAction: 'pan-y'
+      }}
+      onTouchMove={(e) => {
+        e.stopPropagation();
+      }}
     >
       {/* Хедер */}
       <div className="sticky top-0 z-20 bg-background/95 backdrop-blur-md border-b border-border/50 shadow-sm">
