@@ -39,11 +39,29 @@ const ExchangePage = ({ user, onRefreshUserBalance }: ExchangePageProps) => {
   const [withdrawLoading, setWithdrawLoading] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [confirmAction, setConfirmAction] = useState<'usdt_to_btc' | 'btc_to_usdt' | null>(null);
+  const [priceUpdateTimer, setPriceUpdateTimer] = useState(60);
+  const [priceLoadTime, setPriceLoadTime] = useState<Date | null>(null);
 
   useEffect(() => {
     loadBtcBalance();
     loadBtcPrice();
   }, [user.id]);
+
+  useEffect(() => {
+    if (showConfirmDialog && priceLoadTime) {
+      const interval = setInterval(() => {
+        const elapsed = Math.floor((Date.now() - priceLoadTime.getTime()) / 1000);
+        const remaining = Math.max(0, 60 - elapsed);
+        setPriceUpdateTimer(remaining);
+        
+        if (remaining === 0) {
+          loadBtcPrice();
+        }
+      }, 1000);
+
+      return () => clearInterval(interval);
+    }
+  }, [showConfirmDialog, priceLoadTime]);
 
   const loadBtcPrice = async () => {
     try {
@@ -70,6 +88,8 @@ const ExchangePage = ({ user, onRefreshUserBalance }: ExchangePageProps) => {
       }
       
       setBtcPrice(newPrice);
+      setPriceLoadTime(new Date());
+      setPriceUpdateTimer(60);
     } catch (error) {
       console.error('Ошибка загрузки курса BTC:', error);
     } finally {
@@ -827,7 +847,7 @@ const ExchangePage = ({ user, onRefreshUserBalance }: ExchangePageProps) => {
             <h3 className="text-lg font-semibold">Как это работает?</h3>
             <ul className="text-sm text-muted-foreground space-y-1">
               <li>• Обмен происходит мгновенно по текущему рыночному курсу</li>
-              <li>• Курс обновляется каждые 10 секунд с биржи CoinGecko</li>
+              <li>• Курс в окне подтверждения обновляется каждую минуту</li>
               <li>• Комиссия за обмен: 0.5%</li>
               <li>• Минимум для обмена: 10 USDT или 0.0001 BTC</li>
               <li>• Минимум для вывода BTC: 0.001 BTC</li>
@@ -850,6 +870,21 @@ const ExchangePage = ({ user, onRefreshUserBalance }: ExchangePageProps) => {
           </DialogHeader>
 
           <div className="space-y-4 py-4">
+            <div className="flex items-center justify-between bg-gradient-to-r from-green-500/10 to-green-600/10 border border-green-500/20 rounded-lg p-3">
+              <div className="flex items-center gap-2">
+                <div className={`w-2 h-2 rounded-full ${priceUpdateTimer > 10 ? 'bg-green-500 animate-pulse' : 'bg-orange-500 animate-pulse'}`} />
+                <span className="text-sm font-medium">
+                  {priceUpdateTimer > 10 ? 'Курс актуален' : 'Обновление курса...'}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Icon name="Clock" size={16} className="text-muted-foreground" />
+                <span className="text-sm font-mono font-semibold">
+                  {Math.floor(priceUpdateTimer / 60)}:{(priceUpdateTimer % 60).toString().padStart(2, '0')}
+                </span>
+              </div>
+            </div>
+
             {confirmAction === 'usdt_to_btc' && (
               <>
                 <div className="bg-muted/50 rounded-lg p-4 space-y-3">
