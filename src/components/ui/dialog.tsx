@@ -9,31 +9,30 @@ const Dialog = (props: React.ComponentProps<typeof DialogPrimitive.Root>) => {
 
   React.useEffect(() => {
     if (open) {
-      const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+      const scrollY = window.scrollY;
       document.body.style.overflow = 'hidden';
-      document.body.style.paddingRight = `${scrollbarWidth}px`;
-      document.body.style.position = 'fixed';
+      document.body.style.position = 'relative';
       document.body.style.width = '100%';
-      document.body.style.top = `-${window.scrollY}px`;
-    } else {
-      const scrollY = document.body.style.top;
-      document.body.style.overflow = '';
-      document.body.style.paddingRight = '';
-      document.body.style.position = '';
-      document.body.style.width = '';
-      document.body.style.top = '';
-      if (scrollY) {
-        window.scrollTo(0, parseInt(scrollY || '0') * -1);
-      }
+      document.body.setAttribute('data-scroll-y', scrollY.toString());
+      
+      const handleResize = () => {
+        window.scrollTo(0, scrollY);
+      };
+      
+      window.addEventListener('resize', handleResize);
+      
+      return () => {
+        window.removeEventListener('resize', handleResize);
+        const savedScrollY = document.body.getAttribute('data-scroll-y');
+        document.body.style.overflow = '';
+        document.body.style.position = '';
+        document.body.style.width = '';
+        document.body.removeAttribute('data-scroll-y');
+        if (savedScrollY) {
+          window.scrollTo(0, parseInt(savedScrollY));
+        }
+      };
     }
-
-    return () => {
-      document.body.style.overflow = '';
-      document.body.style.paddingRight = '';
-      document.body.style.position = '';
-      document.body.style.width = '';
-      document.body.style.top = '';
-    };
   }, [open]);
 
   return <DialogPrimitive.Root open={open} {...restProps} />;
@@ -96,9 +95,13 @@ const DialogContent = React.forwardRef<
     >
       {children}
       <DialogPrimitive.Close 
-        className="absolute right-3 top-3 sm:right-4 sm:top-4 rounded-sm opacity-70 ring-offset-background transition-all duration-200 hover:opacity-100 active:scale-95 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground z-50 touch-manipulation"
+        className="absolute right-3 top-3 sm:right-4 sm:top-4 rounded-sm opacity-70 ring-offset-background transition-all duration-200 hover:opacity-100 active:scale-95 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground z-[60] touch-manipulation pointer-events-auto"
         onTouchStart={(e) => {
           e.stopPropagation();
+        }}
+        onTouchEnd={(e) => {
+          e.stopPropagation();
+          e.preventDefault();
         }}
         onClick={(e) => {
           e.stopPropagation();
