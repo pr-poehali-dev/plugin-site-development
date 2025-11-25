@@ -72,7 +72,11 @@ export const CryptoPaymentDialog = ({
                   <Button
                     size="icon"
                     variant="outline"
-                    onClick={() => onCopyToClipboard(cryptoPayment.wallet_address)}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      onCopyToClipboard(cryptoPayment.wallet_address);
+                    }}
                   >
                     <Icon name="Copy" size={16} />
                   </Button>
