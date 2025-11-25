@@ -230,7 +230,7 @@ const UserProfile = ({ user, isOwnProfile, onClose, onTopUpBalance, onUpdateProf
     setIsLoading(false);
   };
 
-  const copyToClipboard = async (text: string) => {
+  const copyToClipboard = (text: string) => {
     if (!text) {
       toast({
         title: 'Ошибка',
@@ -241,58 +241,49 @@ const UserProfile = ({ user, isOwnProfile, onClose, onTopUpBalance, onUpdateProf
     }
 
     const cleanText = String(text).trim();
-
-    if (navigator.clipboard && window.isSecureContext) {
-      try {
-        await navigator.clipboard.writeText(cleanText);
-        toast({
-          title: 'Успешно',
-          description: 'Адрес скопирован в буфер обмена'
-        });
-        return;
-      } catch (error) {
-        console.error('Clipboard API error:', error);
-      }
-    }
-
+    
     const textArea = document.createElement('textarea');
     textArea.value = cleanText;
-    textArea.style.position = 'fixed';
-    textArea.style.left = '-999999px';
-    textArea.style.top = '-999999px';
-    textArea.style.opacity = '0';
+    textArea.style.position = 'absolute';
+    textArea.style.left = '-9999px';
+    textArea.style.top = '0';
+    textArea.setAttribute('readonly', '');
     document.body.appendChild(textArea);
     
-    textArea.focus();
-    textArea.select();
-    
-    try {
+    if (navigator.userAgent.match(/ipad|ipod|iphone/i)) {
       const range = document.createRange();
       range.selectNodeContents(textArea);
       const selection = window.getSelection();
       selection?.removeAllRanges();
       selection?.addRange(range);
-      textArea.setSelectionRange(0, cleanText.length);
-      
+      textArea.setSelectionRange(0, 999999);
+    } else {
+      textArea.select();
+    }
+    
+    try {
       const successful = document.execCommand('copy');
+      document.body.removeChild(textArea);
       
       if (successful) {
         toast({
-          title: 'Успешно',
-          description: 'Адрес скопирован в буфер обмена'
+          title: '✅ Скопировано',
+          description: cleanText
         });
       } else {
-        throw new Error('execCommand failed');
+        toast({
+          title: 'Не удалось скопировать',
+          description: 'Скопируйте адрес вручную',
+          variant: 'destructive'
+        });
       }
     } catch (err) {
-      console.error('Fallback copy error:', err);
+      document.body.removeChild(textArea);
       toast({
-        title: 'Не удалось скопировать',
-        description: 'Скопируйте адрес вручную',
+        title: 'Ошибка копирования',
+        description: 'Скопируйте адрес вручную: ' + cleanText,
         variant: 'destructive'
       });
-    } finally {
-      document.body.removeChild(textArea);
     }
   };
 
