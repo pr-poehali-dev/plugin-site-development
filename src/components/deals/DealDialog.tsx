@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -41,6 +41,14 @@ export const DealDialog = ({
   onCancelDeal,
   actionLoading
 }: DealDialogProps) => {
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (open && inputRef.current) {
+      inputRef.current.blur();
+    }
+  }, [open]);
+
   if (!deal) return null;
 
   const isSeller = user && deal.seller_id === user.id;
@@ -195,11 +203,17 @@ export const DealDialog = ({
               
               <div className="flex gap-2">
                 <Input
+                  ref={inputRef}
                   value={newMessage}
                   onChange={(e) => onMessageChange(e.target.value)}
                   placeholder="Введите сообщение..."
                   onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && onSendMessage()}
                   autoFocus={false}
+                  onFocus={(e) => {
+                    setTimeout(() => {
+                      e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }, 300);
+                  }}
                 />
                 <Button onClick={onSendMessage} size="icon">
                   <Icon name="Send" size={18} />
