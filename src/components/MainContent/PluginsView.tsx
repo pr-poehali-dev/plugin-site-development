@@ -46,7 +46,7 @@ export const PluginsView = ({
     {
       icon: 'Gamepad2',
       title: 'Игры',
-      description: 'Казино с честными алгоритмами. Crash, Mines, Roulette, Lottery.',
+      description: 'Игры с честными алгоритмами: Blackjack, Dice, Baccarat, Lottery.',
       items: ['Provably Fair система', 'Ставки в USDT', 'Мгновенные выплаты', 'Статистика игр'],
       gradient: 'from-purple-500/20 via-fuchsia-500/20 to-pink-500/20'
     },
