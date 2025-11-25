@@ -36,16 +36,28 @@ export const DealDialogMobile = ({
   handleBuyerConfirm
 }: DealDialogMobileProps) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, []);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [dealMessages]);
 
   return (
-    <div className="fixed inset-0 z-[100] bg-background">
+    <div 
+      ref={containerRef}
+      className="fixed inset-0 z-[100] bg-background overflow-y-auto overscroll-contain"
+      style={{ WebkitOverflowScrolling: 'touch' }}
+    >
       {/* Хедер */}
-      <div className="sticky top-0 z-10 bg-gradient-to-b from-background via-background to-background/95 backdrop-blur-sm border-b border-border/50">
+      <div className="sticky top-0 z-20 bg-background/95 backdrop-blur-md border-b border-border/50 shadow-sm">
         <div className="flex items-center gap-3 p-4">
           <button
             onClick={onClose}
@@ -61,9 +73,9 @@ export const DealDialogMobile = ({
         </div>
       </div>
 
-      {/* Контент - скроллится */}
-      <div className="h-[calc(100vh-72px)] overflow-y-auto overscroll-contain">
-        <div className="p-4 space-y-3 pb-safe">
+      {/* Контент */}
+      <div className="min-h-screen pb-6">
+        <div className="p-4 space-y-3">
           
           {/* Роль пользователя */}
           {user && (Number(user.id) === Number(deal.seller_id) || Number(user.id) === Number(deal.buyer_id)) && (
@@ -113,7 +125,7 @@ export const DealDialogMobile = ({
 
           {/* Чат */}
           <Card className="p-3 bg-gradient-to-br from-muted/30 to-muted/10 min-h-[300px]">
-            <div className="space-y-2">
+            <div className="space-y-2 pb-4">
               {dealMessages.map((msg) => (
                 <div
                   key={msg.id}
@@ -157,12 +169,11 @@ export const DealDialogMobile = ({
             </div>
           </Card>
 
-          {/* Поле ввода сообщения */}
+          {/* Поле ввода сообщения - STICKY ВНИЗУ */}
           {deal.status !== 'completed' && deal.status !== 'cancelled' && user && (Number(user.id) === Number(deal.seller_id) || Number(user.id) === Number(deal.buyer_id)) && (
-            <Card className="p-3 bg-muted/50 border-border/50">
-              <div className="flex items-center gap-2">
+            <div className="sticky bottom-0 left-0 right-0 z-10 bg-background/95 backdrop-blur-sm border-t border-border/30 p-4 -mx-4 -mb-6">
+              <div className="flex items-center gap-2 max-w-screen-lg mx-auto">
                 <input
-                  ref={inputRef}
                   type="text"
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
@@ -172,8 +183,9 @@ export const DealDialogMobile = ({
                     }
                   }}
                   placeholder="Написать сообщение..."
-                  className="flex-1 h-11 px-4 text-base rounded-xl border-2 border-input bg-background placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 transition-colors"
+                  className="flex-1 h-12 px-4 text-base rounded-xl border-2 border-input bg-background placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 transition-colors"
                   autoComplete="off"
+                  style={{ fontSize: '16px' }}
                 />
                 <Button 
                   onClick={() => {
@@ -182,13 +194,13 @@ export const DealDialogMobile = ({
                     }
                   }}
                   size="icon" 
-                  className="bg-gradient-to-r from-green-700 to-green-800 hover:from-green-600 hover:to-green-700 h-11 w-11 rounded-xl flex-shrink-0"
+                  className="bg-gradient-to-r from-green-700 to-green-800 hover:from-green-600 hover:to-green-700 h-12 w-12 rounded-xl flex-shrink-0"
                   type="button"
                 >
                   <Icon name="Send" size={18} />
                 </Button>
               </div>
-            </Card>
+            </div>
           )}
 
           {/* Кнопки действий */}
