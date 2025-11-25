@@ -332,7 +332,7 @@ const MessagesPanel = ({ open, onOpenChange, userId, initialRecipientId }: Messa
           {/* Список чатов - показывается на мобилке когда чат не выбран */}
           <div className={`${showChatList ? 'flex' : 'hidden sm:flex'} w-full sm:w-80 md:w-96 flex-col border-r border-border relative`}>
             {/* Шапка списка чатов */}
-            <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-muted/30 mt-6 sm:mt-0">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-muted/30">
               <h2 className="text-xl font-semibold">Чаты</h2>
             </div>
 
@@ -454,7 +454,7 @@ const MessagesPanel = ({ open, onOpenChange, userId, initialRecipientId }: Messa
             {selectedChat ? (
               <>
                 {/* Шапка чата */}
-                <div className="flex-shrink-0 flex items-center gap-3 px-3 sm:px-4 py-3 border-b border-border/30 bg-background min-h-[60px] mt-6 sm:mt-0">
+                <div className="flex-shrink-0 flex items-center gap-3 px-3 sm:px-4 py-3 border-b border-border/30 bg-background min-h-[60px]">
                   <Button
                     variant="ghost"
                     size="icon"
