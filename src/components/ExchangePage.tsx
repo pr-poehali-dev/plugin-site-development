@@ -918,9 +918,9 @@ const ExchangePage = ({ user, onRefreshUserBalance }: ExchangePageProps) => {
                   </div>
                 </div>
 
-                <div className="flex items-start gap-2 text-xs text-muted-foreground bg-orange-500/10 border border-orange-500/20 rounded-lg p-3">
-                  <Icon name="Info" size={16} className="text-orange-500 shrink-0 mt-0.5" />
-                  <p>Курс может измениться. Если курс изменится более чем на 1%, операция будет отменена и вам нужно будет повторить обмен.</p>
+                <div className="flex items-start gap-2 text-xs text-muted-foreground bg-blue-500/10 border border-blue-500/20 rounded-lg p-3">
+                  <Icon name="Info" size={16} className="text-blue-500 shrink-0 mt-0.5" />
+                  <p>Курс зафиксирован для вас на 1 минуту. После курс будет обновлен.</p>
                 </div>
               </>
             )}
@@ -958,9 +958,9 @@ const ExchangePage = ({ user, onRefreshUserBalance }: ExchangePageProps) => {
                   </div>
                 </div>
 
-                <div className="flex items-start gap-2 text-xs text-muted-foreground bg-orange-500/10 border border-orange-500/20 rounded-lg p-3">
-                  <Icon name="Info" size={16} className="text-orange-500 shrink-0 mt-0.5" />
-                  <p>Курс может измениться. Если курс изменится более чем на 1%, операция будет отменена и вам нужно будет повторить обмен.</p>
+                <div className="flex items-start gap-2 text-xs text-muted-foreground bg-blue-500/10 border border-blue-500/20 rounded-lg p-3">
+                  <Icon name="Info" size={16} className="text-blue-500 shrink-0 mt-0.5" />
+                  <p>Курс зафиксирован для вас на 1 минуту. После курс будет обновлен.</p>
                 </div>
               </>
             )}
