@@ -7,6 +7,14 @@ import { useToast } from '@/hooks/use-toast';
 import { User } from '@/types';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Label } from '@/components/ui/label';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
 const AUTH_URL = 'https://functions.poehali.dev/2497448a-6aff-4df5-97ef-9181cf792f03';
 const BTC_PRICE_URL = 'https://functions.poehali.dev/bdf92326-10c7-4f4f-bc94-761a9ea4ed96';
@@ -29,6 +37,8 @@ const ExchangePage = ({ user, onRefreshUserBalance }: ExchangePageProps) => {
   const [withdrawAddress, setWithdrawAddress] = useState('');
   const [withdrawAmount, setWithdrawAmount] = useState('');
   const [withdrawLoading, setWithdrawLoading] = useState(false);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [confirmAction, setConfirmAction] = useState<'usdt_to_btc' | 'btc_to_usdt' | null>(null);
 
   useEffect(() => {
     loadBtcBalance();
@@ -158,6 +168,15 @@ const ExchangePage = ({ user, onRefreshUserBalance }: ExchangePageProps) => {
       return;
     }
 
+    await loadBtcPrice();
+    setConfirmAction('usdt_to_btc');
+    setShowConfirmDialog(true);
+  };
+
+  const confirmExchangeUsdtToBtc = async () => {
+    const usdt = parseFloat(usdtAmount);
+    setShowConfirmDialog(false);
+
     setLoading(true);
 
     try {
@@ -245,6 +264,15 @@ const ExchangePage = ({ user, onRefreshUserBalance }: ExchangePageProps) => {
       });
       return;
     }
+
+    await loadBtcPrice();
+    setConfirmAction('btc_to_usdt');
+    setShowConfirmDialog(true);
+  };
+
+  const confirmExchangeBtcToUsdt = async () => {
+    const btc = parseFloat(btcAmount);
+    setShowConfirmDialog(false);
 
     setLoading(true);
 
@@ -808,6 +836,129 @@ const ExchangePage = ({ user, onRefreshUserBalance }: ExchangePageProps) => {
           </div>
         </div>
       </Card>
+
+      <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Icon name="AlertCircle" size={24} className="text-orange-500" />
+              Подтверждение обмена
+            </DialogTitle>
+            <DialogDescription>
+              Проверьте детали операции перед подтверждением
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            {confirmAction === 'usdt_to_btc' && (
+              <>
+                <div className="bg-muted/50 rounded-lg p-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Актуальный курс BTC:</span>
+                    <span className="font-bold text-lg text-green-400">
+                      ${btcPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </span>
+                  </div>
+                  
+                  <div className="border-t border-border/50 pt-3 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">Вы отдаёте:</span>
+                      <span className="font-semibold">{usdtAmount} USDT</span>
+                    </div>
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-muted-foreground">Комиссия обмена (0.5%):</span>
+                      <span className="text-red-400">-{(parseFloat(usdtAmount) * 0.005).toFixed(2)} USDT</span>
+                    </div>
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-muted-foreground">К обмену:</span>
+                      <span>{(parseFloat(usdtAmount) - parseFloat(usdtAmount) * 0.005).toFixed(2)} USDT</span>
+                    </div>
+                  </div>
+
+                  <div className="border-t border-border/50 pt-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">Вы получите:</span>
+                      <span className="font-bold text-lg text-green-400">{btcAmount} BTC</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-2 text-xs text-muted-foreground bg-orange-500/10 border border-orange-500/20 rounded-lg p-3">
+                  <Icon name="Info" size={16} className="text-orange-500 shrink-0 mt-0.5" />
+                  <p>Курс может измениться. Если курс изменится более чем на 1%, операция будет отменена и вам нужно будет повторить обмен.</p>
+                </div>
+              </>
+            )}
+
+            {confirmAction === 'btc_to_usdt' && (
+              <>
+                <div className="bg-muted/50 rounded-lg p-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Актуальный курс BTC:</span>
+                    <span className="font-bold text-lg text-green-400">
+                      ${btcPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </span>
+                  </div>
+                  
+                  <div className="border-t border-border/50 pt-3 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">Вы отдаёте:</span>
+                      <span className="font-semibold">{btcAmount} BTC</span>
+                    </div>
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-muted-foreground">Эквивалент в USDT:</span>
+                      <span>{(parseFloat(btcAmount) * btcPrice).toFixed(2)} USDT</span>
+                    </div>
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-muted-foreground">Комиссия обмена (0.5%):</span>
+                      <span className="text-red-400">-{(parseFloat(btcAmount) * btcPrice * 0.005).toFixed(2)} USDT</span>
+                    </div>
+                  </div>
+
+                  <div className="border-t border-border/50 pt-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">Вы получите:</span>
+                      <span className="font-bold text-lg text-green-400">{usdtAmount} USDT</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-2 text-xs text-muted-foreground bg-orange-500/10 border border-orange-500/20 rounded-lg p-3">
+                  <Icon name="Info" size={16} className="text-orange-500 shrink-0 mt-0.5" />
+                  <p>Курс может измениться. Если курс изменится более чем на 1%, операция будет отменена и вам нужно будет повторить обмен.</p>
+                </div>
+              </>
+            )}
+          </div>
+
+          <DialogFooter className="gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setShowConfirmDialog(false)}
+              disabled={loading}
+            >
+              Отмена
+            </Button>
+            <Button
+              onClick={confirmAction === 'usdt_to_btc' ? confirmExchangeUsdtToBtc : confirmExchangeBtcToUsdt}
+              disabled={loading}
+              className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700"
+            >
+              {loading ? (
+                <>
+                  <Icon name="Loader2" size={18} className="mr-2 animate-spin" />
+                  Обмен...
+                </>
+              ) : (
+                <>
+                  <Icon name="Check" size={18} className="mr-2" />
+                  Подтвердить обмен
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
