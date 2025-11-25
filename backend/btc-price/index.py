@@ -10,15 +10,24 @@ import urllib.request
 from typing import Dict, Any
 
 def get_real_btc_price() -> float:
-    """Получить реальную цену BTC с CoinGecko API"""
+    """Получить реальную цену BTC с Binance API"""
     try:
-        with urllib.request.urlopen('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd', timeout=5) as response:
+        # Пробуем Binance API (наиболее надёжный источник)
+        with urllib.request.urlopen('https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT', timeout=5) as response:
             data = json.loads(response.read().decode())
-            real_price = float(data['bitcoin']['usd'])
+            real_price = float(data['price'])
             return real_price + 1000
     except Exception as e:
-        print(f'Error fetching BTC price: {e}')
-        return 0
+        print(f'Error fetching BTC price from Binance: {e}')
+        # Fallback на Coinbase API
+        try:
+            with urllib.request.urlopen('https://api.coinbase.com/v2/prices/BTC-USD/spot', timeout=5) as response:
+                data = json.loads(response.read().decode())
+                real_price = float(data['data']['amount'])
+                return real_price + 1000
+        except Exception as e2:
+            print(f'Error fetching BTC price from Coinbase: {e2}')
+            return 0
 
 def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     method: str = event.get('httpMethod', 'GET')

@@ -35,15 +35,24 @@ def generate_referral_code() -> str:
     return secrets.token_urlsafe(8).upper().replace('-', '').replace('_', '')[:8]
 
 def get_real_btc_price() -> float:
-    """Получить реальную цену BTC с CoinGecko API"""
+    """Получить реальную цену BTC с Binance API"""
     try:
-        with urllib.request.urlopen('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd', timeout=5) as response:
+        # Пробуем Binance API (наиболее надёжный источник)
+        with urllib.request.urlopen('https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT', timeout=5) as response:
             data = json.loads(response.read().decode())
-            real_price = float(data['bitcoin']['usd'])
+            real_price = float(data['price'])
             return real_price + 1000
     except Exception as e:
-        print(f'Error fetching BTC price: {e}')
-        return 0
+        print(f'Error fetching BTC price from Binance: {e}')
+        # Fallback на Coinbase API
+        try:
+            with urllib.request.urlopen('https://api.coinbase.com/v2/prices/BTC-USD/spot', timeout=5) as response:
+                data = json.loads(response.read().decode())
+                real_price = float(data['data']['amount'])
+                return real_price + 1000
+        except Exception as e2:
+            print(f'Error fetching BTC price from Coinbase: {e2}')
+            return 0
 
 def validate_btc_price(client_price: float, tolerance_percent: float = 2.0) -> bool:
     """Валидация цены BTC от клиента с допустимым отклонением"""
