@@ -31,6 +31,24 @@ const useIsMobile = () => {
   return isMobile;
 };
 
+const useIsDesktop = () => {
+  const [isDesktop, setIsDesktop] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth >= 1024;
+    }
+    return false;
+  });
+  
+  useEffect(() => {
+    const checkDesktop = () => setIsDesktop(window.innerWidth >= 1024);
+    checkDesktop();
+    window.addEventListener('resize', checkDesktop);
+    return () => window.removeEventListener('resize', checkDesktop);
+  }, []);
+  
+  return isDesktop;
+};
+
 const DEALS_URL = 'https://functions.poehali.dev/8a665174-b0af-4138-82e0-a9422dbb8fc4';
 
 interface DealsViewProps {
@@ -42,6 +60,7 @@ interface DealsViewProps {
 export const DealsView = ({ user, onShowAuthDialog, onRefreshUserBalance }: DealsViewProps) => {
   const { toast } = useToast();
   const isMobile = useIsMobile();
+  const isDesktop = useIsDesktop();
   const [deals, setDeals] = useState<Deal[]>([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
@@ -385,6 +404,21 @@ export const DealsView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Deal
 
   return (
     <div className="space-y-3 sm:space-y-6 animate-fade-in">
+      {!isDesktop && (
+        <Card className="p-3 bg-blue-500/10 border-blue-500/30">
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center flex-shrink-0">
+              <Icon name="Monitor" size={20} className="text-blue-400" />
+            </div>
+            <div>
+              <p className="text-sm font-bold text-blue-400 mb-1">💻 Доступно только на ПК</p>
+              <p className="text-xs text-muted-foreground/80">
+                Создание и просмотр сделок доступны только с компьютера для вашей безопасности
+              </p>
+            </div>
+          </div>
+        </Card>
+      )}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-3">
         <div>
           <h1 className="text-xl sm:text-3xl font-bold mb-1 sm:mb-2">🛡️ Гарант-сервис</h1>
@@ -393,11 +427,24 @@ export const DealsView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Deal
           </p>
         </div>
         <Button
-          onClick={() => user ? setShowCreateDialog(true) : onShowAuthDialog()}
-          className="bg-gradient-to-r from-green-800 to-green-900 hover:from-green-700 hover:to-green-800 w-full sm:w-auto h-9 sm:h-10 text-sm transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-green-800/50 active:scale-95 touch-manipulation"
+          onClick={() => {
+            if (!isDesktop) {
+              toast({
+                title: '💻 Доступно только на ПК',
+                description: 'Создание сделок доступно только с компьютера',
+                variant: 'destructive'
+              });
+              return;
+            }
+            user ? setShowCreateDialog(true) : onShowAuthDialog();
+          }}
+          className={`bg-gradient-to-r from-green-800 to-green-900 hover:from-green-700 hover:to-green-800 w-full sm:w-auto h-9 sm:h-10 text-sm transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-green-800/50 active:scale-95 touch-manipulation ${
+            !isDesktop ? 'opacity-60 cursor-not-allowed' : ''
+          }`}
         >
           <Icon name="Plus" size={16} className="mr-2" />
           Разместить объявление
+          {!isDesktop && <Icon name="Monitor" size={14} className="ml-2" />}
         </Button>
       </div>
 
@@ -526,8 +573,20 @@ export const DealsView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Deal
           {deals.map((deal) => (
             <Card
               key={deal.id}
-              className="p-4 transition-all duration-300 cursor-pointer hover:border-green-700/70 hover:shadow-xl hover:shadow-green-800/20 hover:scale-[1.02] active:scale-[0.98] touch-manipulation"
+              className={`p-4 transition-all duration-300 touch-manipulation ${
+                isDesktop
+                  ? 'cursor-pointer hover:border-green-700/70 hover:shadow-xl hover:shadow-green-800/20 hover:scale-[1.02] active:scale-[0.98]'
+                  : 'opacity-60 cursor-not-allowed'
+              }`}
               onClick={() => {
+                if (!isDesktop) {
+                  toast({
+                    title: '💻 Доступно только на ПК',
+                    description: 'Просмотр сделок доступен только с компьютера',
+                    variant: 'destructive'
+                  });
+                  return;
+                }
                 setSelectedDeal(deal);
                 fetchDealDetails(deal.id);
               }}
@@ -555,8 +614,14 @@ export const DealsView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Deal
                       <p className="text-muted-foreground">Продавец</p>
                     </div>
                   </div>
-                  <div className="text-right">
+                  <div className="text-right flex flex-col items-end gap-1">
                     <p className="text-xl font-bold text-green-400">{deal.price} USDT</p>
+                    {!isDesktop && (
+                      <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                        <Icon name="Monitor" size={12} />
+                        <span>Только ПК</span>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
