@@ -505,27 +505,38 @@ export const DealsView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Deal
         </div>
       </Card>
 
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-3">
-        <Button
-          onClick={() => {
-            if (!isDesktop) {
-              toast({
-                title: '💻 Доступно только на ПК',
-                description: 'Создание и просмотр сделок доступны только с компьютера',
-                variant: 'destructive'
-              });
-              return;
-            }
-            user ? setShowCreateDialog(true) : onShowAuthDialog();
-          }}
-          disabled={!isDesktop}
-          className="bg-gradient-to-r from-green-800 to-green-900 hover:from-green-700 hover:to-green-800 w-full sm:w-auto h-9 sm:h-10 text-sm transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-green-800/50 active:scale-95 touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <Icon name="Plus" size={16} className="mr-2" />
-          Разместить объявление
-          {!isDesktop && <Icon name="Monitor" size={14} className="ml-2" />}
-        </Button>
-      </div>
+      <Card className="p-4 sm:p-6 bg-gradient-to-br from-green-800/5 via-emerald-800/5 to-green-900/5 border-green-700/20">
+        <div className="flex flex-col items-center gap-3 text-center">
+          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-green-700 to-green-900 flex items-center justify-center">
+            <Icon name="Plus" size={24} className="text-white" />
+          </div>
+          <div>
+            <h3 className="text-lg font-bold mb-1">Хотите продать через гарант?</h3>
+            <p className="text-sm text-muted-foreground">
+              Создайте объявление и получите деньги безопасно
+            </p>
+          </div>
+          <Button
+            onClick={() => {
+              if (!isDesktop) {
+                toast({
+                  title: '💻 Доступно только на ПК',
+                  description: 'Создание и просмотр сделок доступны только с компьютера',
+                  variant: 'destructive'
+                });
+                return;
+              }
+              user ? setShowCreateDialog(true) : onShowAuthDialog();
+            }}
+            disabled={!isDesktop}
+            className="bg-gradient-to-r from-green-700 to-green-900 hover:from-green-600 hover:to-green-800 h-11 px-8 text-base font-bold transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-green-800/50 active:scale-95 touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <Icon name="Plus" size={18} className="mr-2" />
+            Разместить объявление
+            {!isDesktop && <Icon name="Monitor" size={16} className="ml-2" />}
+          </Button>
+        </div>
+      </Card>
 
       <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
         {[
