@@ -231,48 +231,66 @@ const UserProfile = ({ user, isOwnProfile, onClose, onTopUpBalance, onUpdateProf
   };
 
   const copyToClipboard = async (text: string) => {
-    try {
-      await navigator.clipboard.writeText(text);
+    if (!text) {
       toast({
-        title: 'Успешно',
-        description: 'Скопировано в буфер обмена'
+        title: 'Ошибка',
+        description: 'Нет текста для копирования',
+        variant: 'destructive'
       });
-    } catch (error) {
-      const textArea = document.createElement('textarea');
-      textArea.value = text;
-      textArea.style.position = 'absolute';
-      textArea.style.left = '-9999px';
-      textArea.style.top = '0';
-      textArea.setAttribute('readonly', '');
-      document.body.appendChild(textArea);
-      
-      if (navigator.userAgent.match(/ipad|iphone/i)) {
-        const range = document.createRange();
-        range.selectNodeContents(textArea);
-        const selection = window.getSelection();
-        selection?.removeAllRanges();
-        selection?.addRange(range);
-        textArea.setSelectionRange(0, 999999);
-      } else {
-        textArea.select();
-      }
-      
+      return;
+    }
+
+    if (navigator.clipboard && window.isSecureContext) {
       try {
-        document.execCommand('copy');
+        await navigator.clipboard.writeText(text);
         toast({
           title: 'Успешно',
-          description: 'Скопировано в буфер обмена'
+          description: 'Адрес скопирован в буфер обмена'
         });
-      } catch (err) {
-        console.error('Ошибка копирования:', err);
-        toast({
-          title: 'Ошибка',
-          description: 'Не удалось скопировать',
-          variant: 'destructive'
-        });
-      } finally {
-        document.body.removeChild(textArea);
+        return;
+      } catch (error) {
+        console.error('Clipboard API error:', error);
       }
+    }
+
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    textArea.style.position = 'fixed';
+    textArea.style.left = '-999999px';
+    textArea.style.top = '-999999px';
+    textArea.style.opacity = '0';
+    document.body.appendChild(textArea);
+    
+    textArea.focus();
+    textArea.select();
+    
+    try {
+      const range = document.createRange();
+      range.selectNodeContents(textArea);
+      const selection = window.getSelection();
+      selection?.removeAllRanges();
+      selection?.addRange(range);
+      textArea.setSelectionRange(0, text.length);
+      
+      const successful = document.execCommand('copy');
+      
+      if (successful) {
+        toast({
+          title: 'Успешно',
+          description: 'Адрес скопирован в буфер обмена'
+        });
+      } else {
+        throw new Error('execCommand failed');
+      }
+    } catch (err) {
+      console.error('Fallback copy error:', err);
+      toast({
+        title: 'Не удалось скопировать',
+        description: 'Скопируйте адрес вручную',
+        variant: 'destructive'
+      });
+    } finally {
+      document.body.removeChild(textArea);
     }
   };
 
