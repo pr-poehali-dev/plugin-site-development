@@ -251,6 +251,7 @@ const UserProfileDialog = ({ open, onOpenChange, userId, currentUserId, onSendMe
                   </div>
                 </div>
               </div>
+            </div>
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center py-12 px-4">
