@@ -10,33 +10,39 @@ const Dialog = (props: React.ComponentProps<typeof DialogPrimitive.Root>) => {
   React.useEffect(() => {
     if (open) {
       const scrollY = window.scrollY;
+      const htmlElement = document.documentElement;
+      const bodyElement = document.body;
       
-      document.body.style.position = 'fixed';
-      document.body.style.top = `-${scrollY}px`;
-      document.body.style.width = '100%';
-      document.body.style.overflow = 'hidden';
-      document.body.style.touchAction = 'none';
+      // Блокируем скролл на html и body
+      htmlElement.style.overflow = 'hidden';
+      htmlElement.style.height = '100%';
+      bodyElement.style.overflow = 'hidden';
+      bodyElement.style.height = '100%';
+      bodyElement.style.touchAction = 'none';
       
+      // Блокируем все touchmove события вне диалога
       const preventTouch = (e: TouchEvent) => {
         const target = e.target as HTMLElement;
-        const isDialog = target.closest('[data-radix-dialog-content]');
-        if (!isDialog) {
+        const isDialogContent = target.closest('[data-radix-dialog-content]');
+        const isDialogOverlay = target.closest('[data-radix-dialog-overlay]');
+        
+        // Разрешаем скролл только внутри контента диалога
+        if (!isDialogContent || isDialogOverlay) {
           e.preventDefault();
+          e.stopPropagation();
         }
       };
       
-      document.body.addEventListener('touchmove', preventTouch, { passive: false });
+      document.addEventListener('touchmove', preventTouch, { passive: false, capture: true });
       
       return () => {
-        document.body.style.position = '';
-        document.body.style.top = '';
-        document.body.style.width = '';
-        document.body.style.overflow = '';
-        document.body.style.touchAction = '';
+        htmlElement.style.overflow = '';
+        htmlElement.style.height = '';
+        bodyElement.style.overflow = '';
+        bodyElement.style.height = '';
+        bodyElement.style.touchAction = '';
         
-        document.body.removeEventListener('touchmove', preventTouch);
-        
-        window.scrollTo(0, scrollY);
+        document.removeEventListener('touchmove', preventTouch, true);
       };
     }
   }, [open]);
@@ -57,15 +63,9 @@ const DialogOverlay = React.forwardRef<
   <DialogPrimitive.Overlay
     ref={ref}
     className={cn(
-      "fixed inset-0 z-50 bg-gradient-to-br from-purple-900/40 via-blue-900/40 to-indigo-900/40 backdrop-blur-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 touch-none",
+      "fixed inset-0 z-50 bg-gradient-to-br from-purple-900/40 via-blue-900/40 to-indigo-900/40 backdrop-blur-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
       className
     )}
-    onTouchStart={(e) => {
-      e.preventDefault();
-    }}
-    onTouchMove={(e) => {
-      e.preventDefault();
-    }}
     {...props}
   />
 ))
