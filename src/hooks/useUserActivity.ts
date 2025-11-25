@@ -219,9 +219,9 @@ export const useUserActivity = ({
       
       const activityInterval = setInterval(updateActivity, 60 * 1000);
       const unreadInterval = setInterval(fetchUnreadCount, 30 * 1000);
-      const balanceInterval = setInterval(checkBalanceUpdates, 5 * 1000);
+      const balanceInterval = setInterval(checkBalanceUpdates, 30 * 1000);
       const paymentsInterval = setInterval(checkPendingPayments, 30 * 1000);
-      const verificationInterval = setInterval(checkVerificationStatus, 15 * 1000);
+      const verificationInterval = setInterval(checkVerificationStatus, 30 * 1000);
       
       return () => {
         clearInterval(activityInterval);

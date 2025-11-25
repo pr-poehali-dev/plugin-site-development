@@ -87,7 +87,7 @@ export const DealsView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Deal
     if (selectedDeal) {
       const interval = setInterval(() => {
         fetchDealDetails(selectedDeal.id);
-      }, 3000);
+      }, 10000);
       return () => clearInterval(interval);
     }
   }, [selectedDeal]);
