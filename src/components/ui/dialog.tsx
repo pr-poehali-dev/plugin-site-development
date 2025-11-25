@@ -4,39 +4,7 @@ import { X } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 
-const Dialog = (props: React.ComponentProps<typeof DialogPrimitive.Root>) => {
-  const { open, ...restProps } = props;
-
-  React.useEffect(() => {
-    if (open) {
-      const scrollY = window.scrollY;
-      document.body.style.overflow = 'hidden';
-      document.body.style.position = 'relative';
-      document.body.style.width = '100%';
-      document.body.setAttribute('data-scroll-y', scrollY.toString());
-      
-      const handleResize = () => {
-        window.scrollTo(0, scrollY);
-      };
-      
-      window.addEventListener('resize', handleResize);
-      
-      return () => {
-        window.removeEventListener('resize', handleResize);
-        const savedScrollY = document.body.getAttribute('data-scroll-y');
-        document.body.style.overflow = '';
-        document.body.style.position = '';
-        document.body.style.width = '';
-        document.body.removeAttribute('data-scroll-y');
-        if (savedScrollY) {
-          window.scrollTo(0, parseInt(savedScrollY));
-        }
-      };
-    }
-  }, [open]);
-
-  return <DialogPrimitive.Root open={open} {...restProps} />;
-}
+const Dialog = DialogPrimitive.Root
 
 const DialogTrigger = DialogPrimitive.Trigger
 
@@ -51,12 +19,9 @@ const DialogOverlay = React.forwardRef<
   <DialogPrimitive.Overlay
     ref={ref}
     className={cn(
-      "fixed inset-0 z-50 bg-gradient-to-br from-purple-900/40 via-blue-900/40 to-indigo-900/40 backdrop-blur-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 overscroll-none touch-none",
+      "fixed inset-0 z-50 bg-gradient-to-br from-purple-900/40 via-blue-900/40 to-indigo-900/40 backdrop-blur-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
       className
     )}
-    onTouchMove={(e) => {
-      e.preventDefault();
-    }}
     {...props}
   />
 ))

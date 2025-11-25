@@ -265,13 +265,6 @@
     scrollbar-width: none;
   }
 
-  /* Prevent body scroll when dialog is open on mobile */
-  body:has([data-state="open"]) {
-    overflow: hidden;
-    position: relative;
-    width: 100%;
-  }
-
   /* Improve touch behavior on mobile */
   @media (max-width: 768px) {
     input:focus,
@@ -293,20 +286,10 @@
   [data-radix-dialog-content] {
     overscroll-behavior: contain;
     -webkit-overflow-scrolling: touch;
-    pointer-events: auto;
   }
 
   [data-radix-dialog-overlay] {
     overscroll-behavior: contain;
-    touch-action: pan-y;
-  }
-
-  /* Fix iOS keyboard resize issues */
-  @supports (-webkit-touch-callout: none) {
-    [data-radix-dialog-content] {
-      position: fixed !important;
-      top: 50% !important;
-      transform: translate(-50%, -50%) !important;
-    }
+    touch-action: none;
   }
 }

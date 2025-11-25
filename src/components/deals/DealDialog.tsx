@@ -45,33 +45,11 @@ export const DealDialog = ({
 
   useEffect(() => {
     if (open && inputRef.current) {
-      inputRef.current.blur();
-    }
-    
-    const handleVisibilityChange = () => {
-      if (document.hidden && inputRef.current) {
-        inputRef.current.blur();
-      }
-    };
-    
-    const handleResize = () => {
-      if (inputRef.current && document.activeElement === inputRef.current) {
-        setTimeout(() => {
-          if (inputRef.current) {
-            inputRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          }
-        }, 100);
-      }
-    };
-    
-    if (open) {
-      document.addEventListener('visibilitychange', handleVisibilityChange);
-      window.addEventListener('resize', handleResize);
-      
-      return () => {
-        document.removeEventListener('visibilitychange', handleVisibilityChange);
-        window.removeEventListener('resize', handleResize);
-      };
+      setTimeout(() => {
+        if (inputRef.current) {
+          inputRef.current.blur();
+        }
+      }, 100);
     }
   }, [open]);
 
@@ -235,16 +213,6 @@ export const DealDialog = ({
                   placeholder="Введите сообщение..."
                   onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && onSendMessage()}
                   autoFocus={false}
-                  onFocus={(e) => {
-                    setTimeout(() => {
-                      e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }, 300);
-                  }}
-                  onBlur={() => {
-                    setTimeout(() => {
-                      window.scrollTo(0, 0);
-                    }, 100);
-                  }}
                 />
                 <Button onClick={onSendMessage} size="icon">
                   <Icon name="Send" size={18} />
