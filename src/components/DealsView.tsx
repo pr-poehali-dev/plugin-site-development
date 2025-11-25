@@ -4,10 +4,13 @@ import { Card } from '@/components/ui/card';
 import Icon from '@/components/ui/icon';
 import { Deal, User } from '@/types';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { getAvatarGradient } from '@/utils/avatarColors';
 import { useToast } from '@/hooks/use-toast';
-import { DealCard } from './deals/DealCard';
-import { DealDialog } from './deals/DealDialog';
-import { CreateDealDialog } from './deals/CreateDealDialog';
 
 const DEALS_URL = 'https://functions.poehali.dev/8a665174-b0af-4138-82e0-a9422dbb8fc4';
 
@@ -278,85 +281,35 @@ export const DealsView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Deal
         
         onRefreshUserBalance?.();
         await fetchDealDetails(selectedDeal.id);
+        setStatusFilter('completed');
         fetchDeals();
-      }
-    } catch (error) {
-      console.error('Ошибка:', error);
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
-  const handleDispute = async () => {
-    if (!user || !selectedDeal || actionLoading) return;
-    setActionLoading(true);
-
-    try {
-      const response = await fetch(DEALS_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-User-Id': user.id.toString()
-        },
-        body: JSON.stringify({
-          action: 'open_dispute',
-          deal_id: selectedDeal.id
-        })
-      });
-      
-      const data = await response.json();
-      if (data.success) {
+        
+        setTimeout(() => {
+          setSelectedDeal(null);
+        }, 2000);
+      } else {
         toast({
-          title: 'Спор открыт',
-          description: 'Администрация рассмотрит ваш случай в течение 24 часов'
+          title: 'Ошибка',
+          description: data.error || 'Ошибка завершения сделки',
+          variant: 'destructive'
         });
-        await fetchDealDetails(selectedDeal.id);
       }
     } catch (error) {
-      console.error('Ошибка:', error);
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
-  const handleCancelDeal = async () => {
-    if (!user || !selectedDeal || actionLoading) return;
-    setActionLoading(true);
-
-    try {
-      const response = await fetch(DEALS_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-User-Id': user.id.toString()
-        },
-        body: JSON.stringify({
-          action: 'cancel_deal',
-          deal_id: selectedDeal.id
-        })
+      toast({
+        title: 'Ошибка',
+        description: 'Ошибка завершения сделки',
+        variant: 'destructive'
       });
-      
-      const data = await response.json();
-      if (data.success) {
-        toast({
-          title: 'Объявление отменено',
-          description: 'Объявление удалено'
-        });
-        setSelectedDeal(null);
-        fetchDeals();
-      }
-    } catch (error) {
-      console.error('Ошибка:', error);
     } finally {
       setActionLoading(false);
     }
   };
 
   const sendMessage = async () => {
-    if (!user || !selectedDeal || !newMessage.trim()) return;
+    if (!user || !newMessage.trim() || !selectedDeal) return;
 
     try {
-      const response = await fetch(DEALS_URL, {
+      await fetch(DEALS_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -365,183 +318,622 @@ export const DealsView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Deal
         body: JSON.stringify({
           action: 'send_message',
           deal_id: selectedDeal.id,
-          message: newMessage.trim()
+          message: newMessage
         })
       });
-      
-      const data = await response.json();
-      if (data.success) {
-        setNewMessage('');
-        await fetchDealDetails(selectedDeal.id);
-      }
+      setNewMessage('');
+      fetchDealDetails(selectedDeal.id);
     } catch (error) {
       console.error('Ошибка отправки сообщения:', error);
     }
   };
 
+  const getStepText = (step: string, isSeller: boolean) => {
+    const steps: Record<string, { seller: string; buyer: string }> = {
+      waiting_buyer: {
+        seller: '📢 Ожидание покупателя',
+        buyer: '🛒 Вы можете купить этот товар'
+      },
+      buyer_paid: {
+        seller: '💰 Покупатель оплатил. Передайте товар',
+        buyer: '⏳ Ожидайте передачи товара от продавца'
+      },
+      seller_sent: {
+        seller: '📦 Ожидайте подтверждения от покупателя',
+        buyer: '✅ Проверьте товар и подтвердите получение'
+      },
+      completed: {
+        seller: '✅ Сделка завершена',
+        buyer: '✅ Сделка завершена'
+      }
+    };
+    const step_data = steps[step] || steps.waiting_buyer;
+    return isSeller ? step_data.seller : step_data.buyer;
+  };
+
+  const getStatusBadge = (deal: Deal) => {
+    if (deal.status === 'completed') {
+      return <Badge variant="outline" className="text-xs">Завершена</Badge>;
+    }
+    if (deal.status === 'in_progress') {
+      return <Badge variant="secondary" className="text-xs">В процессе</Badge>;
+    }
+    return <Badge variant="default" className="bg-green-800 text-xs">Активна</Badge>;
+  };
+
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div>
-        <h1 className="text-3xl font-bold mb-2">Сделки P2P</h1>
-        <p className="text-muted-foreground">
-          Безопасная покупка и продажа с гарантом
-        </p>
+    <div className="space-y-3 sm:space-y-6 animate-fade-in">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-3">
+        <div>
+          <h1 className="text-xl sm:text-3xl font-bold mb-1 sm:mb-2">🛡️ Гарант-сервис</h1>
+          <p className="text-xs sm:text-sm text-muted-foreground">
+            Безопасные сделки с защитой средств
+          </p>
+        </div>
+        <Button
+          onClick={() => user ? setShowCreateDialog(true) : onShowAuthDialog()}
+          className="bg-gradient-to-r from-green-800 to-green-900 hover:from-green-700 hover:to-green-800 w-full sm:w-auto h-9 sm:h-10 text-sm transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-green-800/50 active:scale-95 touch-manipulation"
+        >
+          <Icon name="Plus" size={16} className="mr-2" />
+          Разместить объявление
+        </Button>
       </div>
 
-      <Card className="p-6 bg-card/50">
-        <div className="flex items-start gap-4">
-          <div className="w-12 h-12 rounded-lg bg-primary/20 flex items-center justify-center flex-shrink-0">
-            <Icon name="Shield" size={24} className="text-primary" />
+      <Card className="p-3 sm:p-6 bg-gradient-to-br from-green-800/10 to-green-900/5 border-green-800/20">
+        <div className="space-y-3 sm:space-y-4">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-green-800/20 rounded-xl flex items-center justify-center flex-shrink-0">
+              <Icon name="ShieldCheck" size={20} className="text-green-400 sm:w-6 sm:h-6" />
+            </div>
+            <div>
+              <h3 className="text-base sm:text-lg font-bold">Как работает гарант?</h3>
+              <p className="text-xs sm:text-sm text-muted-foreground/80">Полная защита ваших средств</p>
+            </div>
           </div>
-          <div className="space-y-2">
-            <h3 className="font-semibold text-lg">Как это работает?</h3>
-            <div className="space-y-1 text-sm text-muted-foreground">
-              <p>1️⃣ Продавец создает объявление о продаже</p>
-              <p>2️⃣ Покупатель оплачивает — средства блокируются на платформе</p>
-              <p>3️⃣ Продавец передает товар покупателю</p>
-              <p>4️⃣ Покупатель подтверждает получение — средства переводятся продавцу</p>
-              <p className="text-primary font-medium mt-2">💡 Все сделки защищены. В случае спора — арбитраж администрации</p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
+            <div className="flex gap-2 p-2 sm:p-3 rounded-lg bg-gradient-to-br from-green-500/5 to-green-600/10 border border-green-500/20 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-green-500/10 hover:border-green-500/40 cursor-default">
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0 text-xs sm:text-sm font-bold text-green-400">1</div>
+              <div className="min-w-0">
+                <p className="text-xs sm:text-sm font-semibold text-green-300">Создание сделки</p>
+                <p className="text-[10px] sm:text-xs text-muted-foreground/70">Продавец размещает объявление с описанием и ценой</p>
+              </div>
+            </div>
+
+            <div className="flex gap-2 p-2 sm:p-3 rounded-lg bg-gradient-to-br from-blue-500/5 to-blue-600/10 border border-blue-500/20 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-blue-500/10 hover:border-blue-500/40 cursor-default">
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-blue-500/20 flex items-center justify-center flex-shrink-0 text-xs sm:text-sm font-bold text-blue-400">2</div>
+              <div className="min-w-0">
+                <p className="text-xs sm:text-sm font-semibold text-blue-300">Оплата</p>
+                <p className="text-[10px] sm:text-xs text-muted-foreground/70">Покупатель переводит средства, они блокируются сервисом</p>
+              </div>
+            </div>
+
+            <div className="flex gap-2 p-2 sm:p-3 rounded-lg bg-gradient-to-br from-purple-500/5 to-purple-600/10 border border-purple-500/20 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-purple-500/10 hover:border-purple-500/40 cursor-default">
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-purple-500/20 flex items-center justify-center flex-shrink-0 text-xs sm:text-sm font-bold text-purple-400">3</div>
+              <div className="min-w-0">
+                <p className="text-xs sm:text-sm font-semibold text-purple-300">Передача товара</p>
+                <p className="text-[10px] sm:text-xs text-muted-foreground/70">Продавец передает товар/услугу покупателю</p>
+              </div>
+            </div>
+
+            <div className="flex gap-2 p-2 sm:p-3 rounded-lg bg-gradient-to-br from-amber-500/5 to-amber-600/10 border border-amber-500/20 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-amber-500/10 hover:border-amber-500/40 cursor-default">
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-amber-500/20 flex items-center justify-center flex-shrink-0 text-xs sm:text-sm font-bold text-amber-400">4</div>
+              <div className="min-w-0">
+                <p className="text-xs sm:text-sm font-semibold text-amber-300">Завершение</p>
+                <p className="text-[10px] sm:text-xs text-muted-foreground/70">Покупатель подтверждает → средства продавцу (комиссия 1%)</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-2 border-t border-green-800/20">
+            <div className="flex items-center gap-2 p-2 rounded-lg bg-green-500/5 transition-all duration-300 hover:bg-green-500/10 hover:scale-[1.02] cursor-default">
+              <div className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
+                <Icon name="Lock" size={14} className="text-green-400" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs font-semibold text-green-300">Безопасность</p>
+                <p className="text-[10px] text-muted-foreground/70">Средства защищены</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 p-2 rounded-lg bg-blue-500/5 transition-all duration-300 hover:bg-blue-500/10 hover:scale-[1.02] cursor-default">
+              <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center flex-shrink-0">
+                <Icon name="MessageSquare" size={14} className="text-blue-400" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs font-semibold text-blue-300">Чат сделки</p>
+                <p className="text-[10px] text-muted-foreground/70">Общение в реальном времени</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 p-2 rounded-lg bg-purple-500/5 transition-all duration-300 hover:bg-purple-500/10 hover:scale-[1.02] cursor-default">
+              <div className="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center flex-shrink-0">
+                <Icon name="Zap" size={14} className="text-purple-400" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs font-semibold text-purple-300">Быстро</p>
+                <p className="text-[10px] text-muted-foreground/70">Моментальные переводы</p>
+              </div>
             </div>
           </div>
         </div>
       </Card>
 
-      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-        <div className="flex gap-2 flex-wrap">
+      <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
+        {[
+          { id: 'active', label: 'Активные', icon: 'Store' },
+          { id: 'my_deals', label: 'Мои сделки', icon: 'ShoppingCart' },
+          { id: 'completed', label: 'Завершенные', icon: 'Check' }
+        ].map((filter) => (
           <Button
-            variant={statusFilter === 'active' ? 'default' : 'outline'}
-            onClick={() => setStatusFilter('active')}
-            size="sm"
+            key={filter.id}
+            variant={statusFilter === filter.id ? 'default' : 'outline'}
+            className={`whitespace-nowrap h-8 sm:h-9 text-xs sm:text-sm transition-all duration-300 hover:scale-105 active:scale-95 touch-manipulation ${statusFilter === filter.id ? 'bg-green-800 hover:bg-green-700 shadow-lg shadow-green-800/30' : 'hover:shadow-md'}`}
+            onClick={() => setStatusFilter(filter.id as any)}
           >
-            <Icon name="ShoppingBag" size={16} className="mr-2" />
-            Активные
+            <Icon name={filter.icon as any} size={14} className="mr-1.5 sm:mr-2" />
+            {filter.label}
           </Button>
-          <Button
-            variant={statusFilter === 'my_deals' ? 'default' : 'outline'}
-            onClick={() => {
-              if (!user) {
-                onShowAuthDialog();
-                return;
-              }
-              setStatusFilter('my_deals');
-            }}
-            size="sm"
-          >
-            <Icon name="User" size={16} className="mr-2" />
-            Мои сделки
-          </Button>
-          <Button
-            variant={statusFilter === 'completed' ? 'default' : 'outline'}
-            onClick={() => {
-              if (!user) {
-                onShowAuthDialog();
-                return;
-              }
-              setStatusFilter('completed');
-            }}
-            size="sm"
-          >
-            <Icon name="CheckCircle2" size={16} className="mr-2" />
-            Завершенные
-          </Button>
-        </div>
-        
-        <Button
-          onClick={() => {
-            if (!user) {
-              onShowAuthDialog();
-              return;
-            }
-            setShowCreateDialog(true);
-          }}
-        >
-          <Icon name="Plus" size={18} className="mr-2" />
-          Создать объявление
-        </Button>
+        ))}
       </div>
 
-      {loading ? (
-        <Card className="p-8">
-          <div className="flex items-center justify-center gap-3">
-            <Icon name="Loader2" size={24} className="animate-spin text-primary" />
-            <p className="text-muted-foreground">Загрузка сделок...</p>
-          </div>
+      {statusFilter !== 'active' && !user && (
+        <Card className="p-2.5 sm:p-3 bg-orange-500/5 border-orange-500/20">
+          <p className="text-xs sm:text-sm text-orange-400 flex items-center gap-2">
+            <Icon name="Lock" size={14} className="sm:w-4 sm:h-4" />
+            <span>Войдите, чтобы увидеть свои сделки</span>
+          </p>
         </Card>
+      )}
+
+      {loading ? (
+        <div className="flex items-center justify-center py-8 sm:py-12">
+          <Icon name="Loader2" size={24} className="animate-spin text-muted-foreground sm:w-8 sm:h-8" />
+        </div>
       ) : deals.length === 0 ? (
-        <Card className="p-8">
-          <div className="text-center space-y-3">
-            <Icon name="PackageOpen" size={48} className="mx-auto text-muted-foreground" />
-            <p className="text-muted-foreground">
-              {statusFilter === 'active' && 'Нет активных объявлений'}
-              {statusFilter === 'my_deals' && 'У вас пока нет сделок'}
-              {statusFilter === 'completed' && 'Нет завершенных сделок'}
-            </p>
-          </div>
+        <Card className="p-8 sm:p-12 text-center space-y-2 sm:space-y-3">
+          <Icon name="Package" size={36} className="mx-auto mb-3 sm:mb-4 text-muted-foreground sm:w-12 sm:h-12" />
+          <p className="text-sm sm:text-base text-muted-foreground font-medium">
+            {statusFilter === 'active' && 'Нет активных объявлений'}
+            {statusFilter === 'my_deals' && 'У вас нет активных сделок'}
+            {statusFilter === 'completed' && 'У вас нет завершенных сделок'}
+          </p>
         </Card>
       ) : (
-        <div className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {deals.map((deal) => (
-            <DealCard
+            <Card
               key={deal.id}
-              deal={deal}
-              user={user}
-              onClick={(deal) => {
+              className="p-4 transition-all duration-300 cursor-pointer hover:border-green-700/70 hover:shadow-xl hover:shadow-green-800/20 hover:scale-[1.02] active:scale-[0.98] touch-manipulation"
+              onClick={() => {
                 setSelectedDeal(deal);
                 fetchDealDetails(deal.id);
               }}
-            />
+            >
+              <div className="space-y-3">
+                <div className="flex items-start justify-between gap-2">
+                  <h3 className="font-semibold text-lg truncate">{deal.title}</h3>
+                  {getStatusBadge(deal)}
+                </div>
+
+                <p className="text-sm text-muted-foreground line-clamp-2">
+                  {deal.description}
+                </p>
+
+                <div className="flex items-center justify-between pt-3 border-t border-border/50">
+                  <div className="flex items-center gap-2">
+                    <Avatar className="w-8 h-8">
+                      <AvatarImage src={deal.seller_avatar} />
+                      <AvatarFallback className={`bg-gradient-to-br ${getAvatarGradient(deal.seller_name || '')} text-white text-xs`}>
+                        {deal.seller_name?.[0].toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="text-xs">
+                      <p className="font-medium">{deal.seller_name}</p>
+                      <p className="text-muted-foreground">Продавец</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xl font-bold text-green-400">{deal.price} USDT</p>
+                  </div>
+                </div>
+              </div>
+            </Card>
           ))}
         </div>
       )}
 
-      <CreateDealDialog
-        open={showCreateDialog}
-        onOpenChange={setShowCreateDialog}
-        newDeal={newDeal}
-        onDealChange={setNewDeal}
-        onSubmit={createDeal}
-        creating={creating}
-      />
-
-      <DealDialog
-        open={!!selectedDeal}
-        onOpenChange={(open) => !open && setSelectedDeal(null)}
-        deal={selectedDeal}
-        user={user}
-        messages={dealMessages}
-        newMessage={newMessage}
-        onMessageChange={setNewMessage}
-        onSendMessage={sendMessage}
-        onBuyerPay={handleBuyerPay}
-        onSellerSent={handleSellerSent}
-        onBuyerConfirm={handleBuyerConfirm}
-        onDispute={handleDispute}
-        onCancelDeal={handleCancelDeal}
-        actionLoading={actionLoading}
-      />
-
-      <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
-        <DialogContent>
+      {/* Диалог создания объявления */}
+      <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+        <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Подтвердить получение товара?</DialogTitle>
+            <DialogTitle>Разместить объявление</DialogTitle>
             <DialogDescription>
-              После подтверждения средства будут переведены продавцу. Это действие нельзя отменить.
-              Подтверждайте только если вы действительно получили товар/услугу.
+              Создайте объявление о продаже через гарант-сервис
             </DialogDescription>
           </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Название</Label>
+              <Input
+                value={newDeal.title}
+                onChange={(e) => setNewDeal({ ...newDeal, title: e.target.value })}
+                placeholder="Например: Bitcoin 0.01 BTC"
+                className="transition-all duration-200 focus:scale-[1.01] focus:shadow-md"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Описание</Label>
+              <Textarea
+                value={newDeal.description}
+                onChange={(e) => setNewDeal({ ...newDeal, description: e.target.value })}
+                placeholder="Подробное описание товара..."
+                className="min-h-[100px] resize-none transition-all duration-200 focus:scale-[1.01] focus:shadow-md"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Цена (USDT)</Label>
+              <Input
+                type="number"
+                value={newDeal.price}
+                onChange={(e) => setNewDeal({ ...newDeal, price: e.target.value })}
+                placeholder="0.00"
+                min="0"
+                step="0.01"
+                className="transition-all duration-200 focus:scale-[1.01] focus:shadow-md"
+              />
+            </div>
+
+            <Card className="bg-blue-500/5 border-blue-500/20 p-3">
+              <p className="text-xs text-blue-400">
+                ℹ️ После успешного завершения сделки с вас будет удержана комиссия 1%
+              </p>
+            </Card>
+
+            <div className="flex gap-3">
+              <Button
+                variant="outline"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setShowCreateDialog(false);
+                }}
+                className="flex-1 transition-all duration-300 hover:scale-105 active:scale-95 touch-manipulation"
+                type="button"
+              >
+                Отмена
+              </Button>
+              <Button
+                onTouchStart={(e) => {
+                  e.stopPropagation();
+                }}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  if (!creating) {
+                    createDeal();
+                  }
+                }}
+                disabled={creating}
+                className="flex-1 bg-gradient-to-r from-green-600 to-green-800 touch-manipulation transition-all duration-300 hover:scale-105 active:scale-95 hover:shadow-lg hover:shadow-green-700/50 disabled:opacity-50 disabled:hover:scale-100"
+                type="button"
+              >
+                <Icon name={creating ? "Loader2" : "Plus"} size={16} className={`mr-2 ${creating ? 'animate-spin' : ''}`} />
+                {creating ? 'Создаем...' : 'Создать'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Диалог детальной сделки */}
+      {selectedDeal && (
+        <Dialog open={!!selectedDeal} onOpenChange={(open) => !open && setSelectedDeal(null)}>
+          <DialogContent className="w-[90vw] max-w-3xl h-[90dvh] sm:h-[80vh] overflow-hidden flex flex-col p-3 sm:p-5 rounded-3xl sm:rounded-lg">
+            <DialogHeader className="flex-shrink-0 pb-2">
+              <DialogTitle className="pr-8 text-sm sm:text-lg leading-tight">{selectedDeal.title}</DialogTitle>
+              <DialogDescription className="text-xs sm:text-sm line-clamp-1 mt-0.5">{selectedDeal.description}</DialogDescription>
+            </DialogHeader>
+
+            <div className="flex-1 flex flex-col space-y-2 sm:space-y-2.5 min-h-0 overflow-hidden">
+              {user && (Number(user.id) === Number(selectedDeal.seller_id) || Number(user.id) === Number(selectedDeal.buyer_id)) && (
+                <Card className="p-2 bg-gradient-to-r from-blue-500/10 to-purple-500/10 border-blue-500/30 shadow-lg shadow-blue-500/5 flex-shrink-0">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500/30 to-purple-500/30 flex items-center justify-center flex-shrink-0 shadow-inner">
+                      <Icon name={Number(user.id) === Number(selectedDeal.seller_id) ? "Store" : "ShoppingCart"} size={14} className="text-blue-300" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-bold truncate text-blue-300">
+                        {Number(user.id) === Number(selectedDeal.seller_id) ? 'Вы - продавец' : 'Вы - покупатель'}
+                      </p>
+                      <p className="text-[10px] text-muted-foreground/80 truncate leading-tight">
+                        {getStepText(selectedDeal.step, Number(user.id) === Number(selectedDeal.seller_id))}
+                      </p>
+                    </div>
+                  </div>
+                </Card>
+              )}
+
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-2 flex-shrink-0">
+                <Card className="p-2 sm:p-2.5 bg-gradient-to-br from-green-500/10 to-green-600/15 border-green-500/30 shadow-lg hover:shadow-green-500/20 transition-all backdrop-blur-sm">
+                  <div className="flex items-center gap-1.5 sm:gap-1">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-green-500/30 to-green-600/40 flex items-center justify-center flex-shrink-0 shadow-inner">
+                      <Icon name="Store" size={14} className="text-green-300" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[9px] sm:text-xs text-muted-foreground/70 mb-0.5 font-medium">Продавец</p>
+                      <div className="flex items-center gap-1">
+                        <Avatar className="w-4 h-4 sm:w-5 sm:h-5 ring-1 ring-green-500/30">
+                          <AvatarImage src={selectedDeal.seller_avatar} />
+                          <AvatarFallback className={`bg-gradient-to-br ${getAvatarGradient(selectedDeal.seller_name)} text-white text-[8px]`}>
+                            {selectedDeal.seller_name[0].toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <p className="font-bold text-[10px] sm:text-xs truncate text-green-300">{selectedDeal.seller_name}</p>
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+
+                <Card className="p-2 sm:p-2.5 bg-gradient-to-br from-amber-500/10 to-yellow-600/15 border-amber-500/30 shadow-lg hover:shadow-amber-500/20 transition-all backdrop-blur-sm">
+                  <div className="flex items-center gap-1.5 sm:gap-1">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-amber-500/30 to-yellow-600/40 flex items-center justify-center flex-shrink-0 shadow-inner">
+                      <Icon name="DollarSign" size={16} className="text-amber-300" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[9px] sm:text-xs text-muted-foreground/70 mb-0.5 font-medium">Сумма</p>
+                      <p className="text-sm sm:text-lg font-black text-amber-300 truncate leading-tight">
+                        {selectedDeal.price}
+                        <span className="text-[9px] sm:text-xs text-muted-foreground/60 ml-0.5 font-semibold">USDT</span>
+                      </p>
+                    </div>
+                  </div>
+                </Card>
+
+                {selectedDeal.buyer_id ? (
+                  <Card className="p-2 sm:p-2.5 bg-gradient-to-br from-blue-500/10 to-blue-600/15 border-blue-500/30 shadow-lg hover:shadow-blue-500/20 transition-all backdrop-blur-sm">
+                    <div className="flex items-center gap-1.5 sm:gap-1">
+                      <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-blue-500/30 to-blue-600/40 flex items-center justify-center flex-shrink-0 shadow-inner">
+                        <Icon name="ShoppingCart" size={14} className="text-blue-300" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-[9px] sm:text-xs text-muted-foreground/70 mb-0.5 font-medium">Покупатель</p>
+                        <div className="flex items-center gap-1">
+                          <Avatar className="w-4 h-4 sm:w-5 sm:h-5 ring-1 ring-blue-500/30">
+                            <AvatarImage src={selectedDeal.buyer_avatar} />
+                            <AvatarFallback className={`bg-gradient-to-br ${getAvatarGradient(selectedDeal.buyer_name || '')} text-white text-[8px]`}>
+                              {selectedDeal.buyer_name?.[0].toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <p className="font-bold text-[10px] sm:text-xs truncate text-blue-300">{selectedDeal.buyer_name}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </Card>
+                ) : (
+                  <Card className="p-2 sm:p-2.5 bg-gradient-to-br from-gray-500/10 to-gray-600/15 border-gray-500/30 shadow-lg backdrop-blur-sm">
+                    <div className="flex items-center gap-1.5 sm:gap-1">
+                      <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-gray-500/30 to-gray-600/40 flex items-center justify-center flex-shrink-0 shadow-inner">
+                        <Icon name="UserX" size={14} className="text-gray-400" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-[9px] sm:text-xs text-muted-foreground/70 mb-0.5 font-medium">Покупатель</p>
+                        <p className="text-[10px] sm:text-xs text-gray-400 font-semibold">Ожидается</p>
+                      </div>
+                    </div>
+                  </Card>
+                )}
+                <Card className="p-2 sm:p-2.5 bg-gradient-to-br from-purple-500/10 to-indigo-600/15 border-purple-500/30 shadow-lg hover:shadow-purple-500/20 transition-all backdrop-blur-sm">
+                  <div className="flex items-center gap-1.5 sm:gap-1">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-purple-500/30 to-indigo-600/40 flex items-center justify-center flex-shrink-0 shadow-inner">
+                      <Icon name="Clock" size={14} className="text-purple-300" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[9px] sm:text-xs text-muted-foreground/70 mb-0.5 font-medium">Статус</p>
+                      <p className="text-[10px] sm:text-xs font-bold text-purple-300 truncate capitalize">
+                        {selectedDeal.status === 'active' ? 'Активна' : selectedDeal.status === 'in_progress' ? 'В процессе' : selectedDeal.status === 'completed' ? 'Завершена' : 'Отменена'}
+                      </p>
+                    </div>
+                  </div>
+                </Card>
+              </div>
+
+              <Card className="p-2 bg-gradient-to-r from-indigo-500/10 to-violet-500/10 border-indigo-500/30 shadow-lg flex-shrink-0">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                    <div className="w-7 h-7 rounded-full bg-gradient-to-br from-indigo-500/30 to-violet-500/30 flex items-center justify-center flex-shrink-0 shadow-inner">
+                      <Icon name="CalendarClock" size={12} className="text-indigo-300" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[9px] text-muted-foreground/70 mb-0.5">Создана</p>
+                      <p className="text-[10px] sm:text-xs font-semibold text-indigo-300 truncate">
+                        {new Date(selectedDeal.created_at).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                    <div className="w-7 h-7 rounded-full bg-gradient-to-br from-teal-500/30 to-cyan-500/30 flex items-center justify-center flex-shrink-0 shadow-inner">
+                      <Icon name="Hash" size={12} className="text-teal-300" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[9px] text-muted-foreground/70 mb-0.5">ID сделки</p>
+                      <p className="text-[10px] sm:text-xs font-mono font-bold text-teal-300 truncate">#{selectedDeal.id}</p>
+                    </div>
+                  </div>
+                </div>
+              </Card>
+
+              {/* Чат */}
+              <Card className="p-2 sm:p-3 flex-1 min-h-0 overflow-y-auto bg-gradient-to-br from-muted/30 to-muted/10 border-border/50 shadow-inner">
+                <div className="space-y-1.5 sm:space-y-2 h-full">
+                  {dealMessages.map((msg) => (
+                    <div
+                      key={msg.id}
+                      className={`${
+                        msg.is_system
+                          ? 'flex justify-center'
+                          : msg.user_id === user?.id
+                          ? 'flex justify-end'
+                          : 'flex justify-start'
+                      }`}
+                    >
+                      {msg.is_system ? (
+                        <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-500/10 border border-blue-500/20 backdrop-blur-sm">
+                          <Icon name="Info" size={9} className="text-blue-400" />
+                          <p className="text-[9px] sm:text-xs text-blue-400 font-semibold">{msg.message}</p>
+                        </div>
+                      ) : (
+                        <div className={`max-w-[90%] sm:max-w-[80%] ${
+                          msg.user_id === user?.id
+                            ? 'bg-gradient-to-br from-green-800/40 to-green-900/30 border border-green-700/40 shadow-md shadow-green-900/20'
+                            : 'bg-gradient-to-br from-card to-muted/50 border border-border shadow-sm'
+                        } p-1.5 sm:p-2 rounded-2xl space-y-0.5`}>
+                          <div className="flex items-center gap-1">
+                            <Avatar className="w-4 h-4 sm:w-5 sm:h-5 ring-1 ring-border/50">
+                              <AvatarImage src={msg.avatar_url} />
+                              <AvatarFallback className={`bg-gradient-to-br ${getAvatarGradient(msg.username || '')} text-white text-[8px]`}>
+                                {msg.username?.[0].toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+                            <span className="text-[9px] sm:text-xs font-bold truncate">{msg.username}</span>
+                            <span className="text-[8px] sm:text-[9px] text-muted-foreground/60 ml-auto flex-shrink-0">
+                              {new Date(msg.created_at).toLocaleString('ru-RU', { hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                          </div>
+                          <p className="text-[10px] sm:text-xs leading-snug break-words pl-5 sm:pl-6">{msg.message}</p>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </Card>
+
+              {selectedDeal.status !== 'completed' && selectedDeal.status !== 'cancelled' && user && (Number(user.id) === Number(selectedDeal.seller_id) || Number(user.id) === Number(selectedDeal.buyer_id)) && (
+                <div className="flex items-center gap-1.5 flex-shrink-0">
+                  <Input
+                    value={newMessage}
+                    onChange={(e) => setNewMessage(e.target.value)}
+                    placeholder="Сообщение..."
+                    onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
+                    className="flex-1 bg-muted/50 h-8 sm:h-9 text-xs sm:text-sm border-border/50 transition-all duration-200 focus:scale-[1.01] focus:shadow-md"
+                  />
+                  <Button onClick={sendMessage} size="icon" className="bg-gradient-to-r from-green-700 to-green-800 hover:from-green-600 hover:to-green-700 h-8 w-8 sm:h-9 sm:w-9 shadow-md shadow-green-900/30 transition-all duration-300 hover:scale-110 active:scale-95 hover:shadow-lg hover:shadow-green-800/50 touch-manipulation">
+                    <Icon name="Send" size={13} />
+                  </Button>
+                </div>
+              )}
+
+              {/* Кнопки действий */}
+              <div className="space-y-1.5 flex-shrink-0">
+                {selectedDeal.status === 'active' && !selectedDeal.buyer_id && user && Number(user.id) !== Number(selectedDeal.seller_id) && (
+                  <Button
+                    onClick={handleBuyerPay}
+                    disabled={actionLoading}
+                    className="w-full bg-gradient-to-r from-green-700 to-green-900 hover:from-green-600 hover:to-green-800 h-9 sm:h-11 text-xs sm:text-base font-bold shadow-lg shadow-green-900/40 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] hover:shadow-xl hover:shadow-green-800/60 touch-manipulation disabled:opacity-50 disabled:hover:scale-100"
+                  >
+                    <Icon name={actionLoading ? "Loader2" : "ShoppingCart"} size={14} className={`mr-1 ${actionLoading ? 'animate-spin' : ''}`} />
+                    {actionLoading ? 'Оплата...' : `Купить ${selectedDeal.price} USDT`}
+                  </Button>
+                )}
+
+                {selectedDeal.step === 'buyer_paid' && user && Number(user.id) === Number(selectedDeal.seller_id) && (
+                  <Button
+                    onClick={handleSellerSent}
+                    disabled={actionLoading}
+                    className="w-full bg-gradient-to-r from-purple-600 to-purple-800 hover:from-purple-500 hover:to-purple-700 h-9 sm:h-11 text-xs sm:text-base font-bold shadow-lg shadow-purple-900/40 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] hover:shadow-xl hover:shadow-purple-800/60 touch-manipulation disabled:opacity-50 disabled:hover:scale-100"
+                  >
+                    <Icon name="Package" size={14} className="mr-1" />
+                    {actionLoading ? 'Обработка...' : 'Товар передан'}
+                  </Button>
+                )}
+
+                {selectedDeal.step === 'seller_sent' && user && Number(user.id) === Number(selectedDeal.buyer_id) && (
+                  <Card className="p-2 bg-gradient-to-br from-orange-500/10 to-red-500/10 border border-orange-500/30 space-y-1.5 shadow-lg shadow-orange-900/20 transition-all duration-300 hover:shadow-xl hover:shadow-orange-800/30 animate-pulse-subtle">
+                    <div className="flex items-start gap-1.5">
+                      <div className="w-7 h-7 rounded-full bg-gradient-to-br from-orange-500/30 to-red-500/20 flex items-center justify-center flex-shrink-0 shadow-inner">
+                        <Icon name="AlertCircle" size={14} className="text-orange-300" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-[10px] sm:text-xs font-bold text-orange-300">⚠️ Внимание!</p>
+                        <p className="text-[9px] sm:text-xs text-muted-foreground/80 leading-tight">
+                          Только если получили товар! {selectedDeal.price} USDT → продавцу
+                        </p>
+                      </div>
+                    </div>
+                    <Button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleBuyerConfirm();
+                      }}
+                      disabled={actionLoading}
+                      className="w-full bg-gradient-to-r from-green-600 to-green-800 hover:from-green-500 hover:to-green-700 cursor-pointer h-9 sm:h-10 text-xs sm:text-base font-bold shadow-lg shadow-green-900/40 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] hover:shadow-xl hover:shadow-green-800/60 touch-manipulation disabled:opacity-50 disabled:hover:scale-100"
+                      type="button"
+                    >
+                      <Icon name="Check" size={14} className="mr-1" />
+                      {actionLoading ? 'Обработка...' : 'Подтвердить получение'}
+                    </Button>
+                  </Card>
+                )}
+
+                {selectedDeal.status === 'completed' && (
+                  <Card className="p-2 bg-gradient-to-br from-green-800/15 to-green-900/25 border-green-500/30 shadow-lg shadow-green-900/30">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-green-500/30 to-green-600/20 flex items-center justify-center flex-shrink-0 shadow-inner">
+                        <Icon name="CheckCircle2" size={16} className="text-green-300" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <h4 className="font-black text-green-300 text-xs sm:text-base leading-tight">Сделка завершена!</h4>
+                        <p className="text-[9px] sm:text-xs text-muted-foreground/80 leading-tight">
+                          {user && Number(user.id) === Number(selectedDeal.seller_id) ? `Вы получили ${(selectedDeal.price - selectedDeal.commission).toFixed(2)} USDT (комиссия ${selectedDeal.commission.toFixed(2)} USDT)` : `Сделка успешно завершена`}
+                        </p>
+                      </div>
+                    </div>
+                  </Card>
+                )}
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* Диалог подтверждения получения товара */}
+      <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>⚠️ Подтверждение получения</DialogTitle>
+            <DialogDescription>
+              Вы уверены, что получили товар?
+            </DialogDescription>
+          </DialogHeader>
+
+          <Card className="bg-orange-500/5 border-orange-500/20 p-4">
+            <p className="text-sm text-muted-foreground">
+              После подтверждения средства <strong className="text-orange-400">{selectedDeal?.price} USDT</strong> будут переведены продавцу. 
+              <br /><br />
+              <strong>Это действие нельзя отменить!</strong>
+            </p>
+          </Card>
+
           <div className="flex gap-3">
             <Button
-              onClick={() => setShowConfirmDialog(false)}
               variant="outline"
-              className="flex-1"
+              onClick={() => setShowConfirmDialog(false)}
+              className="flex-1 transition-all duration-300 hover:scale-105 active:scale-95 touch-manipulation"
+              disabled={actionLoading}
             >
               Отмена
             </Button>
             <Button
               onClick={confirmBuyerConfirm}
-              className="flex-1"
+              disabled={actionLoading}
+              className="flex-1 bg-gradient-to-r from-green-600 to-green-700 transition-all duration-300 hover:scale-105 active:scale-95 hover:shadow-lg hover:shadow-green-700/50 touch-manipulation disabled:opacity-50 disabled:hover:scale-100"
             >
-              Подтвердить
+              <Icon name={actionLoading ? "Loader2" : "Check"} size={16} className={`mr-2 ${actionLoading ? 'animate-spin' : ''}`} />
+              {actionLoading ? 'Обработка...' : 'Да, подтверждаю'}
             </Button>
           </div>
         </DialogContent>
