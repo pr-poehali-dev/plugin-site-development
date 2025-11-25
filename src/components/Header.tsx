@@ -194,11 +194,6 @@ const Header = ({
                   <div className="text-right hidden sm:block">
                     <p className="text-sm font-medium text-white">{user.username}</p>
                   </div>
-                  <div className="sm:hidden flex items-center gap-1">
-                    <span className={`text-xs text-green-400 font-bold transition-all duration-300 ${isBalanceChanging ? 'scale-110' : 'scale-100'}`}>
-                      {Number(animatedBalance).toFixed(1)} USDT
-                    </span>
-                  </div>
                   <Icon name="User" className="w-5 h-5" />
                 </Button>
                 <Button variant="ghost" size="icon" className="relative text-white hover:bg-orange-500/10 transition-colors shrink-0" onClick={onShowNotifications}>
