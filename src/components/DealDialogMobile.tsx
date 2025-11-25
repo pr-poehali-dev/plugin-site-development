@@ -101,14 +101,19 @@ export const DealDialogMobile = ({
   // Весь контент диалога
   const dialogContent = (
     <div 
-      className="fixed inset-0 bg-background overflow-y-auto"
+      className="fixed inset-0 bg-background flex flex-col"
       style={{
-        touchAction: 'pan-y',
-        overscrollBehavior: 'contain',
-        WebkitOverflowScrolling: 'touch'
+        touchAction: 'none'
       }}
     >
-      <div className="min-h-screen p-4 space-y-3 pb-32">
+      <div 
+        className="flex-1 overflow-y-auto p-4 space-y-3 pb-4"
+        style={{
+          touchAction: 'pan-y',
+          overscrollBehavior: 'contain',
+          WebkitOverflowScrolling: 'touch'
+        }}
+      >
         {/* Header with close button */}
         <div className="flex items-center gap-3 pb-2">
           <button
@@ -302,12 +307,17 @@ export const DealDialogMobile = ({
         )}
       </div>
 
-      {/* Input - sticky at bottom */}
+      </div>
+
+      {/* Input - outside scroll, always accessible */}
       {deal.status !== 'completed' &&
         deal.status !== 'cancelled' &&
         user &&
         (Number(user.id) === Number(deal.seller_id) || Number(user.id) === Number(deal.buyer_id)) && (
-          <div className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-sm border-t border-border/30 p-4 z-50">
+          <div 
+            className="flex-shrink-0 bg-background/95 backdrop-blur-sm border-t border-border/30 p-4"
+            style={{ touchAction: 'none' }}
+          >
             <div className="flex items-center gap-2">
               <input
                 ref={inputRef}
@@ -327,22 +337,12 @@ export const DealDialogMobile = ({
                 }}
                 onTouchStart={(e) => {
                   e.stopPropagation();
-                  inputRef.current?.focus();
                 }}
                 onClick={(e) => {
                   e.stopPropagation();
-                  inputRef.current?.focus();
                 }}
                 onFocus={() => console.log('Input focused')}
-                onBlur={(e) => {
-                  console.log('Input blurred');
-                  // Не даём потерять фокус при скролле
-                  setTimeout(() => {
-                    if (inputRef.current && document.activeElement !== inputRef.current) {
-                      inputRef.current.focus();
-                    }
-                  }, 100);
-                }}
+                onBlur={() => console.log('Input blurred')}
                 placeholder="Написать сообщение..."
                 className="flex-1 h-12 px-4 text-base rounded-xl border-2 border-input bg-background placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 transition-colors"
                 autoComplete="off"
@@ -350,8 +350,7 @@ export const DealDialogMobile = ({
                   fontSize: '16px', 
                   touchAction: 'manipulation', 
                   WebkitUserSelect: 'text', 
-                  userSelect: 'text',
-                  pointerEvents: 'auto'
+                  userSelect: 'text'
                 }}
               />
               <Button
