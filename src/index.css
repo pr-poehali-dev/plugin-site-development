@@ -286,10 +286,20 @@
   [data-radix-dialog-content] {
     overscroll-behavior: contain;
     -webkit-overflow-scrolling: touch;
+    touch-action: auto;
   }
 
   [data-radix-dialog-overlay] {
-    overscroll-behavior: contain;
+    overscroll-behavior: none;
     touch-action: none;
+    pointer-events: auto;
+  }
+
+  body:has([data-radix-dialog-overlay]) {
+    overflow: hidden !important;
+    touch-action: none !important;
+    position: fixed !important;
+    width: 100% !important;
+    height: 100% !important;
   }
 }

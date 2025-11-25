@@ -4,7 +4,23 @@ import { X } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 
-const Dialog = DialogPrimitive.Root
+const Dialog = (props: React.ComponentProps<typeof DialogPrimitive.Root>) => {
+  const { open, ...restProps } = props;
+
+  React.useEffect(() => {
+    if (open) {
+      document.body.style.overflow = 'hidden';
+      document.body.style.touchAction = 'none';
+      
+      return () => {
+        document.body.style.overflow = '';
+        document.body.style.touchAction = '';
+      };
+    }
+  }, [open]);
+
+  return <DialogPrimitive.Root open={open} {...restProps} />;
+}
 
 const DialogTrigger = DialogPrimitive.Trigger
 
@@ -19,9 +35,15 @@ const DialogOverlay = React.forwardRef<
   <DialogPrimitive.Overlay
     ref={ref}
     className={cn(
-      "fixed inset-0 z-50 bg-gradient-to-br from-purple-900/40 via-blue-900/40 to-indigo-900/40 backdrop-blur-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+      "fixed inset-0 z-50 bg-gradient-to-br from-purple-900/40 via-blue-900/40 to-indigo-900/40 backdrop-blur-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 touch-none",
       className
     )}
+    onTouchStart={(e) => {
+      e.preventDefault();
+    }}
+    onTouchMove={(e) => {
+      e.preventDefault();
+    }}
     {...props}
   />
 ))
