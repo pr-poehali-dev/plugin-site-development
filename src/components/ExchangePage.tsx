@@ -1,12 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import Icon from '@/components/ui/icon';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { User } from '@/types';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Label } from '@/components/ui/label';
+import { BtcPriceCard } from './exchange/BtcPriceCard';
+import { ExchangeForm } from './exchange/ExchangeForm';
+import { WithdrawForm } from './exchange/WithdrawForm';
 
 const AUTH_URL = 'https://functions.poehali.dev/2497448a-6aff-4df5-97ef-9181cf792f03';
 const BTC_PRICE_URL = 'https://functions.poehali.dev/bdf92326-10c7-4f4f-bc94-761a9ea4ed96';
@@ -295,16 +294,7 @@ const ExchangePage = ({ user, onRefreshUserBalance }: ExchangePageProps) => {
 
   const handleWithdraw = async () => {
     const amount = parseFloat(withdrawAmount);
-
-    if (!withdrawAddress.trim()) {
-      toast({
-        title: 'Ошибка',
-        description: 'Введите BTC адрес',
-        variant: 'destructive'
-      });
-      return;
-    }
-
+    
     if (!amount || amount <= 0) {
       toast({
         title: 'Ошибка',
@@ -332,16 +322,18 @@ const ExchangePage = ({ user, onRefreshUserBalance }: ExchangePageProps) => {
       return;
     }
 
+    if (!withdrawAddress || withdrawAddress.length < 26) {
+      toast({
+        title: 'Некорректный адрес',
+        description: 'Укажите корректный BTC адрес',
+        variant: 'destructive'
+      });
+      return;
+    }
+
     setWithdrawLoading(true);
 
     try {
-      console.log('🔵 Отправка запроса на вывод BTC:', {
-        action: 'withdraw_btc',
-        btc_amount: amount,
-        btc_address: withdrawAddress,
-        user_id: user.id
-      });
-
       const response = await fetch(AUTH_URL, {
         method: 'POST',
         headers: {
@@ -351,30 +343,22 @@ const ExchangePage = ({ user, onRefreshUserBalance }: ExchangePageProps) => {
         body: JSON.stringify({
           action: 'withdraw_btc',
           btc_amount: amount,
-          btc_address: withdrawAddress
+          address: withdrawAddress
         })
       });
 
-      console.log('📡 Статус ответа:', response.status);
-
       const data = await response.json();
-      console.log('📦 Ответ сервера:', data);
 
       if (data.success) {
         toast({
-          title: '✅ Заявка на вывод принята!',
-          description: 'Ваш вывод находится на рассмотрении. Среднее время рассмотрения от 2 минут до 1 часа'
+          title: '✅ Вывод инициирован',
+          description: `Отправка ${amount} BTC на адрес ${withdrawAddress.substring(0, 10)}...`
         });
-        
-        if (onRefreshUserBalance) {
-          onRefreshUserBalance();
-        }
         
         loadBtcBalance();
         setWithdrawAddress('');
         setWithdrawAmount('');
       } else {
-        console.error('❌ Ошибка вывода:', data.error);
         toast({
           title: 'Ошибка',
           description: data.error || 'Ошибка вывода',
@@ -382,7 +366,6 @@ const ExchangePage = ({ user, onRefreshUserBalance }: ExchangePageProps) => {
         });
       }
     } catch (error) {
-      console.error('💥 Исключение при выводе:', error);
       toast({
         title: 'Ошибка',
         description: 'Ошибка подключения к серверу',
@@ -394,378 +377,67 @@ const ExchangePage = ({ user, onRefreshUserBalance }: ExchangePageProps) => {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500/20 to-orange-500/5 flex items-center justify-center">
-          <Icon name="ArrowLeftRight" size={24} className="text-orange-500" />
+    <div className="space-y-6 animate-fade-in">
+      <div>
+        <h1 className="text-3xl font-bold mb-2">Обмен валют</h1>
+        <p className="text-muted-foreground">
+          Обменивайте USDT на BTC по актуальному курсу
+        </p>
+      </div>
+
+      <BtcPriceCard 
+        btcPrice={btcPrice}
+        priceChange={priceChange}
+        priceLoading={priceLoading}
+      />
+
+      <div className="grid lg:grid-cols-2 gap-6">
+        <div className="space-y-4">
+          <div className="flex items-center gap-2">
+            <Icon name="Repeat" size={20} className="text-primary" />
+            <h2 className="text-xl font-bold">Обмен</h2>
+          </div>
+          
+          <ExchangeForm
+            usdtAmount={usdtAmount}
+            btcAmount={btcAmount}
+            usdtBalance={user.balance || 0}
+            btcBalance={btcBalance}
+            onUsdtToBtcChange={handleUsdtToBtcChange}
+            onBtcToUsdtChange={handleBtcToUsdtChange}
+            onExchangeUsdtToBtc={handleExchangeUsdtToBtc}
+            onExchangeBtcToUsdt={handleExchangeBtcToUsdt}
+            loading={loading}
+            btcPrice={btcPrice}
+          />
         </div>
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold">Обменник</h1>
-          <p className="text-sm text-muted-foreground">Обмен и вывод криптовалюты</p>
+
+        <div className="space-y-4">
+          <div className="flex items-center gap-2">
+            <Icon name="Send" size={20} className="text-primary" />
+            <h2 className="text-xl font-bold">Вывод BTC</h2>
+          </div>
+
+          <WithdrawForm
+            btcBalance={btcBalance}
+            withdrawAddress={withdrawAddress}
+            withdrawAmount={withdrawAmount}
+            onAddressChange={setWithdrawAddress}
+            onAmountChange={setWithdrawAmount}
+            onWithdraw={handleWithdraw}
+            loading={withdrawLoading}
+          />
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <Card className="p-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-green-500/20 flex items-center justify-center">
-              <Icon name="DollarSign" size={20} className="text-green-400" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold">{Number(user.balance || 0).toFixed(2)}</p>
-              <p className="text-xs text-muted-foreground">Баланс USDT</p>
-            </div>
-          </div>
-        </Card>
-
-        <Card className="p-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-orange-500/20 flex items-center justify-center">
-              <Icon name="Bitcoin" size={20} className="text-orange-400" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold">{btcBalance.toFixed(8)}</p>
-              <p className="text-xs text-muted-foreground">Баланс BTC</p>
-            </div>
-          </div>
-        </Card>
-
-        <Card className="p-4">
-          <div className="flex items-center gap-3">
-            <div className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all duration-500 ${
-              priceChange === 'up' ? 'bg-green-500/30 scale-110' : 
-              priceChange === 'down' ? 'bg-red-500/30 scale-110' : 
-              'bg-blue-500/20'
-            }`}>
-              <Icon 
-                name={priceChange === 'up' ? 'TrendingUp' : priceChange === 'down' ? 'TrendingDown' : 'TrendingUp'} 
-                size={20} 
-                className={`transition-colors duration-500 ${
-                  priceChange === 'up' ? 'text-green-400' : 
-                  priceChange === 'down' ? 'text-red-400' : 
-                  'text-blue-400'
-                }`}
-              />
-            </div>
-            <div className="flex-1">
-              <p className={`text-2xl font-bold transition-all duration-500 ${
-                priceChange === 'up' ? 'text-green-400 scale-105' : 
-                priceChange === 'down' ? 'text-red-400 scale-105' : 
-                ''
-              }`}>
-                {priceLoading ? '...' : `$${btcPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-              </p>
-              <div className="flex items-center gap-1">
-                <p className="text-xs text-muted-foreground">Курс BTC</p>
-                {priceChange !== 'neutral' && (
-                  <span className={`text-xs font-medium ${priceChange === 'up' ? 'text-green-400' : 'text-red-400'}`}>
-                    {priceChange === 'up' ? '↑' : '↓'}
-                  </span>
-                )}
-              </div>
-            </div>
-          </div>
-        </Card>
-      </div>
-
-      <Tabs defaultValue="usdt-to-btc" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="usdt-to-btc">USDT → BTC</TabsTrigger>
-          <TabsTrigger value="btc-to-usdt">BTC → USDT</TabsTrigger>
-          <TabsTrigger value="withdraw">Вывод BTC</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="usdt-to-btc" className="space-y-4 mt-4">
-          <Card className="p-6">
-            <div className="space-y-6">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold flex items-center gap-2">
-                  <Icon name="ArrowRight" size={20} className="text-primary" />
-                  Обмен USDT на BTC
-                </h3>
-                <div className={`text-xs font-medium transition-colors duration-500 ${
-                  priceChange === 'up' ? 'text-green-400' : 
-                  priceChange === 'down' ? 'text-red-400' : 
-                  'text-muted-foreground'
-                }`}>
-                  1 BTC = ${btcPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <div>
-                  <label className="text-sm font-medium mb-2 block">Отдаете</label>
-                  <div className="relative">
-                    <Input
-                      type="number"
-                      value={usdtAmount}
-                      onChange={(e) => handleUsdtToBtcChange(e.target.value)}
-                      placeholder="0.00"
-                      className="pr-16 text-lg"
-                      min="0"
-                      step="0.01"
-                    />
-                    <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2 text-sm font-medium text-muted-foreground">
-                      <Icon name="DollarSign" size={16} className="text-green-400" />
-                      USDT
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex justify-center">
-                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                    <Icon name="ArrowDown" size={20} className="text-primary" />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="text-sm font-medium mb-2 block">Получаете</label>
-                  <div className="relative">
-                    <Input
-                      type="number"
-                      value={btcAmount}
-                      readOnly
-                      placeholder="0.00000000"
-                      className="pr-16 text-lg bg-muted/50"
-                    />
-                    <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2 text-sm font-medium text-muted-foreground">
-                      <Icon name="Bitcoin" size={16} className="text-orange-400" />
-                      BTC
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-muted/50 rounded-lg p-4 space-y-2">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Минимальная сумма:</span>
-                  <span className="font-medium">10 USDT</span>
-                </div>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Комиссия:</span>
-                  <span className="font-medium text-orange-400">0.5%</span>
-                </div>
-                {usdtAmount && parseFloat(usdtAmount) > 0 && (
-                  <div className="flex items-center justify-between text-sm pt-2 border-t border-border/50">
-                    <span className="text-muted-foreground">Комиссия обмена:</span>
-                    <span className="font-medium">{(parseFloat(usdtAmount) * 0.005).toFixed(2)} USDT</span>
-                  </div>
-                )}
-              </div>
-
-              <Button
-                onClick={handleExchangeUsdtToBtc}
-                disabled={loading || !usdtAmount || parseFloat(usdtAmount) < 10 || priceLoading}
-                className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700"
-              >
-                {loading ? (
-                  <>
-                    <Icon name="Loader2" size={18} className="mr-2 animate-spin" />
-                    Обмен...
-                  </>
-                ) : (
-                  <>
-                    <Icon name="ArrowRight" size={18} className="mr-2" />
-                    Обменять USDT на BTC
-                  </>
-                )}
-              </Button>
-            </div>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="btc-to-usdt" className="space-y-4 mt-4">
-          <Card className="p-6">
-            <div className="space-y-6">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold flex items-center gap-2">
-                  <Icon name="ArrowLeft" size={20} className="text-primary" />
-                  Обмен BTC на USDT
-                </h3>
-                <div className={`text-xs font-medium transition-colors duration-500 ${
-                  priceChange === 'up' ? 'text-green-400' : 
-                  priceChange === 'down' ? 'text-red-400' : 
-                  'text-muted-foreground'
-                }`}>
-                  1 BTC = ${btcPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <div>
-                  <label className="text-sm font-medium mb-2 block">Отдаете</label>
-                  <div className="relative">
-                    <Input
-                      type="number"
-                      value={btcAmount}
-                      onChange={(e) => handleBtcToUsdtChange(e.target.value)}
-                      placeholder="0.00000000"
-                      className="pr-16 text-lg"
-                      min="0"
-                      step="0.00000001"
-                    />
-                    <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2 text-sm font-medium text-muted-foreground">
-                      <Icon name="Bitcoin" size={16} className="text-orange-400" />
-                      BTC
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex justify-center">
-                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                    <Icon name="ArrowDown" size={20} className="text-primary" />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="text-sm font-medium mb-2 block">Получаете</label>
-                  <div className="relative">
-                    <Input
-                      type="number"
-                      value={usdtAmount}
-                      readOnly
-                      placeholder="0.00"
-                      className="pr-16 text-lg bg-muted/50"
-                    />
-                    <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2 text-sm font-medium text-muted-foreground">
-                      <Icon name="DollarSign" size={16} className="text-green-400" />
-                      USDT
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-muted/50 rounded-lg p-4 space-y-2">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Минимальная сумма:</span>
-                  <span className="font-medium">0.0001 BTC</span>
-                </div>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Комиссия:</span>
-                  <span className="font-medium text-orange-400">0.5%</span>
-                </div>
-                {btcAmount && parseFloat(btcAmount) > 0 && (
-                  <div className="flex items-center justify-between text-sm pt-2 border-t border-border/50">
-                    <span className="text-muted-foreground">Комиссия обмена:</span>
-                    <span className="font-medium">{(parseFloat(btcAmount) * btcPrice * 0.005).toFixed(2)} USDT</span>
-                  </div>
-                )}
-              </div>
-
-              <Button
-                onClick={handleExchangeBtcToUsdt}
-                disabled={loading || !btcAmount || parseFloat(btcAmount) < 0.0001 || priceLoading}
-                className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700"
-              >
-                {loading ? (
-                  <>
-                    <Icon name="Loader2" size={18} className="mr-2 animate-spin" />
-                    Обмен...
-                  </>
-                ) : (
-                  <>
-                    <Icon name="ArrowLeft" size={18} className="mr-2" />
-                    Обменять BTC на USDT
-                  </>
-                )}
-              </Button>
-            </div>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="withdraw" className="space-y-4 mt-4">
-          <Card className="p-6">
-            <div className="space-y-6">
-              <div className="flex items-center gap-2">
-                <Icon name="Send" size={20} className="text-primary" />
-                <h3 className="text-lg font-semibold">Вывод BTC</h3>
-              </div>
-
-              <div className="space-y-4">
-                <div>
-                  <Label className="text-sm font-medium mb-2 block">BTC адрес получателя</Label>
-                  <Input
-                    value={withdrawAddress}
-                    onChange={(e) => setWithdrawAddress(e.target.value)}
-                    placeholder="bc1q..."
-                    className="font-mono"
-                  />
-                </div>
-
-                <div>
-                  <Label className="text-sm font-medium mb-2 block">Сумма BTC</Label>
-                  <Input
-                    type="number"
-                    value={withdrawAmount}
-                    onChange={(e) => setWithdrawAmount(e.target.value)}
-                    placeholder="0.00000000"
-                    step="0.00000001"
-                    min="0"
-                  />
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Доступно: {btcBalance.toFixed(8)} BTC
-                  </p>
-                </div>
-              </div>
-
-              <div className="bg-muted/50 rounded-lg p-4 space-y-2">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Минимальная сумма:</span>
-                  <span className="font-medium">0.001 BTC</span>
-                </div>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Комиссия вывода:</span>
-                  <span className="font-medium text-orange-400">0.00015 BTC</span>
-                </div>
-                {withdrawAmount && parseFloat(withdrawAmount) > 0 && (
-                  <div className="flex items-center justify-between text-sm pt-2 border-t border-border/50">
-                    <span className="text-muted-foreground">Итого спишется:</span>
-                    <span className="font-medium text-red-400">{(parseFloat(withdrawAmount) + 0.00015).toFixed(8)} BTC</span>
-                  </div>
-                )}
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Время обработки:</span>
-                  <span className="font-medium">До 24 часов</span>
-                </div>
-              </div>
-
-              <Button
-                onClick={handleWithdraw}
-                disabled={withdrawLoading || !withdrawAddress || !withdrawAmount || parseFloat(withdrawAmount) < 0.001}
-                className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700"
-              >
-                {withdrawLoading ? (
-                  <>
-                    <Icon name="Loader2" size={18} className="mr-2 animate-spin" />
-                    Обработка...
-                  </>
-                ) : (
-                  <>
-                    <Icon name="Send" size={18} className="mr-2" />
-                    Вывести BTC
-                  </>
-                )}
-              </Button>
-            </div>
-          </Card>
-        </TabsContent>
-      </Tabs>
-
-      <Card className="p-6 bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
-        <div className="flex items-start gap-4">
-          <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center shrink-0">
-            <Icon name="Info" size={24} className="text-primary" />
-          </div>
-          <div className="space-y-2">
-            <h3 className="text-lg font-semibold">Как это работает?</h3>
-            <ul className="text-sm text-muted-foreground space-y-1">
-              <li>• Обмен происходит мгновенно по текущему рыночному курсу</li>
-              <li>• Курс обновляется каждые 10 секунд с биржи CoinGecko</li>
-              <li>• Комиссия за обмен: 0.5%</li>
-              <li>• Минимум для обмена: 10 USDT или 0.0001 BTC</li>
-              <li>• Минимум для вывода BTC: 0.001 BTC</li>
-              <li>• Вывод обрабатывается администратором в течение 24 часов</li>
-            </ul>
+      <Card className="p-4 bg-muted/30">
+        <div className="flex items-start gap-3">
+          <Icon name="Info" size={20} className="text-primary flex-shrink-0 mt-0.5" />
+          <div className="space-y-1 text-sm text-muted-foreground">
+            <p>• Обмен происходит по текущему рыночному курсу</p>
+            <p>• Комиссия за обмен: 0.5%</p>
+            <p>• Минимальная сумма обмена: 10 USDT или 0.0001 BTC</p>
+            <p>• Минимальная сумма вывода: 0.001 BTC</p>
           </div>
         </div>
       </Card>
