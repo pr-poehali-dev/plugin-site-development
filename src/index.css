@@ -282,21 +282,35 @@
     }
   }
 
-  [data-radix-dialog-content] {
-    overscroll-behavior: contain;
-    -webkit-overflow-scrolling: touch;
-    touch-action: auto !important;
-    pointer-events: auto !important;
-    position: fixed !important;
-  }
-
   [data-radix-dialog-overlay] {
-    overscroll-behavior: none;
-    pointer-events: auto !important;
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 9998 !important;
+    overscroll-behavior: contain;
     touch-action: none;
   }
 
-  [data-radix-dialog-content] * {
+  [data-radix-dialog-content] {
+    position: fixed !important;
+    z-index: 9999 !important;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    contain: layout style paint;
+    will-change: transform;
+  }
+
+  [data-radix-dialog-content] input,
+  [data-radix-dialog-content] textarea,
+  [data-radix-dialog-content] button,
+  [data-radix-dialog-content] [role="button"],
+  [data-radix-dialog-content] a {
+    touch-action: manipulation !important;
     pointer-events: auto !important;
+  }
+
+  [data-radix-dialog-close] {
+    pointer-events: auto !important;
+    touch-action: manipulation !important;
+    z-index: 99999 !important;
   }
 }

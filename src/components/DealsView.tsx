@@ -812,15 +812,22 @@ export const DealsView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Deal
               </Card>
 
               {selectedDeal.status !== 'completed' && selectedDeal.status !== 'cancelled' && user && (Number(user.id) === Number(selectedDeal.seller_id) || Number(user.id) === Number(selectedDeal.buyer_id)) && (
-                <div className="flex items-center gap-1.5 flex-shrink-0">
+                <div className="flex items-center gap-1.5 flex-shrink-0" style={{ contain: 'layout' }}>
                   <Input
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
                     placeholder="Сообщение..."
                     onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
-                    className="flex-1 bg-muted/50 h-8 sm:h-9 text-xs sm:text-sm border-border/50 transition-all duration-200 focus:scale-[1.01] focus:shadow-md"
+                    className="flex-1 bg-muted/50 h-8 sm:h-9 text-xs sm:text-sm border-border/50 transition-all duration-200 focus:shadow-md"
+                    inputMode="text"
+                    autoComplete="off"
                   />
-                  <Button onClick={sendMessage} size="icon" className="bg-gradient-to-r from-green-700 to-green-800 hover:from-green-600 hover:to-green-700 h-8 w-8 sm:h-9 sm:w-9 shadow-md shadow-green-900/30 transition-all duration-300 hover:scale-110 active:scale-95 hover:shadow-lg hover:shadow-green-800/50 touch-manipulation">
+                  <Button 
+                    onClick={sendMessage} 
+                    size="icon" 
+                    className="bg-gradient-to-r from-green-700 to-green-800 hover:from-green-600 hover:to-green-700 h-8 w-8 sm:h-9 sm:w-9 shadow-md shadow-green-900/30 transition-all duration-300 hover:scale-110 active:scale-95 hover:shadow-lg hover:shadow-green-800/50 touch-manipulation"
+                    type="button"
+                  >
                     <Icon name="Send" size={13} />
                   </Button>
                 </div>
@@ -864,14 +871,20 @@ export const DealsView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Deal
                       </div>
                     </div>
                     <Button
+                      onTouchEnd={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        if (!actionLoading) handleBuyerConfirm();
+                      }}
                       onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
-                        handleBuyerConfirm();
+                        if (!actionLoading) handleBuyerConfirm();
                       }}
                       disabled={actionLoading}
                       className="w-full bg-gradient-to-r from-green-600 to-green-800 hover:from-green-500 hover:to-green-700 cursor-pointer h-9 sm:h-10 text-xs sm:text-base font-bold shadow-lg shadow-green-900/40 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] hover:shadow-xl hover:shadow-green-800/60 touch-manipulation disabled:opacity-50 disabled:hover:scale-100"
                       type="button"
+                      style={{ pointerEvents: 'auto' }}
                     >
                       <Icon name="Check" size={14} className="mr-1" />
                       {actionLoading ? 'Обработка...' : 'Подтвердить получение'}
