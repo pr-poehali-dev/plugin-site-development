@@ -159,15 +159,6 @@ const MessagesPanel = ({ open, onOpenChange, userId, initialRecipientId, onUserC
       const otherRole = isFromMe ? (msg as any).to_role : (msg as any).from_role;
       const otherLastSeen = isFromMe ? (msg as any).to_last_seen : (msg as any).from_last_seen;
 
-      console.log('Building chat for user:', otherUserId, {
-        username: otherUsername,
-        role: otherRole,
-        avatar: otherAvatar,
-        lastSeen: otherLastSeen,
-        isFromMe,
-        rawMsg: msg
-      });
-
       if (!chatsMap.has(otherUserId)) {
         chatsMap.set(otherUserId, {
           userId: otherUserId,
@@ -338,24 +329,21 @@ const MessagesPanel = ({ open, onOpenChange, userId, initialRecipientId, onUserC
   const getRoleBadge = (role: string | undefined) => {
     if (!role || role === 'user') return null;
     
-    const roleConfig: Record<string, { label: string; icon: string; className: string; bgGradient: string }> = {
+    const roleConfig: Record<string, { label: string; className: string; bgGradient: string }> = {
       admin: { 
-        label: 'Admin', 
-        icon: '👑',
-        className: 'text-red-400 border-red-500/40',
-        bgGradient: 'bg-gradient-to-r from-red-500/10 via-red-500/20 to-red-500/10'
+        label: 'Администратор',
+        className: 'text-red-400 border-red-500/50',
+        bgGradient: 'bg-gradient-to-r from-red-500/15 via-red-500/25 to-red-500/15'
       },
       moderator: { 
-        label: 'Mod', 
-        icon: '🛡️',
-        className: 'text-blue-400 border-blue-500/40',
-        bgGradient: 'bg-gradient-to-r from-blue-500/10 via-blue-500/20 to-blue-500/10'
+        label: 'Модератор',
+        className: 'text-blue-400 border-blue-500/50',
+        bgGradient: 'bg-gradient-to-r from-blue-500/15 via-blue-500/25 to-blue-500/15'
       },
       vip: { 
-        label: 'VIP', 
-        icon: '⭐',
-        className: 'text-yellow-400 border-yellow-500/40',
-        bgGradient: 'bg-gradient-to-r from-yellow-500/10 via-yellow-500/20 to-yellow-500/10'
+        label: 'VIP',
+        className: 'text-yellow-400 border-yellow-500/50',
+        bgGradient: 'bg-gradient-to-r from-yellow-500/15 via-yellow-500/25 to-yellow-500/15'
       }
     };
 
@@ -363,8 +351,7 @@ const MessagesPanel = ({ open, onOpenChange, userId, initialRecipientId, onUserC
     if (!config) return null;
 
     return (
-      <span className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-[9px] font-bold border backdrop-blur-sm ${config.className} ${config.bgGradient} shadow-sm`}>
-        <span className="text-[10px]">{config.icon}</span>
+      <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold border backdrop-blur-sm ${config.className} ${config.bgGradient} shadow-sm uppercase tracking-wide`}>
         {config.label}
       </span>
     );
