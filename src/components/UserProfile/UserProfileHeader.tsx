@@ -73,151 +73,185 @@ export const UserProfileHeader = ({
         className="hidden"
       />
 
-      <div className="flex items-start gap-3 sm:gap-4 md:gap-6">
-        <div className="relative group cursor-pointer" onClick={isOwnProfile ? onAvatarSelect : undefined}>
-          <Avatar className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24">
-            <AvatarImage src={avatarPreview || user.avatar_url} />
-            <AvatarFallback className={`bg-gradient-to-br ${getAvatarGradient(user.username)} text-white text-xl sm:text-2xl md:text-3xl font-bold`}>
-              {user.username[0].toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
-          {isOwnProfile && (
-            <div className="absolute inset-0 rounded-full bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-              {avatarUploading ? (
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
-              ) : (
-                <Icon name="Camera" size={28} className="text-white" />
-              )}
+      <div className="relative">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-purple-500/5 to-blue-500/5 rounded-3xl" />
+        <Card className="relative border-border/40 backdrop-blur-sm bg-background/95 shadow-xl">
+          <div className="p-4 sm:p-6">
+            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6">
+              <div className="relative group cursor-pointer" onClick={isOwnProfile ? onAvatarSelect : undefined}>
+                <div className="absolute -inset-1 bg-gradient-to-br from-primary via-purple-500 to-blue-500 rounded-full opacity-75 blur-md group-hover:opacity-100 transition-opacity" />
+                <Avatar className="relative w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 ring-4 ring-background">
+                  <AvatarImage src={avatarPreview || user.avatar_url} />
+                  <AvatarFallback className={`bg-gradient-to-br ${getAvatarGradient(user.username)} text-white text-2xl sm:text-3xl md:text-4xl font-bold`}>
+                    {user.username[0].toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                {isOwnProfile && (
+                  <div className="absolute inset-0 rounded-full bg-black/60 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center backdrop-blur-sm">
+                    {avatarUploading ? (
+                      <Icon name="Loader2" size={32} className="animate-spin text-white" />
+                    ) : (
+                      <Icon name="Camera" size={32} className="text-white" />
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <div className="flex-1 text-center sm:text-left space-y-3 min-w-0 w-full">
+                <div>
+                  <div className="flex items-center justify-center sm:justify-start gap-2 mb-1.5">
+                    <h3 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent truncate">
+                      {user.username}
+                    </h3>
+                    {user.is_verified && (
+                      <Icon name="BadgeCheck" size={24} className="text-primary flex-shrink-0 sm:w-7 sm:h-7 drop-shadow-lg" title="Верифицирован" />
+                    )}
+                  </div>
+                  <p className="text-sm text-muted-foreground truncate">{user.email}</p>
+                </div>
+
+                <div className="flex flex-wrap justify-center sm:justify-start gap-2">
+                  {user.role === 'admin' && (
+                    <span className="px-3 py-1.5 bg-gradient-to-r from-red-500/20 to-red-600/20 border border-red-500/40 text-red-400 rounded-lg text-xs font-bold inline-flex items-center gap-1.5 shadow-lg shadow-red-500/10">
+                      <Icon name="Shield" size={14} />
+                      АДМИНИСТРАТОР
+                    </span>
+                  )}
+                  
+                  {user.forum_role && (
+                    <ForumRoleBadge role={user.forum_role} />
+                  )}
+                  
+                  {hasActiveVip && (
+                    <span className="px-3 py-1.5 bg-gradient-to-r from-amber-500/20 via-yellow-500/20 to-orange-500/20 border border-amber-500/40 text-amber-400 rounded-lg text-xs font-bold inline-flex items-center gap-1.5 shadow-lg shadow-amber-500/10">
+                      <Icon name="Crown" size={14} />
+                      VIP {isOwnProfile && `(${vipDaysLeft}д)`}
+                    </span>
+                  )}
+                  
+                  {user.is_verified && (
+                    <span className="px-3 py-1.5 bg-gradient-to-r from-primary/20 to-primary/10 border border-primary/40 text-primary rounded-lg text-xs font-bold inline-flex items-center gap-1.5 shadow-lg shadow-primary/10">
+                      <Icon name="ShieldCheck" size={14} />
+                      ВЕРИФИЦИРОВАН
+                    </span>
+                  )}
+                </div>
+
+                {user.bio && (
+                  <p className="text-sm text-foreground/70 leading-relaxed line-clamp-2 sm:line-clamp-3">{user.bio}</p>
+                )}
+              </div>
             </div>
-          )}
-        </div>
-
-        <div className="flex-1 space-y-2 sm:space-y-3 min-w-0">
-          <div>
-            <div className="flex items-center gap-1.5 mb-1">
-              <h3 className="text-lg sm:text-xl md:text-2xl font-bold truncate">{user.username}</h3>
-              {user.is_verified && (
-                <Icon name="BadgeCheck" size={20} className="text-primary flex-shrink-0 sm:w-6 sm:h-6" title="Верифицирован" />
-              )}
-            </div>
-            <p className="text-xs sm:text-sm text-muted-foreground truncate">{user.email}</p>
           </div>
-
-          <div className="flex flex-wrap gap-2">
-            {user.role === 'admin' && (
-              <span className="px-2 sm:px-3 py-0.5 sm:py-1 bg-red-500/20 text-red-400 rounded-lg text-xs sm:text-sm font-medium inline-flex items-center gap-1">
-                <Icon name="Shield" size={14} />
-                Администратор
-              </span>
-            )}
-            
-            {user.forum_role && (
-              <ForumRoleBadge role={user.forum_role} />
-            )}
-            
-            {hasActiveVip && (
-              <span className="px-2 sm:px-3 py-0.5 sm:py-1 bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-400 rounded-lg text-xs sm:text-sm font-medium inline-flex items-center gap-1">
-                <Icon name="Crown" size={14} />
-                VIP {isOwnProfile && `(${vipDaysLeft} ${vipDaysLeft === 1 ? 'день' : vipDaysLeft < 5 ? 'дня' : 'дней'})`}
-              </span>
-            )}
-            
-            {user.is_verified && (
-              <span className="px-2 sm:px-3 py-0.5 sm:py-1 bg-primary/20 text-primary rounded-lg text-xs sm:text-sm font-medium inline-flex items-center gap-1">
-                <Icon name="ShieldCheck" size={14} />
-                Верифицирован
-              </span>
-            )}
-          </div>
-
-          {user.bio && (
-            <p className="text-xs sm:text-sm text-foreground/80 mt-2 line-clamp-3">{user.bio}</p>
-          )}
-        </div>
+        </Card>
       </div>
 
       {isOwnProfile && (
-        <Card className="bg-gradient-to-br from-green-800/10 to-green-900/10 border-green-800/20 p-3 sm:p-4 md:p-6">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0 mb-3 sm:mb-4">
-            <div className="flex items-center gap-2 sm:gap-3">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-green-800 to-green-900 flex items-center justify-center">
-                <Icon name="Wallet" size={20} className="text-white sm:w-6 sm:h-6" />
+        <div className="relative group">
+          <div className="absolute -inset-1 bg-gradient-to-r from-green-600 via-emerald-600 to-green-700 rounded-2xl opacity-20 group-hover:opacity-30 transition-opacity blur-xl" />
+          <Card className="relative bg-gradient-to-br from-green-950/40 via-emerald-950/40 to-green-950/40 border-green-700/30 backdrop-blur-sm overflow-hidden">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-green-500/10 to-transparent rounded-full blur-3xl" />
+            <div className="relative p-4 sm:p-6">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
+                <div className="flex items-center gap-4 w-full sm:w-auto">
+                  <div className="relative">
+                    <div className="absolute inset-0 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl blur-md opacity-75" />
+                    <div className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br from-green-600 to-emerald-700 flex items-center justify-center shadow-2xl">
+                      <Icon name="Wallet" size={28} className="text-white" />
+                    </div>
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-xs sm:text-sm text-green-400/80 font-medium mb-1">Ваш баланс</p>
+                    <p className={`text-2xl sm:text-3xl font-black bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent transition-all duration-500 ${isBalanceChanging ? 'scale-110' : 'scale-100'}`}>
+                      {Number(animatedBalance).toFixed(2)} <span className="text-xl sm:text-2xl">USDT</span>
+                    </p>
+                  </div>
+                </div>
+                <div className="flex gap-2 w-full sm:w-auto">
+                  <Button 
+                    onClick={onShowTopUpDialog}
+                    className="bg-gradient-to-r from-green-600 to-emerald-700 hover:from-green-500 hover:to-emerald-600 shadow-lg shadow-green-600/25 hover:shadow-xl hover:shadow-green-600/40 transition-all hover:scale-105 active:scale-95 flex-1 sm:flex-none font-bold"
+                  >
+                    <Icon name="Plus" size={18} className="mr-2" />
+                    Пополнить
+                  </Button>
+                  <Button 
+                    onClick={onShowWithdrawalDialog}
+                    className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-400 hover:to-orange-500 shadow-lg shadow-orange-500/25 hover:shadow-xl hover:shadow-orange-500/40 transition-all hover:scale-105 active:scale-95 flex-1 sm:flex-none font-bold"
+                  >
+                    <Icon name="ArrowDownToLine" size={18} className="mr-2" />
+                    Вывод
+                  </Button>
+                </div>
               </div>
-              <div>
-                <p className="text-xs sm:text-sm text-muted-foreground">Баланс</p>
-                <p className={`text-xl sm:text-2xl md:text-3xl font-bold transition-all duration-300 ${isBalanceChanging ? 'scale-110 text-green-400' : 'scale-100'}`}>
-                  {Number(animatedBalance).toFixed(2)} USDT
-                </p>
+              <div className="flex items-center gap-2 text-xs text-green-400/60">
+                <Icon name="Info" size={14} />
+                <p>Используйте баланс для покупки товаров и услуг</p>
               </div>
             </div>
-            <div className="flex gap-2 w-full sm:w-auto">
-              <Button 
-                onClick={onShowTopUpDialog}
-                className="bg-gradient-to-r from-green-800 to-green-900 hover:from-green-700 hover:to-green-800 flex-1 sm:flex-none text-xs sm:text-sm"
-              >
-                <Icon name="Plus" size={16} className="mr-1.5 sm:mr-2 sm:w-[18px] sm:h-[18px]" />
-                Пополнить
-              </Button>
-              <Button 
-                onClick={onShowWithdrawalDialog}
-                className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-400 hover:to-orange-500 shadow-lg shadow-orange-500/20 flex-1 sm:flex-none text-xs sm:text-sm"
-              >
-                <Icon name="ArrowDownToLine" size={16} className="mr-1.5 sm:mr-2 sm:w-[18px] sm:h-[18px]" />
-                Вывод
-              </Button>
-            </div>
-          </div>
-          <p className="text-xs sm:text-sm text-muted-foreground">
-            Используйте баланс в USDT для покупки товаров
-          </p>
-        </Card>
+          </Card>
+        </div>
       )}
 
       {isOwnProfile && hasActiveVip && (
-        <Card className="bg-gradient-to-br from-amber-500/10 to-orange-500/10 border-amber-500/30 p-3 sm:p-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center flex-shrink-0">
-              <Icon name="Crown" size={20} className="text-white sm:w-6 sm:h-6" />
+        <div className="relative group">
+          <div className="absolute -inset-1 bg-gradient-to-r from-amber-500 via-yellow-500 to-orange-500 rounded-2xl opacity-30 group-hover:opacity-50 transition-opacity blur-xl" />
+          <Card className="relative bg-gradient-to-br from-amber-950/40 via-yellow-950/40 to-orange-950/40 border-amber-500/40 backdrop-blur-sm overflow-hidden">
+            <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-br from-amber-500/20 to-transparent rounded-full blur-3xl" />
+            <div className="relative p-4 sm:p-5">
+              <div className="flex items-center gap-4">
+                <div className="relative flex-shrink-0">
+                  <div className="absolute inset-0 bg-gradient-to-br from-amber-500 to-orange-600 rounded-2xl blur-md opacity-75 animate-pulse" />
+                  <div className="relative w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br from-amber-500 via-yellow-500 to-orange-600 flex items-center justify-center shadow-2xl">
+                    <Icon name="Crown" size={24} className="text-white" />
+                  </div>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm sm:text-base font-bold text-amber-400 mb-1">VIP Привилегия активна</p>
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-amber-300/70">
+                    <div className="flex items-center gap-1">
+                      <Icon name="Clock" size={12} />
+                      <span>Осталось: <span className="font-bold text-amber-400">{vipDaysLeft}д</span></span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Icon name="Calendar" size={12} />
+                      <span>До: <span className="font-medium text-amber-300">{new Date(user.vip_until!).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' })}</span></span>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-xs sm:text-sm font-semibold text-amber-400 mb-1">VIP Привилегия активна</p>
-              <p className="text-xs text-muted-foreground">
-                Осталось: <span className="font-semibold text-foreground">{vipDaysLeft} {vipDaysLeft === 1 ? 'день' : vipDaysLeft < 5 ? 'дня' : 'дней'}</span>
-              </p>
-              <p className="text-xs text-muted-foreground mt-1">
-                До: <span className="font-medium">{new Date(user.vip_until!).toLocaleDateString('ru-RU')}</span>
-              </p>
-            </div>
-          </div>
-        </Card>
+          </Card>
+        </div>
       )}
 
       {isOwnProfile && memberRoleInfo && (
-        <Card className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border-blue-500/30 p-3 sm:p-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center flex-shrink-0">
-              <Icon name="Clock" size={20} className="text-white sm:w-6 sm:h-6" />
+        <div className="relative group">
+          <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 via-cyan-500 to-blue-600 rounded-2xl opacity-20 group-hover:opacity-30 transition-opacity blur-xl" />
+          <Card className="relative bg-gradient-to-br from-blue-950/40 via-cyan-950/40 to-blue-950/40 border-blue-500/40 backdrop-blur-sm overflow-hidden">
+            <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-br from-blue-500/20 to-transparent rounded-full blur-3xl" />
+            <div className="relative p-4 sm:p-5">
+              <div className="flex items-center gap-4">
+                <div className="relative flex-shrink-0">
+                  <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-2xl blur-md opacity-75 animate-pulse" />
+                  <div className="relative w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br from-blue-500 via-cyan-500 to-blue-600 flex items-center justify-center shadow-2xl">
+                    <Icon name="TrendingUp" size={24} className="text-white" />
+                  </div>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm sm:text-base font-bold text-blue-400 mb-1">Скоро повышение ранга!</p>
+                  <p className="text-xs text-blue-300/70 mb-2">
+                    Через <span className="font-bold text-blue-400">{memberRoleInfo.hours}ч {memberRoleInfo.minutes}м</span> → <span className="font-bold text-cyan-400">Участник форума</span>
+                  </p>
+                  <div className="flex items-start gap-1.5 text-xs text-blue-300/60">
+                    <Icon name="Info" size={12} className="mt-0.5 flex-shrink-0" />
+                    <span>С ролью "Участник" откроется доступ к играм</span>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-xs sm:text-sm font-semibold text-blue-400 mb-1">Роль "Участник"</p>
-              <p className="text-xs text-muted-foreground">
-                Будет выдана через: <span className="font-semibold text-foreground">{memberRoleInfo.hours}ч {memberRoleInfo.minutes}мин</span>
-              </p>
-              <p className="text-xs text-muted-foreground mt-1">
-                {memberRoleInfo.date.toLocaleDateString('ru-RU', { 
-                  day: 'numeric', 
-                  month: 'long',
-                  hour: '2-digit',
-                  minute: '2-digit'
-                })}
-              </p>
-              <p className="text-xs text-muted-foreground mt-2 flex items-start gap-1.5">
-                <Icon name="Info" size={12} className="mt-0.5 flex-shrink-0" />
-                <span>С ролью "Участник" откроется доступ к играм</span>
-              </p>
-            </div>
-          </div>
-        </Card>
+          </Card>
+        </div>
       )}
     </>
   );

@@ -373,13 +373,20 @@ const UserProfile = ({ user, isOwnProfile, onClose, onTopUpBalance, onUpdateProf
 
   return (
     <>
-      <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-2 sm:p-4 animate-fade-in">
-        <Card className="w-full max-w-3xl max-h-[95vh] sm:max-h-[90vh] overflow-y-auto bg-card border-border animate-scale-in">
-          <div className="p-3 sm:p-4 md:p-6 space-y-3 sm:space-y-4 md:space-y-6">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl sm:text-2xl font-bold">Личный кабинет</h2>
-              <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8 sm:h-10 sm:w-10">
-                <Icon name="X" size={20} className="sm:w-6 sm:h-6" />
+      <div className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center p-2 sm:p-4 animate-fade-in">
+        <Card className="w-full max-w-4xl max-h-[95vh] sm:max-h-[90vh] overflow-y-auto bg-background/95 backdrop-blur-md border-border/50 shadow-2xl animate-scale-in rounded-2xl sm:rounded-3xl">
+          <div className="p-4 sm:p-6 md:p-8 space-y-4 sm:space-y-5 md:space-y-6">
+            <div className="relative flex items-center justify-between pb-4 border-b border-border/50">
+              <div>
+                <h2 className="text-2xl sm:text-3xl font-black bg-gradient-to-r from-foreground via-primary to-purple-500 bg-clip-text text-transparent">
+                  {isOwnProfile ? '👤 Личный кабинет' : `👤 ${user.username}`}
+                </h2>
+                {isOwnProfile && (
+                  <p className="text-xs sm:text-sm text-muted-foreground mt-1">Управляйте своим профилем и балансом</p>
+                )}
+              </div>
+              <Button variant="ghost" size="icon" onClick={onClose} className="h-10 w-10 rounded-xl hover:bg-muted/80 transition-all hover:scale-110 active:scale-90">
+                <Icon name="X" size={24} />
               </Button>
             </div>
 

@@ -86,10 +86,19 @@ export const UserProfileTabs = ({
   return (
     <>
       <Tabs value={activeTab} onValueChange={onTabChange} className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="settings" className="text-xs sm:text-sm">Настройки</TabsTrigger>
-          <TabsTrigger value="verification" className="text-xs sm:text-sm">Верификация</TabsTrigger>
-          <TabsTrigger value="transactions" className="text-xs sm:text-sm">Транзакции</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-3 bg-muted/50 backdrop-blur-sm p-1 rounded-xl h-auto">
+          <TabsTrigger value="settings" className="text-xs sm:text-sm rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-md transition-all">
+            <Icon name="Settings" size={16} className="mr-1.5 sm:mr-2" />
+            Настройки
+          </TabsTrigger>
+          <TabsTrigger value="verification" className="text-xs sm:text-sm rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-md transition-all">
+            <Icon name="ShieldCheck" size={16} className="mr-1.5 sm:mr-2" />
+            Верификация
+          </TabsTrigger>
+          <TabsTrigger value="transactions" className="text-xs sm:text-sm rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-md transition-all">
+            <Icon name="Receipt" size={16} className="mr-1.5 sm:mr-2" />
+            Транзакции
+          </TabsTrigger>
         </TabsList>
 
       <TabsContent value="verification" className="space-y-3 sm:space-y-4 mt-3 sm:mt-4">
@@ -100,18 +109,25 @@ export const UserProfileTabs = ({
         )}
       </TabsContent>
 
-      <TabsContent value="transactions" className="space-y-3 sm:space-y-4 mt-3 sm:mt-4">
+      <TabsContent value="transactions" className="space-y-3 mt-4">
         {transactionsLoading ? (
-          <div className="flex items-center justify-center py-12">
-            <Icon name="Loader2" size={32} className="animate-spin text-muted-foreground" />
+          <div className="flex flex-col items-center justify-center py-16">
+            <Icon name="Loader2" size={40} className="animate-spin text-primary mb-3" />
+            <p className="text-sm text-muted-foreground">Загрузка транзакций...</p>
           </div>
         ) : transactions.length === 0 ? (
-          <Card className="p-4 sm:p-6 md:p-8 text-center">
-            <Icon name="Receipt" size={48} className="mx-auto mb-4 text-muted-foreground" />
-            <p className="text-muted-foreground">История транзакций пуста</p>
+          <Card className="p-8 sm:p-12 text-center border-border/50">
+            <div className="relative mx-auto mb-4 w-16 h-16 sm:w-20 sm:h-20">
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-purple-500/20 rounded-2xl blur-xl" />
+              <div className="relative w-full h-full bg-gradient-to-br from-primary/10 to-purple-500/10 rounded-2xl flex items-center justify-center">
+                <Icon name="Receipt" size={32} className="text-muted-foreground sm:w-10 sm:h-10" />
+              </div>
+            </div>
+            <p className="text-base font-medium text-muted-foreground">История транзакций пуста</p>
+            <p className="text-sm text-muted-foreground/70 mt-1">Здесь будут отображаться все ваши операции</p>
           </Card>
         ) : (
-          <div className="space-y-2 sm:space-y-3">
+          <div className="space-y-2.5">
             {transactions.map((transaction) => {
               const getTransactionIcon = () => {
                 if (transaction.type === 'escrow_sale') return { icon: 'ShoppingBag', color: 'green' };
@@ -130,18 +146,18 @@ export const UserProfileTabs = ({
               const isNeutral = amount === 0;
 
               return (
-                <Card key={transaction.id} className="p-3 sm:p-4 hover:bg-accent/50 transition-colors">
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-                      <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center shrink-0 ${
-                        color === 'green' ? 'bg-green-500/20' : 
-                        color === 'blue' ? 'bg-blue-500/20' : 
-                        color === 'gray' ? 'bg-gray-500/20' : 
-                        'bg-red-500/20'
+                <Card key={transaction.id} className="p-3 sm:p-4 hover:bg-accent/50 transition-all hover:shadow-md group border-border/50">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                      <div className={`relative w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center shrink-0 transition-all group-hover:scale-110 ${
+                        color === 'green' ? 'bg-gradient-to-br from-green-500/20 to-emerald-500/20' : 
+                        color === 'blue' ? 'bg-gradient-to-br from-blue-500/20 to-cyan-500/20' : 
+                        color === 'gray' ? 'bg-gradient-to-br from-gray-500/20 to-slate-500/20' : 
+                        'bg-gradient-to-br from-red-500/20 to-orange-500/20'
                       }`}>
                         <Icon 
                           name={icon as any} 
-                          size={16} 
+                          size={18} 
                           className={`sm:w-5 sm:h-5 ${
                             color === 'green' ? 'text-green-400' : 
                             color === 'blue' ? 'text-blue-400' : 
@@ -150,24 +166,25 @@ export const UserProfileTabs = ({
                           }`}
                         />
                       </div>
-                      <div className="min-w-0">
-                        <p className="font-medium text-sm sm:text-base truncate">{transaction.description}</p>
-                        <p className="text-xs text-muted-foreground truncate">
+                      <div className="min-w-0 flex-1">
+                        <p className="font-semibold text-sm sm:text-base truncate">{transaction.description}</p>
+                        <p className="text-xs text-muted-foreground/80 truncate flex items-center gap-1">
+                          <Icon name="Clock" size={10} />
                           {new Date(transaction.created_at).toLocaleString('ru-RU', {
-                            year: 'numeric',
-                            month: 'long',
                             day: 'numeric',
+                            month: 'short',
                             hour: '2-digit',
                             minute: '2-digit'
                           })}
                         </p>
                       </div>
                     </div>
-                    <div className={`text-sm sm:text-base md:text-lg font-bold shrink-0 ${
+                    <div className={`text-base sm:text-lg font-black shrink-0 ${
                       isNeutral ? 'text-muted-foreground' :
                       isPositive ? 'text-green-400' : 'text-red-400'
                     }`}>
-                      {!isNeutral && (isPositive ? '+' : '')}{amount.toFixed(2)} USDT
+                      {!isNeutral && (isPositive ? '+' : '')}{amount.toFixed(2)}
+                      <span className="text-xs font-medium ml-0.5">₮</span>
                     </div>
                   </div>
                 </Card>
@@ -177,24 +194,30 @@ export const UserProfileTabs = ({
         )}
       </TabsContent>
 
-      <TabsContent value="settings" className="space-y-4 mt-4">
+      <TabsContent value="settings" className="space-y-5 mt-4">
         {isOwnProfile && onUpdateProfile && (
           <>
-            <div>
-              <Label className="text-sm font-medium mb-2 block">О себе</Label>
+            <Card className="p-4 border-border/50 hover:border-border/80 transition-colors">
+              <Label className="text-sm font-semibold mb-2.5 flex items-center gap-2">
+                <Icon name="User" size={16} />
+                О себе
+              </Label>
               <Textarea 
                 defaultValue={user.bio || ''}
                 onBlur={(e) => onUpdateProfile({ bio: e.target.value })}
-                className="min-h-[100px]"
+                className="min-h-[120px] resize-none focus:ring-2 focus:ring-primary/20 transition-all"
                 placeholder="Расскажите о себе..."
               />
-            </div>
+            </Card>
             
-            <div className="space-y-3 sm:space-y-4">
-              <Label className="text-sm font-medium">Социальные сети</Label>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+            <Card className="p-4 border-border/50 hover:border-border/80 transition-colors">
+              <Label className="text-sm font-semibold mb-3 flex items-center gap-2">
+                <Icon name="Link" size={16} />
+                Социальные сети
+              </Label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <Label className="text-xs text-muted-foreground mb-1 flex items-center gap-2">
+                  <Label className="text-xs text-muted-foreground mb-2 flex items-center gap-1.5">
                     <Icon name="Send" size={14} />
                     Telegram
                   </Label>
@@ -202,11 +225,12 @@ export const UserProfileTabs = ({
                     defaultValue={user.telegram || ''}
                     onBlur={(e) => onUpdateProfile({ telegram: e.target.value })}
                     placeholder="@username"
+                    className="focus:ring-2 focus:ring-primary/20 transition-all"
                   />
                 </div>
                 
                 <div>
-                  <Label className="text-xs text-muted-foreground mb-1 flex items-center gap-2">
+                  <Label className="text-xs text-muted-foreground mb-2 flex items-center gap-1.5">
                     <Icon name="MessageSquare" size={14} />
                     Discord
                   </Label>
@@ -214,38 +238,50 @@ export const UserProfileTabs = ({
                     defaultValue={user.discord || ''}
                     onBlur={(e) => onUpdateProfile({ discord: e.target.value })}
                     placeholder="username#1234"
+                    className="focus:ring-2 focus:ring-primary/20 transition-all"
                   />
                 </div>
               </div>
-            </div>
-
-            <Card className="p-3 sm:p-4 bg-orange-500/5 border-orange-500/20">
-              <div className="flex flex-col sm:flex-row items-start justify-between gap-3 sm:gap-4">
-                <div className="flex-1">
-                  <h4 className="text-sm sm:text-base font-semibold mb-1 flex items-center gap-2">
-                    <Icon name="Key" size={16} className="text-orange-400 sm:w-[18px] sm:h-[18px]" />
-                    Сброс пароля
-                  </h4>
-                  <p className="text-xs sm:text-sm text-muted-foreground break-all">
-                    Новый пароль будет отправлен на email: {user.email}
-                  </p>
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleResetPassword}
-                  disabled={resetLoading}
-                  className="flex-shrink-0 w-full sm:w-auto text-xs sm:text-sm"
-                >
-                  {resetLoading ? (
-                    <Icon name="Loader2" size={14} className="animate-spin mr-1.5 sm:mr-2 sm:w-4 sm:h-4" />
-                  ) : (
-                    <Icon name="RefreshCw" size={14} className="mr-1.5 sm:mr-2 sm:w-4 sm:h-4" />
-                  )}
-                  Сбросить пароль
-                </Button>
-              </div>
             </Card>
+
+            <div className="relative group">
+              <div className="absolute -inset-1 bg-gradient-to-r from-orange-500 to-red-500 rounded-2xl opacity-20 group-hover:opacity-30 transition-opacity blur-lg" />
+              <Card className="relative bg-gradient-to-br from-orange-950/40 to-red-950/40 border-orange-500/40 backdrop-blur-sm">
+                <div className="p-4 sm:p-5">
+                  <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
+                    <div className="flex items-start gap-3 flex-1">
+                      <div className="relative flex-shrink-0">
+                        <div className="absolute inset-0 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl blur-md opacity-75" />
+                        <div className="relative w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center">
+                          <Icon name="Key" size={20} className="text-white" />
+                        </div>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="text-sm sm:text-base font-bold text-orange-400 mb-1">Сброс пароля</h4>
+                        <p className="text-xs text-orange-300/70">
+                          Новый пароль будет отправлен на<br className="hidden sm:block" />
+                          <span className="font-medium text-orange-300">{user.email}</span>
+                        </p>
+                      </div>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleResetPassword}
+                      disabled={resetLoading}
+                      className="flex-shrink-0 w-full sm:w-auto border-orange-500/50 hover:bg-orange-500/20 hover:border-orange-500 transition-all font-medium"
+                    >
+                      {resetLoading ? (
+                        <Icon name="Loader2" size={16} className="animate-spin mr-2" />
+                      ) : (
+                        <Icon name="RefreshCw" size={16} className="mr-2" />
+                      )}
+                      Сбросить
+                    </Button>
+                  </div>
+                </div>
+              </Card>
+            </div>
           </>
         )}
       </TabsContent>
