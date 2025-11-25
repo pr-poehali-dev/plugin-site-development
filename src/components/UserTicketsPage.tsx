@@ -48,7 +48,7 @@ const UserTicketsPage = ({ user }: UserTicketsPageProps) => {
 
   useEffect(() => {
     loadTickets();
-    const interval = setInterval(loadTickets, 5000);
+    const interval = setInterval(loadTickets, 60000);
     return () => clearInterval(interval);
   }, [user.id]);
 

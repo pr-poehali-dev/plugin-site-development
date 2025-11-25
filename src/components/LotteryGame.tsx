@@ -63,10 +63,10 @@ const LotteryGame = ({ user, onShowAuthDialog, onRefreshUserBalance }: LotteryGa
     if (user) {
       loadNotificationsData();
     }
-    const lotteryInterval = setInterval(loadLotteryData, 5000);
-    const chatInterval = setInterval(loadChatData, 3000);
-    const drawInterval = setInterval(checkDrawStatus, 10000);
-    const notifInterval = user ? setInterval(loadNotificationsData, 10000) : null;
+    const lotteryInterval = setInterval(loadLotteryData, 30000);
+    const chatInterval = setInterval(loadChatData, 30000);
+    const drawInterval = setInterval(checkDrawStatus, 60000);
+    const notifInterval = user ? setInterval(loadNotificationsData, 60000) : null;
     return () => {
       clearInterval(lotteryInterval);
       clearInterval(chatInterval);

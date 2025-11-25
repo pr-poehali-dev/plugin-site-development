@@ -33,7 +33,7 @@ const ExchangePage = ({ user, onRefreshUserBalance }: ExchangePageProps) => {
   useEffect(() => {
     loadBtcBalance();
     loadBtcPrice();
-    const interval = setInterval(loadBtcPrice, 1000);
+    const interval = setInterval(loadBtcPrice, 30000);
     return () => clearInterval(interval);
   }, [user.id]);
 

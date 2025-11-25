@@ -96,7 +96,7 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
   useEffect(() => {
     const interval = setInterval(() => {
       fetchTickets();
-    }, 5000);
+    }, 60000);
 
     return () => {
       clearInterval(interval);
@@ -123,7 +123,7 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
       if (activeTab === 'tickets') {
         fetchTickets();
       }
-    }, 5000);
+    }, 60000);
     
     return () => clearInterval(interval);
   }, [activeTab]);

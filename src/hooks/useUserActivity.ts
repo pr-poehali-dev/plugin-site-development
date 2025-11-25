@@ -211,24 +211,21 @@ export const useUserActivity = ({
         }
       };
 
-      updateActivity();
-      fetchUnreadCount();
-      checkBalanceUpdates();
-      checkPendingPayments();
-      checkVerificationStatus();
-      
-      const activityInterval = setInterval(updateActivity, 60 * 1000);
-      const unreadInterval = setInterval(fetchUnreadCount, 30 * 1000);
-      const balanceInterval = setInterval(checkBalanceUpdates, 30 * 1000);
-      const paymentsInterval = setInterval(checkPendingPayments, 30 * 1000);
-      const verificationInterval = setInterval(checkVerificationStatus, 30 * 1000);
+      const runAllChecks = async () => {
+        await Promise.all([
+          updateActivity(),
+          fetchUnreadCount(),
+          checkBalanceUpdates(),
+          checkPendingPayments(),
+          checkVerificationStatus()
+        ]);
+      };
+
+      runAllChecks();
+      const mainInterval = setInterval(runAllChecks, 60 * 1000);
       
       return () => {
-        clearInterval(activityInterval);
-        clearInterval(unreadInterval);
-        clearInterval(balanceInterval);
-        clearInterval(paymentsInterval);
-        clearInterval(verificationInterval);
+        clearInterval(mainInterval);
       };
     }
   }, [user]);
