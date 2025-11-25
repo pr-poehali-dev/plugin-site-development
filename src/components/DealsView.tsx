@@ -521,15 +521,15 @@ export const DealsView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Deal
               if (!isDesktop) {
                 toast({
                   title: '💻 Доступно только на ПК',
-                  description: 'Создание и просмотр сделок доступны только с компьютера',
-                  variant: 'destructive'
+                  description: 'Гарант-сервис доступен только с компьютера из-за некорректной работы мобильных браузеров',
+                  variant: 'destructive',
+                  duration: 5000
                 });
                 return;
               }
               user ? setShowCreateDialog(true) : onShowAuthDialog();
             }}
-            disabled={!isDesktop}
-            className="bg-gradient-to-r from-green-700 to-green-900 hover:from-green-600 hover:to-green-800 h-11 px-8 text-base font-bold transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-green-800/50 active:scale-95 touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed"
+            className="bg-gradient-to-r from-green-700 to-green-900 hover:from-green-600 hover:to-green-800 h-11 px-8 text-base font-bold transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-green-800/50 active:scale-95 touch-manipulation"
           >
             <Icon name="Plus" size={18} className="mr-2" />
             Разместить объявление
