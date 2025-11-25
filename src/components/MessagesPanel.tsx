@@ -159,6 +159,15 @@ const MessagesPanel = ({ open, onOpenChange, userId, initialRecipientId, onUserC
       const otherRole = isFromMe ? (msg as any).to_role : (msg as any).from_role;
       const otherLastSeen = isFromMe ? (msg as any).to_last_seen : (msg as any).from_last_seen;
 
+      console.log('Building chat for user:', otherUserId, {
+        username: otherUsername,
+        role: otherRole,
+        avatar: otherAvatar,
+        lastSeen: otherLastSeen,
+        isFromMe,
+        rawMsg: msg
+      });
+
       if (!chatsMap.has(otherUserId)) {
         chatsMap.set(otherUserId, {
           userId: otherUserId,
