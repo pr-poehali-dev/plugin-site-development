@@ -429,8 +429,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                             'isBase64Encoded': False
                         }
                     
-                    # Рассчитываем комиссию (1% с продавца)
-                    commission = float(deal['price']) * 0.01
+                    # Рассчитываем комиссию (3% с продавца)
+                    commission = float(deal['price']) * 0.03
                     seller_amount = float(deal['price']) - commission
                     
                     # Переводим средства продавцу (минус комиссия)
@@ -440,7 +440,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     cursor.execute("""
                         INSERT INTO transactions (user_id, amount, type, description)
                         VALUES (%s, %s, 'deal_sale', %s)
-                    """, (deal['seller_id'], seller_amount, f'Продажа через гарант (сделка #{deal_id}, комиссия 1%)'))
+                    """, (deal['seller_id'], seller_amount, f'Продажа через гарант (сделка #{deal_id}, комиссия 3%)'))
                     
                     # Обновляем сделку
                     cursor.execute("""

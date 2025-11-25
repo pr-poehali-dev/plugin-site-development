@@ -686,7 +686,7 @@ export const DealsView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Deal
 
             <Card className="bg-blue-500/5 border-blue-500/20 p-3">
               <p className="text-xs text-blue-400">
-                ℹ️ После успешного завершения сделки с вас будет удержана комиссия 1%
+                ℹ️ После успешного завершения сделки с вас будет удержана комиссия 3%
               </p>
             </Card>
 
