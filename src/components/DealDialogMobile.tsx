@@ -5,6 +5,7 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import Icon from '@/components/ui/icon';
 import { getAvatarGradient } from '@/utils/avatarColors';
 import { useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 
 interface DealDialogMobileProps {
   deal: Deal;
@@ -37,26 +38,42 @@ export const DealDialogMobile = ({
 }: DealDialogMobileProps) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const portalRoot = useRef<HTMLDivElement | null>(null);
 
-  // Блокировка скролла body при открытии диалога
+  // Создание изолированного Portal контейнера
   useEffect(() => {
-    const originalStyle = window.getComputedStyle(document.body).overflow;
-    const scrollY = window.scrollY;
+    // Создаём отдельный контейнер для Portal
+    const container = document.createElement('div');
+    container.id = 'deal-dialog-portal';
+    container.style.position = 'fixed';
+    container.style.top = '0';
+    container.style.left = '0';
+    container.style.width = '100%';
+    container.style.height = '100%';
+    container.style.zIndex = '9999';
+    container.style.isolation = 'isolate'; // Полная изоляция от родителя
     
-    // Полная блокировка скролла фона
+    document.body.appendChild(container);
+    portalRoot.current = container;
+
+    // Блокируем скролл body
+    const scrollY = window.scrollY;
+    document.body.style.overflow = 'hidden';
     document.body.style.position = 'fixed';
     document.body.style.top = `-${scrollY}px`;
-    document.body.style.left = '0';
-    document.body.style.right = '0';
-    document.body.style.overflow = 'hidden';
-    
+    document.body.style.width = '100%';
+
     return () => {
-      // Восстановление при закрытии
+      // Удаляем Portal контейнер
+      if (portalRoot.current && document.body.contains(portalRoot.current)) {
+        document.body.removeChild(portalRoot.current);
+      }
+      
+      // Восстанавливаем body
+      document.body.style.overflow = '';
       document.body.style.position = '';
       document.body.style.top = '';
-      document.body.style.left = '';
-      document.body.style.right = '';
-      document.body.style.overflow = originalStyle;
+      document.body.style.width = '';
       window.scrollTo(0, scrollY);
     };
   }, []);
@@ -65,8 +82,16 @@ export const DealDialogMobile = ({
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [dealMessages]);
 
-  return (
-    <div className="fixed inset-0 z-[100] bg-background overflow-y-auto">
+  // Весь контент диалога
+  const dialogContent = (
+    <div 
+      className="fixed inset-0 bg-background overflow-y-auto"
+      style={{
+        touchAction: 'pan-y',
+        overscrollBehavior: 'contain',
+        WebkitOverflowScrolling: 'touch'
+      }}
+    >
       <div className="min-h-screen p-4 space-y-3 pb-32">
         {/* Header with close button */}
         <div className="flex items-center gap-3 pb-2">
@@ -308,4 +333,8 @@ export const DealDialogMobile = ({
         )}
     </div>
   );
+
+  // Рендерим через Portal в изолированный контейнер
+  if (!portalRoot.current) return null;
+  return createPortal(dialogContent, portalRoot.current);
 };
