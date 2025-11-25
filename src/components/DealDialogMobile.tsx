@@ -39,6 +39,7 @@ export const DealDialogMobile = ({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const portalRoot = useRef<HTMLDivElement | null>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // Создание изолированного Portal контейнера
   useEffect(() => {
@@ -82,20 +83,24 @@ export const DealDialogMobile = ({
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [dealMessages]);
 
-  // Блокируем потерю фокуса input при скролле
+  // Предотвращаем blur input при скролле контента
   useEffect(() => {
-    const handleTouchMove = (e: TouchEvent) => {
-      // Разрешаем скролл, но не даём убрать фокус с input
-      if (inputRef.current && document.activeElement === inputRef.current) {
-        e.stopPropagation();
+    const scrollContainer = scrollContainerRef.current;
+    if (!scrollContainer) return;
+
+    const handleTouchStart = (e: TouchEvent) => {
+      // Если касание НЕ на input - разрешаем скролл
+      const target = e.target as HTMLElement;
+      if (inputRef.current && !inputRef.current.contains(target)) {
+        // Принудительно снимаем фокус с input при начале скролла
+        if (document.activeElement === inputRef.current) {
+          inputRef.current.blur();
+        }
       }
     };
 
-    const container = portalRoot.current;
-    if (container) {
-      container.addEventListener('touchmove', handleTouchMove, { passive: true });
-      return () => container.removeEventListener('touchmove', handleTouchMove);
-    }
+    scrollContainer.addEventListener('touchstart', handleTouchStart, { passive: true });
+    return () => scrollContainer.removeEventListener('touchstart', handleTouchStart);
   }, []);
 
   // Весь контент диалога
@@ -107,6 +112,7 @@ export const DealDialogMobile = ({
       }}
     >
       <div 
+        ref={scrollContainerRef}
         className="flex-1 overflow-y-auto p-4 space-y-3 pb-4"
         style={{
           touchAction: 'pan-y',
@@ -321,34 +327,37 @@ export const DealDialogMobile = ({
                 ref={inputRef}
                 type="text"
                 value={newMessage}
-                onChange={(e) => {
-                  console.log('Input onChange:', e.target.value);
-                  setNewMessage(e.target.value);
-                }}
-                onInput={(e) => {
-                  console.log('Input onInput:', (e.target as HTMLInputElement).value);
-                }}
+                onChange={(e) => setNewMessage(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && newMessage.trim()) {
+                    e.preventDefault();
                     sendMessage();
                   }
                 }}
                 onTouchStart={(e) => {
                   e.stopPropagation();
+                  // Принудительный фокус при касании
+                  setTimeout(() => inputRef.current?.focus(), 0);
+                }}
+                onTouchEnd={(e) => {
+                  e.stopPropagation();
                 }}
                 onClick={(e) => {
                   e.stopPropagation();
+                  e.preventDefault();
+                  inputRef.current?.focus();
                 }}
-                onFocus={() => console.log('Input focused')}
-                onBlur={() => console.log('Input blurred')}
                 placeholder="Написать сообщение..."
                 className="flex-1 h-12 px-4 text-base rounded-xl border-2 border-input bg-background placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 transition-colors"
                 autoComplete="off"
+                inputMode="text"
+                enterKeyHint="send"
                 style={{ 
                   fontSize: '16px', 
-                  touchAction: 'manipulation', 
+                  touchAction: 'none',
                   WebkitUserSelect: 'text', 
-                  userSelect: 'text'
+                  userSelect: 'text',
+                  WebkitTapHighlightColor: 'transparent'
                 }}
               />
               <Button
