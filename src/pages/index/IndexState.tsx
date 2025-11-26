@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Plugin, Category, User, ForumTopic, ForumComment, SearchResult } from '@/types';
 import { useDataFetching } from '@/hooks/useDataFetching';
 import { useUserActivity } from '@/hooks/useUserActivity';
@@ -17,7 +17,11 @@ export const useIndexState = () => {
     return (localStorage.getItem('activeView') as 'plugins' | 'forum') || 'plugins';
   });
   const [searchQuery, setSearchQuery] = useState('');
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(() => {
+    const saved = localStorage.getItem('sidebarOpen');
+    if (saved !== null) return saved === 'true';
+    return window.innerWidth >= 1024;
+  });
   const [authDialogOpen, setAuthDialogOpen] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
@@ -40,6 +44,10 @@ export const useIndexState = () => {
   const [messagesUnread, setMessagesUnread] = useState(0);
   const [adminNotificationsUnread, setAdminNotificationsUnread] = useState(0);
   const [messageRecipientId, setMessageRecipientId] = useState<number | null>(null);
+
+  useEffect(() => {
+    localStorage.setItem('sidebarOpen', sidebarOpen.toString());
+  }, [sidebarOpen]);
 
   const { fetchPlugins, fetchForumTopics } = useDataFetching({
     activeView,
