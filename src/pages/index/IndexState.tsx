@@ -27,6 +27,7 @@ export const useIndexState = () => {
   const [authDialogOpen, setAuthDialogOpen] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [forumTopics, setForumTopics] = useState<ForumTopic[]>([]);
   const [selectedTopic, setSelectedTopic] = useState<ForumTopic | null>(null);
   const [topicComments, setTopicComments] = useState<ForumComment[]>([]);
@@ -50,6 +51,11 @@ export const useIndexState = () => {
   useEffect(() => {
     localStorage.setItem('sidebarOpen', sidebarOpen.toString());
   }, [sidebarOpen]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsInitialLoad(false), 100);
+    return () => clearTimeout(timer);
+  }, []);
 
   const { fetchPlugins, fetchForumTopics } = useDataFetching({
     activeView,
@@ -176,6 +182,7 @@ export const useIndexState = () => {
     setAdminNotificationsUnread,
     messageRecipientId,
     setMessageRecipientId,
+    isInitialLoad,
     fetchPlugins,
     fetchForumTopics,
     handleCreateTopic,
