@@ -8,6 +8,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
+import { CookieProvider } from "./contexts/CookieContext";
+import { CookieConsent } from "./components/CookieConsent";
 
 const queryClient = new QueryClient();
 
@@ -50,23 +52,26 @@ const CryptoChecker = () => {
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Helmet>
-        <title>Купить Flash USDT TRC20 | GitCrypto - Флеш USDT криптовалюта</title>
-        <meta name="description" content="Купить Flash USDT TRC20 - надежная платформа GitCrypto для покупки флеш криптовалюты. Смарт-контракты на блокчейне TRON, безопасные транзакции. Flash токены USDT TRC20 с мгновенной отправкой. Форум криптосообщества и плагины для разработчиков" />
-      </Helmet>
-      <CryptoChecker />
-      <Toaster />
-      <Sonner />
-      <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/reset-password" element={<ResetPassword />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
+    <CookieProvider>
+      <TooltipProvider>
+        <Helmet>
+          <title>Купить Flash USDT TRC20 | GitCrypto - Флеш USDT криптовалюта</title>
+          <meta name="description" content="Купить Flash USDT TRC20 - надежная платформа GitCrypto для покупки флеш криптовалюты. Смарт-контракты на блокчейне TRON, безопасные транзакции. Flash токены USDT TRC20 с мгновенной отправкой. Форум криптосообщества и плагины для разработчиков" />
+        </Helmet>
+        <CryptoChecker />
+        <Toaster />
+        <Sonner />
+        <CookieConsent />
+        <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </CookieProvider>
   </QueryClientProvider>
 );
 
