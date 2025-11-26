@@ -3,6 +3,7 @@ import { Helmet } from 'react-helmet';
 import { useIndexState } from './index/IndexState';
 import { useIndexHandlers } from './index/IndexHandlers';
 import IndexLayout from './index/IndexLayout';
+import { CookieConsent } from '@/components/CookieConsent';
 
 const AdminPanel = lazy(() => import('@/components/AdminPanel'));
 const UserProfileDialog = lazy(() => import('@/components/UserProfileDialog'));
@@ -307,6 +308,8 @@ const Index = () => {
           <DDoSMonitor currentUser={state.user} />
         </Suspense>
       )}
+
+      <CookieConsent isAuthenticated={!!state.user} />
     </div>
     </>
   );

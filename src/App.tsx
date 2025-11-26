@@ -9,7 +9,6 @@ import Index from "./pages/Index";
 import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 import { CookieProvider } from "./contexts/CookieContext";
-import { CookieConsent } from "./components/CookieConsent";
 
 const queryClient = new QueryClient();
 
@@ -61,7 +60,6 @@ const App = () => (
         <CryptoChecker />
         <Toaster />
         <Sonner />
-        <CookieConsent />
         <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
           <Routes>
             <Route path="/" element={<Index />} />
