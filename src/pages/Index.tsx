@@ -296,6 +296,7 @@ const Index = () => {
                 onCreateTopic={() => {}}
                 onProfileDialogChange={() => {}}
                 onUpdateProfile={() => {}}
+                onAuthDialogAttemptClose={handlers.handleAuthDialogAttemptClose}
               />
               </Suspense>
             </div>

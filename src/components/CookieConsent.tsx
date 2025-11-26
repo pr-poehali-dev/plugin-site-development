@@ -13,6 +13,7 @@ interface CookieConsentProps {
 
 export const CookieConsent = ({ isAuthenticated }: CookieConsentProps) => {
   const [visible, setVisible] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -26,29 +27,46 @@ export const CookieConsent = ({ isAuthenticated }: CookieConsentProps) => {
     }
   }, [isAuthenticated]);
 
+  const handleClose = (action: () => void) => {
+    setIsClosing(true);
+    setTimeout(() => {
+      action();
+      setVisible(false);
+      setIsClosing(false);
+    }, 300);
+  };
+
   const handleAccept = () => {
-    CookieManager.set(CONSENT_KEY, CONSENT_VERSION, {
-      expires: 365,
-      secure: true,
-      sameSite: 'lax'
+    handleClose(() => {
+      CookieManager.set(CONSENT_KEY, CONSENT_VERSION, {
+        expires: 365,
+        secure: true,
+        sameSite: 'lax'
+      });
     });
-    setVisible(false);
   };
 
   const handleDecline = () => {
-    CookieManager.set(CONSENT_KEY, 'declined', {
-      expires: 30,
-      secure: true,
-      sameSite: 'lax'
+    handleClose(() => {
+      CookieManager.set(CONSENT_KEY, 'declined', {
+        expires: 30,
+        secure: true,
+        sameSite: 'lax'
+      });
     });
-    setVisible(false);
   };
 
   if (!visible) return null;
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-[100] p-3 sm:p-4 animate-in slide-in-from-bottom-5">
-      <Card className="max-w-4xl mx-auto p-3 sm:p-4 border-primary/20 bg-background/98 backdrop-blur-lg shadow-2xl">
+    <div 
+      className={`fixed bottom-0 left-0 right-0 z-[100] p-3 sm:p-4 transition-all duration-300 ${
+        isClosing 
+          ? 'translate-y-full opacity-0' 
+          : 'translate-y-0 opacity-100 animate-in slide-in-from-bottom-5'
+      }`}
+    >
+      <Card className="max-w-4xl mx-auto p-3 sm:p-4 border-primary/20 bg-background/98 backdrop-blur-lg shadow-2xl transition-all duration-300">
         <div className="flex items-start gap-2 sm:gap-4">
           <div className="flex-shrink-0 mt-0.5">
             <Icon name="Cookie" className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
@@ -66,7 +84,7 @@ export const CookieConsent = ({ isAuthenticated }: CookieConsentProps) => {
               <Button
                 onClick={handleAccept}
                 size="sm"
-                className="bg-primary hover:bg-primary/90 w-full sm:w-auto"
+                className="bg-primary hover:bg-primary/90 w-full sm:w-auto transition-all duration-200 hover:scale-[1.02]"
               >
                 <Icon name="Check" className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5" />
                 <span className="text-xs sm:text-sm">Принять</span>
@@ -76,7 +94,7 @@ export const CookieConsent = ({ isAuthenticated }: CookieConsentProps) => {
                 onClick={handleDecline}
                 variant="outline"
                 size="sm"
-                className="w-full sm:w-auto"
+                className="w-full sm:w-auto transition-all duration-200 hover:scale-[1.02]"
               >
                 <span className="text-xs sm:text-sm">Отклонить</span>
               </Button>
@@ -86,8 +104,8 @@ export const CookieConsent = ({ isAuthenticated }: CookieConsentProps) => {
           <Button
             variant="ghost"
             size="sm"
-            className="flex-shrink-0 h-7 w-7 p-0 hover:bg-muted/50"
-            onClick={() => setVisible(false)}
+            className="flex-shrink-0 h-7 w-7 p-0 hover:bg-muted/50 transition-all duration-200 hover:rotate-90"
+            onClick={() => handleClose(() => {})}
           >
             <Icon name="X" className="h-3.5 w-3.5" />
           </Button>
