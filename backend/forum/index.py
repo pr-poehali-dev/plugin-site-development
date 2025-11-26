@@ -155,7 +155,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                         fcat.name as category_name, fcat.slug as category_slug, fcat.color as category_color, fcat.icon as category_icon,
                         parent_fc.name as parent_category_name, parent_fc.slug as parent_category_slug,
                         parent_fc.color as parent_category_color, parent_fc.icon as parent_category_icon,
-                        COUNT(fcom.id) as comments_count
+                        COUNT(fcom.id) as comments_count,
+                        MAX(fcom.created_at) as last_comment_at
                     FROM forum_topics ft
                     LEFT JOIN users u ON ft.author_id = u.id
                     LEFT JOIN forum_comments fcom ON ft.id = fcom.topic_id AND fcom.removed_at IS NULL

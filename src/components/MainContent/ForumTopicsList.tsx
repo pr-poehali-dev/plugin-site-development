@@ -137,7 +137,9 @@ export const ForumTopicsList = ({
     if (forumSortBy === 'newest') {
       return sorted.sort((a, b) => {
         if (a.is_pinned !== b.is_pinned) return a.is_pinned ? -1 : 1;
-        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        const aTime = a.last_comment_at || a.created_at;
+        const bTime = b.last_comment_at || b.created_at;
+        return new Date(bTime).getTime() - new Date(aTime).getTime();
       });
     }
     if (forumSortBy === 'hot') {

@@ -61,6 +61,7 @@ export interface ForumTopic {
   is_pinned: boolean;
   created_at: string;
   updated_at?: string;
+  last_comment_at?: string;
   author_id?: number;
   author_name: string;
   author_avatar?: string;
