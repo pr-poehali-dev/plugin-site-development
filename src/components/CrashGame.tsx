@@ -113,19 +113,24 @@ const CrashGame = ({ user, onShowAuthDialog, onRefreshUserBalance }: CrashGamePr
       let currentMultiplier = 1.00;
       const autoCashoutValue = parseFloat(autoCashout);
 
+      let localHasCashedOut = false;
+      
       intervalRef.current = setInterval(() => {
         currentMultiplier += 0.01;
         setMultiplier(currentMultiplier);
 
-        if (!isNaN(autoCashoutValue) && currentMultiplier >= autoCashoutValue && !hasCashedOut) {
+        if (!isNaN(autoCashoutValue) && currentMultiplier >= autoCashoutValue && !localHasCashedOut) {
+          localHasCashedOut = true;
+          setHasCashedOut(true);
           cashout(currentMultiplier, betAmount, true);
         }
 
         if (currentMultiplier >= crash) {
           if (intervalRef.current) {
             clearInterval(intervalRef.current);
+            intervalRef.current = null;
           }
-          if (!hasCashedOut) {
+          if (!localHasCashedOut) {
             handleCrash(betAmount);
           }
         }
@@ -147,6 +152,7 @@ const CrashGame = ({ user, onShowAuthDialog, onRefreshUserBalance }: CrashGamePr
     setHasCashedOut(true);
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
+      intervalRef.current = null;
     }
 
     const winAmount = betAmount * currentMultiplier;
@@ -322,9 +328,12 @@ const CrashGame = ({ user, onShowAuthDialog, onRefreshUserBalance }: CrashGamePr
 
           {gameState === 'flying' && !hasCashedOut && (
             <Button
-              onClick={() => cashout(multiplier, parseFloat(bet))}
+              onClick={() => {
+                setHasCashedOut(true);
+                cashout(multiplier, parseFloat(bet), false);
+              }}
               className="w-full bg-gradient-to-r from-green-600 to-green-800 hover:from-green-700 hover:to-green-900 text-xl py-6"
-              disabled={isProcessing}
+              disabled={isProcessing || hasCashedOut}
             >
               <Icon name="DollarSign" size={24} className="mr-2" />
               Забрать {(parseFloat(bet) * multiplier).toFixed(2)} USDT

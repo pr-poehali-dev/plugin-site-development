@@ -11,7 +11,6 @@ import LotteryGame from './LotteryGame';
 import CrashGame from './CrashGame';
 import MinesGame from './MinesGame';
 import SlotsGame from './SlotsGame';
-import PlinkoGame from './PlinkoGame';
 
 interface CasinoHubProps {
   user: User | null;
@@ -19,7 +18,7 @@ interface CasinoHubProps {
   onRefreshUserBalance?: () => void;
 }
 
-type GameType = 'menu' | 'blackjack' | 'baccarat' | 'dice' | 'lottery' | 'crash' | 'mines' | 'slots' | 'plinko';
+type GameType = 'menu' | 'blackjack' | 'baccarat' | 'dice' | 'lottery' | 'crash' | 'mines' | 'slots';
 
 const CasinoHub = ({ user, onShowAuthDialog, onRefreshUserBalance }: CasinoHubProps) => {
   const [selectedGame, setSelectedGame] = useState<GameType>('menu');
@@ -32,7 +31,7 @@ const CasinoHub = ({ user, onShowAuthDialog, onRefreshUserBalance }: CasinoHubPr
       name: 'Блэкджек',
       icon: 'Spade',
       description: 'Наберите 21 очко или больше дилера',
-      color: 'from-green-600 to-green-800',
+      color: 'from-emerald-600 via-green-600 to-teal-700',
       available: true
     },
     {
@@ -40,16 +39,15 @@ const CasinoHub = ({ user, onShowAuthDialog, onRefreshUserBalance }: CasinoHubPr
       name: 'Баккара',
       icon: 'Diamond',
       description: 'Классическая карточная игра казино',
-      color: 'from-purple-600 to-purple-800',
+      color: 'from-purple-600 via-violet-600 to-indigo-700',
       available: true
     },
-
     {
       id: 'dice' as GameType,
       name: 'Dice',
       icon: 'Dices',
       description: 'Бросайте кубик и угадывайте результат',
-      color: 'from-orange-600 to-orange-800',
+      color: 'from-orange-600 via-red-600 to-pink-700',
       available: true
     },
     {
@@ -57,7 +55,7 @@ const CasinoHub = ({ user, onShowAuthDialog, onRefreshUserBalance }: CasinoHubPr
       name: 'Лотерея',
       icon: 'Ticket',
       description: '10 билетов по 50 USDT. Приз 400 USDT',
-      color: 'from-indigo-600 to-indigo-800',
+      color: 'from-indigo-600 via-blue-600 to-cyan-700',
       available: true
     },
     {
@@ -65,7 +63,7 @@ const CasinoHub = ({ user, onShowAuthDialog, onRefreshUserBalance }: CasinoHubPr
       name: 'Crash',
       icon: 'Rocket',
       description: 'Ракета взлетает - успей вывести!',
-      color: 'from-sky-600 to-sky-800',
+      color: 'from-sky-600 via-blue-600 to-indigo-700',
       available: true
     },
     {
@@ -73,7 +71,7 @@ const CasinoHub = ({ user, onShowAuthDialog, onRefreshUserBalance }: CasinoHubPr
       name: 'Mines',
       icon: 'Grid3x3',
       description: 'Найди алмазы, избегая мин',
-      color: 'from-purple-600 to-purple-800',
+      color: 'from-violet-600 via-purple-600 to-fuchsia-700',
       available: true
     },
     {
@@ -81,17 +79,10 @@ const CasinoHub = ({ user, onShowAuthDialog, onRefreshUserBalance }: CasinoHubPr
       name: 'Слоты',
       icon: 'Cherry',
       description: 'Классический игровой автомат',
-      color: 'from-yellow-600 to-yellow-800',
+      color: 'from-amber-600 via-yellow-600 to-orange-700',
       available: true
     },
-    {
-      id: 'plinko' as GameType,
-      name: 'Plinko',
-      icon: 'ArrowDown',
-      description: 'Сбрось шарик и выиграй до 16x',
-      color: 'from-indigo-600 to-indigo-800',
-      available: true
-    }
+
   ];
 
   if (selectedGame === 'blackjack') {
@@ -243,42 +234,28 @@ const CasinoHub = ({ user, onShowAuthDialog, onRefreshUserBalance }: CasinoHubPr
     );
   }
 
-  if (selectedGame === 'plinko') {
-    return (
-      <div className="space-y-4">
-        <Button 
-          type="button"
-          onClick={() => setSelectedGame('menu')}
-          variant="outline"
-          className="gap-2"
-        >
-          <Icon name="ArrowLeft" size={18} />
-          Назад к играм
-        </Button>
-        <PlinkoGame 
-          user={user} 
-          onShowAuthDialog={onShowAuthDialog}
-          onRefreshUserBalance={onRefreshUserBalance}
-        />
-      </div>
-    );
-  }
+
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div>
-        <h1 className="text-3xl font-bold mb-2">🎮 Игры</h1>
-        <p className="text-muted-foreground">
-          Выберите игру и испытайте удачу. Играйте на реальные USDT. 
+    <div className="space-y-8 animate-fade-in">
+      <div className="relative">
+        <div className="absolute inset-0 bg-gradient-to-r from-purple-600/10 via-pink-600/10 to-blue-600/10 blur-3xl -z-10"></div>
+        <h1 className="text-4xl md:text-5xl font-black mb-3 bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent">
+          🎮 Казино
+        </h1>
+        <p className="text-lg text-muted-foreground">
+          Премиум игры на реальные USDT с мгновенными выплатами
         </p>
         {!canPlay && (
-          <div className="mt-4 p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
-            <div className="flex items-start gap-3">
-              <Icon name="Info" size={20} className="text-yellow-500 flex-shrink-0 mt-0.5" />
+          <div className="mt-6 p-5 bg-gradient-to-r from-yellow-500/10 to-orange-500/10 border border-yellow-500/30 rounded-2xl backdrop-blur-sm">
+            <div className="flex items-start gap-4">
+              <div className="w-10 h-10 bg-yellow-500/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                <Icon name="Info" size={20} className="text-yellow-400" />
+              </div>
               <div className="text-sm">
-                <p className="font-semibold text-yellow-500 mb-1">Требуется роль "Участник"</p>
+                <p className="font-bold text-yellow-400 mb-2 text-base">Требуется роль "Участник"</p>
                 <p className="text-muted-foreground">
-                  Роль "Участник" выдается автоматически через 24 часа после регистрации. Это сделано для защиты от злоупотреблений.
+                  Роль выдается автоматически через 24 часа после регистрации для защиты от злоупотреблений.
                 </p>
               </div>
             </div>
@@ -286,12 +263,14 @@ const CasinoHub = ({ user, onShowAuthDialog, onRefreshUserBalance }: CasinoHubPr
         )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
         {games.map((game) => (
           <Card 
             key={game.id}
-            className={`p-0 bg-gradient-to-br ${game.color} border-0 relative overflow-hidden group transition-all duration-300 ${
-              !game.available || !canPlay ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer hover:scale-[1.02] hover:shadow-2xl'
+            className={`group relative p-0 bg-gradient-to-br ${game.color} border-0 overflow-hidden transition-all duration-500 ${
+              !game.available || !canPlay 
+                ? 'opacity-50 cursor-not-allowed' 
+                : 'cursor-pointer hover:scale-[1.05] hover:shadow-[0_20px_60px_-15px] hover:shadow-current/50 hover:-translate-y-1'
             }`}
             onClick={() => {
               if (!user) {
@@ -306,72 +285,57 @@ const CasinoHub = ({ user, onShowAuthDialog, onRefreshUserBalance }: CasinoHubPr
               }
             }}
           >
-            {/* Тематический фоновый паттерн */}
-            <div className="absolute inset-0">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(255,255,255,0.1),transparent)] opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/30 to-transparent"></div>
+            
+            <div className="absolute inset-0 opacity-20">
               {game.id === 'blackjack' && (
                 <>
-                  <div className="absolute top-4 right-8 text-white/10 text-6xl font-bold rotate-12">♠</div>
-                  <div className="absolute bottom-8 left-4 text-white/10 text-5xl font-bold -rotate-12">♥</div>
-                  <div className="absolute top-1/2 right-4 text-white/10 text-4xl font-bold">♦</div>
-                  <div className="absolute bottom-4 right-1/3 text-white/10 text-5xl font-bold rotate-45">♣</div>
+                  <div className="absolute top-4 right-6 text-white/30 text-5xl font-bold rotate-12 group-hover:rotate-45 transition-transform duration-700">♠</div>
+                  <div className="absolute bottom-6 left-4 text-white/30 text-4xl font-bold -rotate-12 group-hover:-rotate-45 transition-transform duration-700">♥</div>
                 </>
               )}
-              {game.id === 'baccarat' && (
-                <>
-                  <div className="absolute top-6 right-6 text-white/10 text-7xl font-bold">♦</div>
-                  <div className="absolute bottom-6 left-6 text-white/10 text-6xl font-bold rotate-180">♦</div>
-                  <div className="absolute top-1/3 left-1/4 text-white/10 text-5xl font-bold rotate-45">♦</div>
-                </>
+              {game.id === 'crash' && (
+                <div className="absolute top-1/2 right-6 text-white/30 text-6xl group-hover:translate-y-[-20px] transition-transform duration-700">🚀</div>
               )}
-              {game.id === 'dice' && (
-                <>
-                  <div className="absolute top-8 right-12 w-16 h-16 border-4 border-white/10 rounded-lg rotate-12 flex items-center justify-center">
-                    <div className="w-3 h-3 bg-white/20 rounded-full"></div>
-                  </div>
-                  <div className="absolute bottom-12 left-8 w-20 h-20 border-4 border-white/10 rounded-lg -rotate-12"></div>
-                  <div className="absolute top-1/2 right-1/4 w-12 h-12 border-4 border-white/10 rounded-lg rotate-45"></div>
-                </>
+              {game.id === 'mines' && (
+                <div className="absolute bottom-4 right-4 text-white/30 text-5xl">💎</div>
               )}
-              {game.id === 'lottery' && (
-                <>
-                  <div className="absolute top-4 right-4 text-white/10 text-6xl">🎫</div>
-                  <div className="absolute bottom-8 left-8 text-white/10 text-5xl rotate-12">🎟️</div>
-                  <div className="absolute top-1/2 left-1/4 text-white/10 text-4xl -rotate-12">✨</div>
-                  <div className="absolute bottom-1/3 right-1/3 text-white/10 text-5xl">🎰</div>
-                </>
+              {game.id === 'slots' && (
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-white/20 text-7xl group-hover:rotate-180 transition-transform duration-1000">🎰</div>
               )}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/20 to-transparent"></div>
             </div>
             
-            <div className="relative z-10 p-6">
-              <div className="flex items-start justify-between mb-4">
-                <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm shadow-lg">
-                  <Icon name={game.icon as any} size={32} className="text-white drop-shadow-lg" />
+            <div className="relative z-10 p-7">
+              <div className="flex items-start justify-between mb-5">
+                <div className="w-14 h-14 bg-white/25 rounded-2xl flex items-center justify-center backdrop-blur-md shadow-xl ring-1 ring-white/30 group-hover:scale-110 group-hover:rotate-6 transition-all duration-500">
+                  <Icon name={game.icon as any} size={28} className="text-white drop-shadow-2xl" />
                 </div>
                 {!game.available && (
-                  <div className="px-3 py-1 bg-white/20 rounded-full backdrop-blur-sm">
-                    <span className="text-xs font-semibold text-white">Скоро</span>
+                  <div className="px-3 py-1.5 bg-white/25 rounded-xl backdrop-blur-md ring-1 ring-white/30">
+                    <span className="text-xs font-bold text-white tracking-wide">СКОРО</span>
                   </div>
                 )}
               </div>
 
-              <h3 className="text-2xl font-bold text-white mb-2 drop-shadow-lg">{game.name}</h3>
-              <p className="text-white/90 text-sm mb-6 drop-shadow-md">{game.description}</p>
+              <h3 className="text-2xl font-black text-white mb-2 drop-shadow-2xl tracking-tight">{game.name}</h3>
+              <p className="text-white/80 text-sm mb-6 drop-shadow-lg leading-relaxed">{game.description}</p>
 
               {!game.available ? (
-                <div className="flex items-center gap-2 text-white/60 text-sm">
+                <div className="inline-flex items-center gap-2 px-4 py-2.5 bg-white/15 rounded-xl text-white/70 text-sm font-semibold backdrop-blur-sm">
                   <Icon name="Lock" size={16} />
                   <span>В разработке</span>
                 </div>
               ) : !canPlay ? (
-                <div className="flex items-center gap-2 text-white/60 text-sm">
+                <div className="inline-flex items-center gap-2 px-4 py-2.5 bg-white/15 rounded-xl text-white/70 text-sm font-semibold backdrop-blur-sm">
                   <Icon name="Lock" size={16} />
-                  <span>Требуется роль "Участник"</span>
+                  <span>Нужна роль</span>
                 </div>
               ) : (
-                <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-xl text-white font-semibold transition-all">
+                <div className="inline-flex items-center gap-2 px-5 py-3 bg-white/30 hover:bg-white/40 backdrop-blur-md rounded-xl text-white font-bold transition-all shadow-lg ring-1 ring-white/40 group-hover:ring-white/60">
                   <span>Играть</span>
-                  <Icon name="ArrowRight" size={18} className="group-hover:translate-x-1 transition-transform" />
+                  <Icon name="Play" size={18} className="group-hover:translate-x-1 transition-transform" />
                 </div>
               )}
             </div>
@@ -379,37 +343,57 @@ const CasinoHub = ({ user, onShowAuthDialog, onRefreshUserBalance }: CasinoHubPr
         ))}
       </div>
 
-      <Card className="p-6 bg-card/50 border-primary/20">
-        <div className="flex items-start gap-4">
-          <div className="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center flex-shrink-0">
-            <Icon name="Info" size={24} className="text-primary" />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <Card className="p-6 bg-gradient-to-br from-blue-600/10 to-cyan-600/10 border-blue-500/20 backdrop-blur-sm">
+          <div className="flex items-start gap-4">
+            <div className="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center flex-shrink-0 ring-1 ring-blue-400/30">
+              <Icon name="Shield" size={24} className="text-blue-400" />
+            </div>
+            <div className="space-y-2">
+              <h3 className="font-bold text-lg text-blue-300">Честная игра</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Проверяемый генератор случайных чисел. Мгновенные выплаты на баланс.
+              </p>
+            </div>
           </div>
-          <div className="space-y-2">
-            <h3 className="font-semibold text-lg">Честная игра</h3>
-            <p className="text-sm text-muted-foreground">
-              Все игры используют проверяемый генератор случайных чисел. Каждый раунд можно проверить на честность.
-              Минимальная ставка: 0.1 USDT. Выигрыши зачисляются моментально на ваш баланс.
-            </p>
+        </Card>
+
+        <Card className="p-6 bg-gradient-to-br from-green-600/10 to-emerald-600/10 border-green-500/20 backdrop-blur-sm">
+          <div className="flex items-start gap-4">
+            <div className="w-12 h-12 bg-green-500/20 rounded-xl flex items-center justify-center flex-shrink-0 ring-1 ring-green-400/30">
+              <Icon name="Zap" size={24} className="text-green-400" />
+            </div>
+            <div className="space-y-2">
+              <h3 className="font-bold text-lg text-green-300">Мгновенно</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Минимальная ставка 0.1 USDT. Выигрыши зачисляются моментально.
+              </p>
+            </div>
           </div>
-        </div>
-      </Card>
+        </Card>
+      </div>
 
       {!user && (
-        <Card className="p-6 bg-gradient-to-r from-green-600/20 to-green-800/20 border-green-600/30">
-          <div className="flex flex-col items-center text-center gap-4">
-            <Icon name="UserCircle2" size={48} className="text-green-400" />
+        <Card className="p-8 bg-gradient-to-br from-purple-600/20 via-pink-600/20 to-blue-600/20 border-purple-500/30 backdrop-blur-sm relative overflow-hidden">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(168,85,247,0.15),transparent)]"></div>
+          <div className="relative flex flex-col items-center text-center gap-5">
+            <div className="w-20 h-20 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center shadow-2xl ring-4 ring-purple-400/20">
+              <Icon name="UserCircle2" size={40} className="text-white" />
+            </div>
             <div>
-              <h3 className="font-semibold text-lg mb-2">Войдите для игры</h3>
-              <p className="text-sm text-muted-foreground mb-4">
-                Создайте аккаунт или войдите, чтобы начать играть на реальные USDT
+              <h3 className="font-black text-2xl mb-2 bg-gradient-to-r from-purple-300 to-pink-300 bg-clip-text text-transparent">
+                Начните играть
+              </h3>
+              <p className="text-muted-foreground">
+                Войдите или создайте аккаунт для игры на реальные USDT
               </p>
             </div>
             <Button 
               onClick={onShowAuthDialog}
-              className="bg-gradient-to-r from-green-600 to-green-800 hover:from-green-700 hover:to-green-900"
+              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 shadow-lg shadow-purple-500/30 px-8 py-6 text-lg font-bold"
             >
-              <Icon name="LogIn" size={18} className="mr-2" />
-              Войти / Регистрация
+              <Icon name="LogIn" size={20} className="mr-2" />
+              Войти
             </Button>
           </div>
         </Card>
