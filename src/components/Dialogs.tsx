@@ -203,94 +203,101 @@ const Dialogs = ({
   return (
     <>
       <Dialog open={authDialogOpen} onOpenChange={handleAuthDialogChange}>
-        <DialogContent className="animate-scale-in border-0 rounded-3xl shadow-2xl bg-card/95 backdrop-blur-xl max-w-md">
-          <DialogHeader className="space-y-3 pb-2">
-            <div className="mx-auto w-16 h-16 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
-              <Icon name="Rocket" size={32} className="text-primary" />
+        <DialogContent className="auth-dialog-content border-0 rounded-3xl shadow-2xl bg-card/95 backdrop-blur-xl max-w-md overflow-hidden">
+          <div className="auth-orbs-container">
+            <div className="auth-orb auth-orb-1"></div>
+            <div className="auth-orb auth-orb-2"></div>
+            <div className="auth-orb auth-orb-3"></div>
+          </div>
+          
+          <DialogHeader className="space-y-3 pb-2 relative z-10">
+            <div className="mx-auto w-20 h-20 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center auth-icon-pulse">
+              <Icon name="Rocket" size={40} className="text-primary auth-icon-float" />
             </div>
-            <DialogTitle className="text-center text-3xl font-bold bg-gradient-to-r from-primary via-primary/80 to-primary/60 bg-clip-text text-transparent">
+            <DialogTitle className="text-center text-3xl font-bold auth-title-shimmer">
               {authMode === 'login' ? 'Добро пожаловать' : 'Регистрация'}
             </DialogTitle>
-            <p className="text-center text-sm text-muted-foreground">
+            <p className="text-center text-sm text-muted-foreground auth-fade-in">
               {authMode === 'login' ? 'Войдите, чтобы продолжить' : 'Создайте аккаунт за несколько секунд'}
             </p>
           </DialogHeader>
 
-          {showResetPassword ? (
-            <div className="space-y-5 pt-2">
-              <div className="p-4 rounded-xl bg-primary/5 border border-primary/20">
-                <p className="text-sm text-foreground/80">
-                  Введите email, указанный при регистрации. Мы отправим вам ссылку для сброса пароля.
-                </p>
+          <div className="relative z-10">
+            {showResetPassword ? (
+              <div className="space-y-5 pt-2 auth-slide-in">
+                <div className="p-4 rounded-xl bg-primary/5 border border-primary/20 auth-glow">
+                  <p className="text-sm text-foreground/80">
+                    Введите email, указанный при регистрации. Мы отправим вам ссылку для сброса пароля.
+                  </p>
+                </div>
+                <div className="space-y-2 auth-input-group">
+                  <label className="text-sm font-medium text-foreground/90">Email</label>
+                  <Input 
+                    type="email" 
+                    value={resetEmail}
+                    onChange={(e) => setResetEmail(e.target.value)}
+                    placeholder="your@email.com"
+                    className="h-11 rounded-xl border-border/50 focus:border-primary transition-all auth-input-focus"
+                    required 
+                  />
+                </div>
+                <div className="flex gap-3">
+                  <Button 
+                    onClick={handleResetPassword}
+                    className="flex-1 h-11 rounded-xl auth-button-gradient text-white font-semibold shadow-lg shadow-primary/25"
+                  >
+                    <Icon name="Mail" size={18} className="mr-2" />
+                    Отправить ссылку
+                  </Button>
+                  <Button 
+                    variant="outline"
+                    onClick={() => {
+                      setShowResetPassword(false);
+                      setResetEmail('');
+                    }}
+                    className="h-11 rounded-xl border-border/50 hover:bg-accent"
+                  >
+                    Отмена
+                  </Button>
+                </div>
               </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground/90">Email</label>
-                <Input 
-                  type="email" 
-                  value={resetEmail}
-                  onChange={(e) => setResetEmail(e.target.value)}
-                  placeholder="your@email.com"
-                  className="h-11 rounded-xl border-border/50 focus:border-primary transition-all"
-                  required 
-                />
-              </div>
-              <div className="flex gap-3">
-                <Button 
-                  onClick={handleResetPassword}
-                  className="flex-1 h-11 rounded-xl bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-white font-semibold shadow-lg shadow-primary/25"
-                >
-                  <Icon name="Mail" size={18} className="mr-2" />
-                  Отправить ссылку
-                </Button>
-                <Button 
-                  variant="outline"
-                  onClick={() => {
-                    setShowResetPassword(false);
-                    setResetEmail('');
-                  }}
-                  className="h-11 rounded-xl border-border/50 hover:bg-accent"
-                >
-                  Отмена
-                </Button>
-              </div>
-            </div>
-          ) : (
+            ) : (
             <form onSubmit={(e) => {
               e.preventDefault();
               const formData = new FormData(e.currentTarget);
               
               onAuthSubmit(e);
-            }} className="space-y-5 pt-2">
-              <div className="space-y-2">
+            }} className="space-y-5 pt-2 auth-slide-in">
+              <div className="space-y-2 auth-input-group">
                 <label className="text-sm font-medium text-foreground/90">Имя пользователя</label>
                 <Input 
                   name="username" 
                   required 
-                  className="h-11 rounded-xl border-border/50 focus:border-primary transition-all"
+                  className="h-11 rounded-xl border-border/50 focus:border-primary transition-all auth-input-focus"
                   placeholder="Введите имя пользователя"
                 />
               </div>
 
               {authMode === 'register' && (
                 <>
-                  <div className="space-y-2">
+                  <div className="space-y-2 auth-input-group">
                     <label className="text-sm font-medium text-foreground/90">Email</label>
                     <Input 
                       name="email" 
                       type="email" 
                       required 
-                      className="h-11 rounded-xl border-border/50 focus:border-primary transition-all"
+                      className="h-11 rounded-xl border-border/50 focus:border-primary transition-all auth-input-focus"
                       placeholder="your@email.com"
                     />
                   </div>
-                  <div className="space-y-2">
+                  <div className="space-y-2 auth-input-group">
                     <label className="text-sm font-medium text-foreground/90">
                       Реферальный код <span className="text-muted-foreground font-normal">(необязательно)</span>
                     </label>
                     <Input 
                       name="referral_code" 
                       placeholder="Введите код, если есть"
-                      className="h-11 rounded-xl border-border/50 focus:border-primary transition-all uppercase"
+                      className="h-11 rounded-xl border-border/50 focus:border-primary transition-all uppercase auth-input-focus"
                       maxLength={8}
                       defaultValue={savedRefCode}
                     />
@@ -298,20 +305,20 @@ const Dialogs = ({
                 </>
               )}
 
-              <div className="space-y-2">
+              <div className="space-y-2 auth-input-group">
                 <label className="text-sm font-medium text-foreground/90">Пароль</label>
                 <Input 
                   name="password" 
                   type="password" 
                   required 
-                  className="h-11 rounded-xl border-border/50 focus:border-primary transition-all"
+                  className="h-11 rounded-xl border-border/50 focus:border-primary transition-all auth-input-focus"
                   placeholder="Введите пароль"
                 />
               </div>
 
               <Button 
                 type="submit" 
-                className="w-full h-12 rounded-xl bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-white font-semibold shadow-lg shadow-primary/25 transition-all hover:shadow-xl hover:shadow-primary/30 hover:scale-[1.02]"
+                className="w-full h-12 rounded-xl auth-button-gradient text-white font-semibold shadow-lg shadow-primary/25 transition-all hover:shadow-xl hover:shadow-primary/30 hover:scale-[1.02]"
               >
                 {authMode === 'login' ? 'Войти' : 'Зарегистрироваться'}
               </Button>
@@ -329,7 +336,7 @@ const Dialogs = ({
                 <button
                   type="button"
                   onClick={() => onAuthModeChange(authMode === 'login' ? 'register' : 'login')}
-                  className="text-sm text-muted-foreground hover:text-primary transition-colors w-full text-center font-medium"
+                  className="text-sm text-muted-foreground hover:text-primary transition-colors w-full text-center font-medium auth-link-hover"
                 >
                   {authMode === 'login' ? 'Нет аккаунта? Зарегистрироваться' : 'Уже есть аккаунт? Войти'}
                 </button>
@@ -338,14 +345,15 @@ const Dialogs = ({
                   <button
                     type="button"
                     onClick={() => setShowResetPassword(true)}
-                    className="text-sm text-muted-foreground hover:text-primary transition-colors w-full text-center font-medium"
+                    className="text-sm text-muted-foreground hover:text-primary transition-colors w-full text-center font-medium auth-link-hover"
                   >
                     Забыли пароль?
                   </button>
                 )}
               </div>
             </form>
-          )}
+            )}
+          </div>
         </DialogContent>
       </Dialog>
 
