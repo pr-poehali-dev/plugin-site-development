@@ -9,10 +9,9 @@ const EMAIL_VERIFY_URL = 'https://functions.poehali.dev/d1025e8d-68f1-4eec-b8e9-
 interface EmailVerificationStepProps {
   email: string;
   onVerified: () => void;
-  onBack: () => void;
 }
 
-const EmailVerificationStep = ({ email, onVerified, onBack }: EmailVerificationStepProps) => {
+const EmailVerificationStep = ({ email, onVerified }: EmailVerificationStepProps) => {
   const { toast } = useToast();
   const [code, setCode] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);
@@ -145,14 +144,7 @@ const EmailVerificationStep = ({ email, onVerified, onBack }: EmailVerificationS
         )}
       </Button>
 
-      <div className="flex items-center justify-between pt-2">
-        <button
-          type="button"
-          onClick={onBack}
-          className="text-sm text-muted-foreground hover:text-primary transition-colors"
-        >
-          ← Назад
-        </button>
+      <div className="flex justify-center pt-2">
         <button
           type="button"
           onClick={sendCode}

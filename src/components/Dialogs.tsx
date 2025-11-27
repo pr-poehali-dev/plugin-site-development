@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Textarea } from '@/components/ui/textarea';
 import Icon from '@/components/ui/icon';
 import { User } from '@/types';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { getAvatarGradient } from '@/utils/avatarColors';
 import { useToast } from '@/hooks/use-toast';
@@ -76,18 +76,6 @@ const Dialogs = ({
   const [resetEmail, setResetEmail] = useState('');
   const [showEmailVerification, setShowEmailVerification] = useState(false);
   const [pendingRegistration, setPendingRegistration] = useState<{username: string; email: string; password: string; referral_code?: string} | null>(null);
-
-  useEffect(() => {
-    const savedData = sessionStorage.getItem('pendingRegistration');
-    if (savedData && !pendingRegistration) {
-      try {
-        const parsed = JSON.parse(savedData);
-        setPendingRegistration(parsed);
-      } catch (e) {
-        console.error('Failed to parse pendingRegistration:', e);
-      }
-    }
-  }, [showEmailVerification]);
 
   const handleAvatarSelect = () => {
     fileInputRef.current?.click();
@@ -385,12 +373,9 @@ const Dialogs = ({
                   sessionStorage.removeItem('pendingRegistration');
                 }
               }}
-              onBack={() => {
-                setShowEmailVerification(false);
-              }}
             />
           ) : (
-            <form key={pendingRegistration?.email || 'empty'} onSubmit={(e) => {
+            <form onSubmit={(e) => {
               e.preventDefault();
               const formData = new FormData(e.currentTarget);
               
@@ -464,7 +449,6 @@ const Dialogs = ({
                   required 
                   className="h-11 rounded-xl border-border/50 focus:border-primary transition-all"
                   placeholder="Введите имя пользователя"
-                  defaultValue={pendingRegistration?.username || ''}
                 />
               </div>
 
@@ -478,7 +462,6 @@ const Dialogs = ({
                       required 
                       className="h-11 rounded-xl border-border/50 focus:border-primary transition-all"
                       placeholder="your@email.com"
-                      defaultValue={pendingRegistration?.email || ''}
                     />
                   </div>
                   <div className="space-y-2">
@@ -490,7 +473,7 @@ const Dialogs = ({
                       placeholder="Введите код, если есть"
                       className="h-11 rounded-xl border-border/50 focus:border-primary transition-all uppercase"
                       maxLength={8}
-                      defaultValue={pendingRegistration?.referral_code || savedRefCode}
+                      defaultValue={savedRefCode}
                     />
                   </div>
                 </>
@@ -504,7 +487,6 @@ const Dialogs = ({
                   required 
                   className="h-11 rounded-xl border-border/50 focus:border-primary transition-all"
                   placeholder="Введите пароль"
-                  defaultValue={pendingRegistration?.password || ''}
                 />
               </div>
 
