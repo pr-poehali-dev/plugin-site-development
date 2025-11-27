@@ -123,7 +123,12 @@ const CrashGame = ({ user, onShowAuthDialog, onRefreshUserBalance }: CrashGamePr
         if (!isNaN(autoCashoutValue) && currentMultiplier >= autoCashoutValue && !localHasCashedOut) {
           localHasCashedOut = true;
           setHasCashedOut(true);
+          if (intervalRef.current) {
+            clearInterval(intervalRef.current);
+            intervalRef.current = null;
+          }
           cashout(currentMultiplier, betAmount, true);
+          return;
         }
 
         if (currentMultiplier >= crash) {
