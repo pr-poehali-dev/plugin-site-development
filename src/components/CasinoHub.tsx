@@ -7,6 +7,12 @@ import BlackjackGame from './BlackjackGame';
 import BaccaratGame from './BaccaratGame';
 import DiceGame from './DiceGame';
 import LotteryGame from './LotteryGame';
+import RouletteGame from './RouletteGame';
+import PokerGame from './PokerGame';
+import CrashGame from './CrashGame';
+import MinesGame from './MinesGame';
+import SlotsGame from './SlotsGame';
+import PlinkoGame from './PlinkoGame';
 
 interface CasinoHubProps {
   user: User | null;
@@ -14,7 +20,7 @@ interface CasinoHubProps {
   onRefreshUserBalance?: () => void;
 }
 
-type GameType = 'menu' | 'blackjack' | 'baccarat' | 'dice' | 'lottery';
+type GameType = 'menu' | 'blackjack' | 'baccarat' | 'dice' | 'lottery' | 'roulette' | 'poker' | 'crash' | 'mines' | 'slots' | 'plinko';
 
 const CasinoHub = ({ user, onShowAuthDialog, onRefreshUserBalance }: CasinoHubProps) => {
   const [selectedGame, setSelectedGame] = useState<GameType>('menu');
@@ -52,6 +58,54 @@ const CasinoHub = ({ user, onShowAuthDialog, onRefreshUserBalance }: CasinoHubPr
       name: 'Лотерея',
       icon: 'Ticket',
       description: '10 билетов по 50 USDT. Приз 400 USDT',
+      color: 'from-indigo-600 to-indigo-800',
+      available: true
+    },
+    {
+      id: 'roulette' as GameType,
+      name: 'Рулетка',
+      icon: 'CircleDot',
+      description: 'Европейская рулетка с числами 0-36',
+      color: 'from-red-600 to-red-800',
+      available: true
+    },
+    {
+      id: 'poker' as GameType,
+      name: 'Покер',
+      icon: 'Club',
+      description: '5-карточный покер против дилера',
+      color: 'from-blue-600 to-blue-800',
+      available: true
+    },
+    {
+      id: 'crash' as GameType,
+      name: 'Crash',
+      icon: 'Rocket',
+      description: 'Ракета взлетает - успей вывести!',
+      color: 'from-sky-600 to-sky-800',
+      available: true
+    },
+    {
+      id: 'mines' as GameType,
+      name: 'Mines',
+      icon: 'Grid3x3',
+      description: 'Найди алмазы, избегая мин',
+      color: 'from-purple-600 to-purple-800',
+      available: true
+    },
+    {
+      id: 'slots' as GameType,
+      name: 'Слоты',
+      icon: 'Cherry',
+      description: 'Классический игровой автомат',
+      color: 'from-yellow-600 to-yellow-800',
+      available: true
+    },
+    {
+      id: 'plinko' as GameType,
+      name: 'Plinko',
+      icon: 'ArrowDown',
+      description: 'Сбрось шарик и выиграй до 16x',
       color: 'from-indigo-600 to-indigo-800',
       available: true
     }
@@ -135,6 +189,132 @@ const CasinoHub = ({ user, onShowAuthDialog, onRefreshUserBalance }: CasinoHubPr
           Назад к играм
         </Button>
         <LotteryGame 
+          user={user} 
+          onShowAuthDialog={onShowAuthDialog}
+          onRefreshUserBalance={onRefreshUserBalance}
+        />
+      </div>
+    );
+  }
+
+  if (selectedGame === 'roulette') {
+    return (
+      <div className="space-y-4">
+        <Button 
+          type="button"
+          onClick={() => setSelectedGame('menu')}
+          variant="outline"
+          className="gap-2"
+        >
+          <Icon name="ArrowLeft" size={18} />
+          Назад к играм
+        </Button>
+        <RouletteGame 
+          user={user} 
+          onShowAuthDialog={onShowAuthDialog}
+          onRefreshUserBalance={onRefreshUserBalance}
+        />
+      </div>
+    );
+  }
+
+  if (selectedGame === 'poker') {
+    return (
+      <div className="space-y-4">
+        <Button 
+          type="button"
+          onClick={() => setSelectedGame('menu')}
+          variant="outline"
+          className="gap-2"
+        >
+          <Icon name="ArrowLeft" size={18} />
+          Назад к играм
+        </Button>
+        <PokerGame 
+          user={user} 
+          onShowAuthDialog={onShowAuthDialog}
+          onRefreshUserBalance={onRefreshUserBalance}
+        />
+      </div>
+    );
+  }
+
+  if (selectedGame === 'crash') {
+    return (
+      <div className="space-y-4">
+        <Button 
+          type="button"
+          onClick={() => setSelectedGame('menu')}
+          variant="outline"
+          className="gap-2"
+        >
+          <Icon name="ArrowLeft" size={18} />
+          Назад к играм
+        </Button>
+        <CrashGame 
+          user={user} 
+          onShowAuthDialog={onShowAuthDialog}
+          onRefreshUserBalance={onRefreshUserBalance}
+        />
+      </div>
+    );
+  }
+
+  if (selectedGame === 'mines') {
+    return (
+      <div className="space-y-4">
+        <Button 
+          type="button"
+          onClick={() => setSelectedGame('menu')}
+          variant="outline"
+          className="gap-2"
+        >
+          <Icon name="ArrowLeft" size={18} />
+          Назад к играм
+        </Button>
+        <MinesGame 
+          user={user} 
+          onShowAuthDialog={onShowAuthDialog}
+          onRefreshUserBalance={onRefreshUserBalance}
+        />
+      </div>
+    );
+  }
+
+  if (selectedGame === 'slots') {
+    return (
+      <div className="space-y-4">
+        <Button 
+          type="button"
+          onClick={() => setSelectedGame('menu')}
+          variant="outline"
+          className="gap-2"
+        >
+          <Icon name="ArrowLeft" size={18} />
+          Назад к играм
+        </Button>
+        <SlotsGame 
+          user={user} 
+          onShowAuthDialog={onShowAuthDialog}
+          onRefreshUserBalance={onRefreshUserBalance}
+        />
+      </div>
+    );
+  }
+
+  if (selectedGame === 'plinko') {
+    return (
+      <div className="space-y-4">
+        <Button 
+          type="button"
+          onClick={() => setSelectedGame('menu')}
+          variant="outline"
+          className="gap-2"
+        >
+          <Icon name="ArrowLeft" size={18} />
+          Назад к играм
+        </Button>
+        <PlinkoGame 
           user={user} 
           onShowAuthDialog={onShowAuthDialog}
           onRefreshUserBalance={onRefreshUserBalance}
