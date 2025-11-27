@@ -11,6 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import VerificationForm from '@/components/VerificationForm';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import CreateTopicDialog from '@/components/forum/CreateTopicDialog';
+import EmailVerificationStep from '@/components/EmailVerificationStep';
 
 interface DialogsProps {
   authDialogOpen: boolean;
@@ -73,6 +74,8 @@ const Dialogs = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [showResetPassword, setShowResetPassword] = useState(false);
   const [resetEmail, setResetEmail] = useState('');
+  const [showEmailVerification, setShowEmailVerification] = useState(false);
+  const [pendingRegistration, setPendingRegistration] = useState<{username: string; email: string; password: string; referral_code?: string} | null>(null);
 
   const handleAvatarSelect = () => {
     fileInputRef.current?.click();
@@ -254,8 +257,90 @@ const Dialogs = ({
                 </Button>
               </div>
             </div>
+          ) : showEmailVerification && pendingRegistration ? (
+            <EmailVerificationStep
+              email={pendingRegistration.email}
+              onVerified={async () => {
+                const response = await fetch(AUTH_URL, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    action: 'register',
+                    ...pendingRegistration
+                  }),
+                });
+                const data = await response.json();
+                if (data.success) {
+                  const loginForm = document.createElement('form');
+                  const usernameInput = document.createElement('input');
+                  usernameInput.name = 'username';
+                  usernameInput.value = pendingRegistration.username;
+                  const passwordInput = document.createElement('input');
+                  passwordInput.name = 'password';
+                  passwordInput.value = pendingRegistration.password;
+                  loginForm.appendChild(usernameInput);
+                  loginForm.appendChild(passwordInput);
+                  
+                  const loginEvent = {
+                    preventDefault: () => {},
+                    currentTarget: loginForm
+                  } as React.FormEvent<HTMLFormElement>;
+                  
+                  setShowEmailVerification(false);
+                  setPendingRegistration(null);
+                  onAuthSubmit(loginEvent);
+                } else {
+                  toast({
+                    title: 'Ошибка',
+                    description: data.error || 'Ошибка регистрации',
+                    variant: 'destructive'
+                  });
+                }
+              }}
+              onBack={() => {
+                setShowEmailVerification(false);
+                setPendingRegistration(null);
+              }}
+            />
           ) : (
-            <form onSubmit={onAuthSubmit} className="space-y-5 pt-2">
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              const formData = new FormData(e.currentTarget);
+              const email = formData.get('email') as string;
+              
+              if (authMode === 'register' && email) {
+                const EMAIL_VERIFY_URL = 'https://functions.poehali.dev/d1025e8d-68f1-4eec-b8e9-30ec5c80d63f';
+                fetch(EMAIL_VERIFY_URL, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ action: 'send_code', email })
+                }).then(res => res.json()).then(data => {
+                  if (data.success) {
+                    setPendingRegistration({
+                      username: formData.get('username') as string,
+                      email: email,
+                      password: formData.get('password') as string,
+                      referral_code: formData.get('referral_code') as string || undefined
+                    });
+                    setShowEmailVerification(true);
+                  } else {
+                    toast({
+                      title: 'Ошибка',
+                      description: data.error || 'Не удалось отправить код',
+                      variant: 'destructive'
+                    });
+                  }
+                }).catch(() => {
+                  toast({
+                    title: 'Ошибка',
+                    description: 'Ошибка подключения к серверу',
+                    variant: 'destructive'
+                  });
+                });
+              } else {
+                onAuthSubmit(e);
+              }
+            }} className="space-y-5 pt-2">
               <div className="space-y-2">
                 <label className="text-sm font-medium text-foreground/90">Имя пользователя</label>
                 <Input 

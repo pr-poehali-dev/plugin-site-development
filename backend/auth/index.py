@@ -189,6 +189,20 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'isBase64Encoded': False
                 }
             
+            # Проверка email верификации
+            cur.execute(
+                f"SELECT verified FROM {SCHEMA}.email_verifications WHERE email = %s AND verified = TRUE ORDER BY created_at DESC LIMIT 1",
+                (email.lower(),)
+            )
+            verification = cur.fetchone()
+            if not verification:
+                return {
+                    'statusCode': 400,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'error': 'Email не подтверждён. Пожалуйста, подтвердите email.'}),
+                    'isBase64Encoded': False
+                }
+            
             # Проверка реферального кода
             referrer_id = None
             if referral_code:

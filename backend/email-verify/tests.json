@@ -1,0 +1,75 @@
+[
+  {
+    "name": "Send verification code",
+    "description": "Test sending a verification code to an email",
+    "request": {
+      "httpMethod": "POST",
+      "body": "{\"action\": \"send_code\", \"email\": \"test@example.com\"}"
+    },
+    "expectedResponse": {
+      "statusCode": 200,
+      "bodyContains": ["success", "true"]
+    }
+  },
+  {
+    "name": "Send code - missing email",
+    "description": "Test sending code without email should fail",
+    "request": {
+      "httpMethod": "POST",
+      "body": "{\"action\": \"send_code\"}"
+    },
+    "expectedResponse": {
+      "statusCode": 400,
+      "bodyContains": ["Email не указан"]
+    }
+  },
+  {
+    "name": "Verify code",
+    "description": "Test verifying a code",
+    "request": {
+      "httpMethod": "POST",
+      "body": "{\"action\": \"verify_code\", \"email\": \"test@example.com\", \"code\": \"123456\"}"
+    },
+    "expectedResponse": {
+      "statusCode": [200, 400],
+      "bodyContains": ["success", "error"]
+    }
+  },
+  {
+    "name": "Verify code - missing parameters",
+    "description": "Test verifying code without required fields should fail",
+    "request": {
+      "httpMethod": "POST",
+      "body": "{\"action\": \"verify_code\"}"
+    },
+    "expectedResponse": {
+      "statusCode": 400,
+      "bodyContains": ["Email и код обязательны"]
+    }
+  },
+  {
+    "name": "OPTIONS request",
+    "description": "Test CORS preflight request",
+    "request": {
+      "httpMethod": "OPTIONS"
+    },
+    "expectedResponse": {
+      "statusCode": 200,
+      "headers": {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "POST, OPTIONS"
+      }
+    }
+  },
+  {
+    "name": "Invalid HTTP method",
+    "description": "Test invalid HTTP method should fail",
+    "request": {
+      "httpMethod": "GET"
+    },
+    "expectedResponse": {
+      "statusCode": 405,
+      "bodyContains": ["Method not allowed"]
+    }
+  }
+]
