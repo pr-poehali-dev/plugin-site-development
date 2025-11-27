@@ -244,7 +244,7 @@ const PokerGame = ({ user, onShowAuthDialog, onRefreshUserBalance }: PokerGamePr
     let isDraw = false;
     let winAmount = 0;
 
-    const shouldWin = Math.random() < 0.37;
+    const shouldWin = Math.random() < 0.27;
     
     if (shouldWin) {
       won = true;

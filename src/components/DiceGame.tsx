@@ -94,7 +94,7 @@ const DiceGame = ({ user, onShowAuthDialog, onRefreshUserBalance }: DiceGameProp
       onRefreshUserBalance?.();
 
       let result: number;
-      const shouldWin = Math.random() < 0.37;
+      const shouldWin = Math.random() < 0.27;
       
       if (shouldWin) {
         if (typeof betType === 'number') {

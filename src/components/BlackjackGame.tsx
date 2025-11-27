@@ -202,7 +202,7 @@ export const BlackjackGame = ({ user, onShowAuthDialog, onRefreshUserBalance }: 
     setGameState('dealer');
 
     setTimeout(() => {
-      const shouldPlayerWin = Math.random() < 0.37;
+      const shouldPlayerWin = Math.random() < 0.27;
       const playerValue = calculateHandValue(finalPlayerHand);
       
       if (shouldPlayerWin && playerValue <= 21) {

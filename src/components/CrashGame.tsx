@@ -35,7 +35,7 @@ const CrashGame = ({ user, onShowAuthDialog, onRefreshUserBalance }: CrashGamePr
   }, []);
 
   const generateCrashPoint = (): number => {
-    const shouldWin = Math.random() < 0.37;
+    const shouldWin = Math.random() < 0.27;
     
     if (shouldWin) {
       const autoCashoutValue = parseFloat(autoCashout) || 2.0;
