@@ -145,6 +145,31 @@ export const UserProfileHeader = ({
                   {user.bio && (
                     <p className="text-sm text-foreground/70 leading-relaxed line-clamp-2 sm:line-clamp-3">{user.bio}</p>
                   )}
+
+                  {(user.telegram || user.discord) && (
+                    <Card className="p-3 sm:p-4 bg-background/60 backdrop-blur-sm border-border/50">
+                      <div className="flex flex-col gap-2">
+                        <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
+                          <Icon name="Link" size={14} />
+                          Контакты
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                          {user.telegram && (
+                            <div className="flex items-center gap-2 p-2 bg-blue-500/10 border border-blue-500/30 rounded-lg">
+                              <Icon name="Send" size={16} className="text-blue-400 flex-shrink-0" />
+                              <span className="text-xs font-medium text-blue-400 truncate">{user.telegram}</span>
+                            </div>
+                          )}
+                          {user.discord && (
+                            <div className="flex items-center gap-2 p-2 bg-purple-500/10 border border-purple-500/30 rounded-lg">
+                              <Icon name="MessageSquare" size={16} className="text-purple-400 flex-shrink-0" />
+                              <span className="text-xs font-medium text-purple-400 truncate">{user.discord}</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </Card>
+                  )}
                 </div>
               </div>
             </div>

@@ -746,6 +746,12 @@ export const DealsView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Deal
           /* Desktop версия */
           <Dialog open={true} onOpenChange={(open) => !open && setSelectedDeal(null)}>
             <DialogContent className="w-[90vw] max-w-3xl h-[80vh] overflow-hidden flex flex-col p-5 rounded-lg">
+              <DialogHeader>
+                <DialogTitle className="text-xl font-bold">{selectedDeal.title}</DialogTitle>
+                <DialogDescription className="text-sm text-muted-foreground line-clamp-2">
+                  {selectedDeal.description}
+                </DialogDescription>
+              </DialogHeader>
 
             <div className="flex-1 flex flex-col space-y-2 sm:space-y-2.5 min-h-0 overflow-hidden">
               {user && (Number(user.id) === Number(selectedDeal.seller_id) || Number(user.id) === Number(selectedDeal.buyer_id)) && (
