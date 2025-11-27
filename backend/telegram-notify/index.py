@@ -120,6 +120,16 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             btc_address = details.get('btc_address', 'N/A')
             message = f"💸 <b>Вывод BTC</b>\n\n👤 Пользователь: {username} (ID: {user_id})\n₿ Сумма: {btc_amount} BTC\n💼 Адрес: <code>{btc_address}</code>"
         
+        elif event_type == 'user_registration':
+            email = details.get('email', 'N/A')
+            message = f"👋 <b>Новый пользователь</b>\n\n👤 Имя: {username} (ID: {user_id})\n📧 Email: {email}\n🔗 Реферал: Нет"
+        
+        elif event_type == 'user_registration_referral':
+            email = details.get('email', 'N/A')
+            referrer_username = details.get('referrer_username', 'N/A')
+            referral_code = details.get('referral_code', 'N/A')
+            message = f"👋 <b>Новый пользователь (по реферальной ссылке)</b>\n\n👤 Имя: {username} (ID: {user_id})\n📧 Email: {email}\n🔗 Пригласил: {referrer_username}\n🎟 Код: {referral_code}"
+        
         else:
             message = f"ℹ️ <b>{event_type}</b>\n\n👤 Пользователь: {username} (ID: {user_id})\n📋 Детали: {json.dumps(details, ensure_ascii=False)}"
         

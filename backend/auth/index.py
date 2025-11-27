@@ -222,13 +222,35 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     new_user_code = generate_referral_code()
             
             # Если использовался реферальный код, создаем запись в referrals
+            referrer_username = None
             if referrer_id:
                 cur.execute(
                     f"INSERT INTO {SCHEMA}.referrals (referrer_id, referred_user_id, referral_code, status) VALUES (%s, %s, %s, 'pending')",
                     (referrer_id, user_id, referral_code)
                 )
+                # Получаем имя реферера для уведомления
+                cur.execute(
+                    f"SELECT username FROM {SCHEMA}.users WHERE id = %s",
+                    (referrer_id,)
+                )
+                referrer_data = cur.fetchone()
+                referrer_username = referrer_data['username'] if referrer_data else None
             
             conn.commit()
+            
+            # Send Telegram notification to admin
+            if referrer_username:
+                send_telegram_notification(
+                    'user_registration_referral',
+                    {'username': username, 'user_id': user_id},
+                    {'email': email, 'referrer_username': referrer_username, 'referral_code': referral_code}
+                )
+            else:
+                send_telegram_notification(
+                    'user_registration',
+                    {'username': username, 'user_id': user_id},
+                    {'email': email}
+                )
             
             token = generate_token()
             
