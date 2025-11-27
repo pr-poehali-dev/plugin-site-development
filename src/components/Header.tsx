@@ -94,10 +94,10 @@ const Header = ({
     }
   }, [user?.balance]);
   return (
-    <header className="sticky top-0 z-20 bg-card border-b border-border backdrop-blur-sm bg-opacity-95">
+    <header className="sticky top-0 z-20 bg-card/95 border-b border-border backdrop-blur-md slide-in-top">
       <div className="flex items-center justify-between px-3 sm:px-6 py-3 sm:py-4">
         <div className="flex items-center gap-2 sm:gap-4 flex-1">
-          <Button variant="ghost" size="icon" onClick={onToggleSidebar} className="text-white hover:bg-orange-500/10 transition-colors shrink-0">
+          <Button variant="ghost" size="icon" onClick={onToggleSidebar} className="text-white hover:bg-primary/10 transition-all duration-300 shrink-0 hover:scale-110 hover:rotate-12">
             <Icon name="Menu" size={20} />
           </Button>
 

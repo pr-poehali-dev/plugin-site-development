@@ -130,11 +130,11 @@ export const PluginsView = ({
             
             <div className="relative z-10">
               <div className="flex flex-col md:flex-row items-start md:items-center gap-6 mb-8">
-                <div className="w-16 h-16 md:w-20 md:h-20 bg-gradient-to-br from-emerald-500/20 to-teal-500/20 border border-emerald-500/30 rounded-xl flex items-center justify-center flex-shrink-0">
+                <div className="w-16 h-16 md:w-20 md:h-20 bg-gradient-to-br from-emerald-500/20 to-teal-500/20 border border-emerald-500/30 rounded-xl flex items-center justify-center flex-shrink-0 float-element pulse-glow">
                   <Icon name="GitBranch" className="text-emerald-400 w-8 h-8 md:w-10 md:h-10" />
                 </div>
                 <div className="flex-1">
-                  <h1 className="text-3xl md:text-4xl font-black mb-2 bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 bg-clip-text text-transparent">
+                  <h1 className="text-3xl md:text-4xl font-black mb-2 bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 bg-clip-text text-transparent text-shimmer">
                     GIT CRYPTO
                   </h1>
                   <p className="text-base md:text-lg text-foreground/80">
@@ -149,20 +149,20 @@ export const PluginsView = ({
               </p>
 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <Card className="bg-gradient-to-br from-emerald-500/10 to-teal-500/10 border-emerald-500/20 p-4 text-center hover:scale-105 transition-transform">
-                  <div className="text-2xl font-bold text-emerald-400 mb-1">5000+</div>
+                <Card className="bg-gradient-to-br from-emerald-500/10 to-teal-500/10 border-emerald-500/20 p-4 text-center hover:scale-105 transition-all duration-300 glow-hover bounce-in">
+                  <div className="text-2xl font-bold text-emerald-400 mb-1 scale-pulse">5000+</div>
                   <div className="text-xs text-foreground/60">Пользователей</div>
                 </Card>
-                <Card className="bg-gradient-to-br from-teal-500/10 to-cyan-500/10 border-teal-500/20 p-4 text-center hover:scale-105 transition-transform">
-                  <div className="text-2xl font-bold text-teal-400 mb-1">250+</div>
+                <Card className="bg-gradient-to-br from-teal-500/10 to-cyan-500/10 border-teal-500/20 p-4 text-center hover:scale-105 transition-all duration-300 glow-hover bounce-in" style={{animationDelay: '0.1s'}}>
+                  <div className="text-2xl font-bold text-teal-400 mb-1 scale-pulse">250+</div>
                   <div className="text-xs text-foreground/60">Активных сделок</div>
                 </Card>
-                <Card className="bg-gradient-to-br from-cyan-500/10 to-blue-500/10 border-cyan-500/20 p-4 text-center hover:scale-105 transition-transform">
-                  <div className="text-2xl font-bold text-cyan-400 mb-1">₮1M+</div>
+                <Card className="bg-gradient-to-br from-cyan-500/10 to-blue-500/10 border-cyan-500/20 p-4 text-center hover:scale-105 transition-all duration-300 glow-hover bounce-in" style={{animationDelay: '0.2s'}}>
+                  <div className="text-2xl font-bold text-cyan-400 mb-1 scale-pulse">₮1M+</div>
                   <div className="text-xs text-foreground/60">Транзакций</div>
                 </Card>
-                <Card className="bg-gradient-to-br from-blue-500/10 to-emerald-500/10 border-blue-500/20 p-4 text-center hover:scale-105 transition-transform">
-                  <div className="text-2xl font-bold text-blue-400 mb-1">99.9%</div>
+                <Card className="bg-gradient-to-br from-blue-500/10 to-emerald-500/10 border-blue-500/20 p-4 text-center hover:scale-105 transition-all duration-300 glow-hover bounce-in" style={{animationDelay: '0.3s'}}>
+                  <div className="text-2xl font-bold text-blue-400 mb-1 scale-pulse">99.9%</div>
                   <div className="text-xs text-foreground/60">Аптайм</div>
                 </Card>
               </div>
@@ -183,13 +183,13 @@ export const PluginsView = ({
               {features.map((feature, index) => (
                 <Card 
                   key={index}
-                  className="relative bg-zinc-900/50 border-zinc-800 p-5 md:p-6 hover:scale-105 transition-all overflow-hidden group"
+                  className="relative bg-zinc-900/50 border-zinc-800 p-5 md:p-6 hover:scale-105 hover:-rotate-1 transition-all duration-500 overflow-hidden group glow-hover cursor-pointer"
                 >
                   <div className={`absolute inset-0 bg-gradient-to-br ${feature.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-500 animate-gradient-x bg-[length:200%_auto]`}></div>
                   
                   <div className="relative z-10">
                     <div className="flex items-start gap-3 mb-4">
-                      <div className={`w-10 h-10 bg-gradient-to-br ${feature.gradient} border border-zinc-700 rounded-lg flex items-center justify-center flex-shrink-0`}>
+                      <div className={`w-10 h-10 bg-gradient-to-br ${feature.gradient} border border-zinc-700 rounded-lg flex items-center justify-center flex-shrink-0 float-element group-hover:rotate-12 transition-transform duration-500`}>
                         <Icon name={feature.icon as any} className="text-foreground w-5 h-5" />
                       </div>
                       <div className="flex-1 min-w-0">

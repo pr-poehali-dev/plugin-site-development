@@ -51,8 +51,8 @@ const Sidebar = ({
         />
       )}
       
-      <aside className={`fixed top-0 left-0 h-full bg-sidebar border-r border-sidebar-border transition-all duration-300 z-30 overflow-hidden flex flex-col ${sidebarOpen ? 'w-64' : 'w-0'} md:z-30`}>
-        <div className={`w-64 transition-opacity duration-300 flex flex-col h-full ${sidebarOpen ? 'opacity-100' : 'opacity-0'}`}>
+      <aside className={`fixed top-0 left-0 h-full bg-sidebar/95 backdrop-blur-md border-r border-sidebar-border transition-all duration-500 z-30 overflow-hidden flex flex-col ${sidebarOpen ? 'w-64' : 'w-0'} md:z-30`}>
+        <div className={`w-64 transition-opacity duration-500 flex flex-col h-full ${sidebarOpen ? 'opacity-100 slide-in-left' : 'opacity-0'}`}>
           {/* Кнопка закрытия для мобильных */}
           <div className="flex items-center justify-center py-3 px-4 md:hidden relative shrink-0">
             <h1 className="text-lg font-bold bg-gradient-to-r from-zinc-300 via-zinc-600 to-zinc-900 bg-clip-text text-transparent tracking-wide animate-gradient-x bg-[length:200%_auto] mr-8">
@@ -70,7 +70,7 @@ const Sidebar = ({
           
           {/* Заголовок для десктопа */}
           <div className="py-6 justify-center hidden md:flex shrink-0">
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-zinc-300 via-zinc-600 to-zinc-900 bg-clip-text text-transparent tracking-wide animate-gradient-x bg-[length:200%_auto]">
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-zinc-300 via-zinc-600 to-zinc-900 bg-clip-text text-transparent tracking-wide animate-gradient-x bg-[length:200%_auto] hover:scale-110 transition-transform duration-300 cursor-pointer">
               Git Crypto
             </h1>
           </div>
@@ -94,8 +94,8 @@ const Sidebar = ({
                   onToggleSidebar();
                 }
               }}
-              className={`w-full flex items-center gap-2 md:gap-3 px-3 md:px-4 py-2 md:py-2.5 rounded-lg transition-all duration-200 tap-highlight ${
-                (activeView === item.view && (item.view === 'forum' || activeCategory === item.id)) ? 'bg-sidebar-accent text-sidebar-accent-foreground' : 'hover:bg-sidebar-accent/50 active:bg-sidebar-accent/70'
+              className={`w-full flex items-center gap-2 md:gap-3 px-3 md:px-4 py-2 md:py-2.5 rounded-lg transition-all duration-300 tap-highlight hover:scale-105 hover:translate-x-1 ${
+                (activeView === item.view && (item.view === 'forum' || activeCategory === item.id)) ? 'bg-sidebar-accent text-sidebar-accent-foreground glow-hover' : 'hover:bg-sidebar-accent/50 active:bg-sidebar-accent/70'
               }`}
             >
               <Icon name={item.icon as any} size={18} />
@@ -113,12 +113,12 @@ const Sidebar = ({
                       onToggleSidebar();
                     }
                   }}
-                  className="w-full flex items-center gap-2 md:gap-3 px-3 md:px-4 py-2 md:py-2.5 rounded-lg transition-all duration-200 tap-highlight hover:bg-sidebar-accent/50 active:bg-sidebar-accent/70 relative"
+                  className="w-full flex items-center gap-2 md:gap-3 px-3 md:px-4 py-2 md:py-2.5 rounded-lg transition-all duration-300 tap-highlight hover:bg-sidebar-accent/50 active:bg-sidebar-accent/70 relative hover:scale-105 hover:translate-x-1"
                 >
                   <Icon name="Mail" size={18} />
                   <span className="text-sm font-medium">Сообщения</span>
                   {messagesUnread > 0 && (
-                    <span className="absolute right-3 px-1.5 py-0.5 text-xs bg-red-500 text-white rounded-full">
+                    <span className="absolute right-3 px-1.5 py-0.5 text-xs bg-red-500 text-white rounded-full badge-pulse">
                       {messagesUnread}
                     </span>
                   )}
@@ -130,7 +130,7 @@ const Sidebar = ({
                       onToggleSidebar();
                     }
                   }}
-                  className="w-full flex items-center gap-2 md:gap-3 px-3 md:px-4 py-2 md:py-2.5 rounded-lg transition-all duration-200 tap-highlight hover:bg-sidebar-accent/50 active:bg-sidebar-accent/70"
+                  className="w-full flex items-center gap-2 md:gap-3 px-3 md:px-4 py-2 md:py-2.5 rounded-lg transition-all duration-300 tap-highlight hover:bg-sidebar-accent/50 active:bg-sidebar-accent/70 hover:scale-105 hover:translate-x-1"
                 >
                   <Icon name="User" size={18} />
                   <span className="text-sm font-medium">Личный кабинет</span>
