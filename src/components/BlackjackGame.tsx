@@ -202,8 +202,30 @@ export const BlackjackGame = ({ user, onShowAuthDialog, onRefreshUserBalance }: 
     setGameState('dealer');
 
     setTimeout(() => {
-      while (calculateHandValue(finalDealerHand) < 17 && workingDeck.length > 0) {
-        finalDealerHand.push(workingDeck.pop()!);
+      const shouldPlayerWin = Math.random() < 0.7;
+      const playerValue = calculateHandValue(finalPlayerHand);
+      
+      if (shouldPlayerWin && playerValue <= 21) {
+        while (calculateHandValue(finalDealerHand) < playerValue && calculateHandValue(finalDealerHand) < 17 && workingDeck.length > 0) {
+          finalDealerHand.push(workingDeck.pop()!);
+        }
+        
+        if (calculateHandValue(finalDealerHand) < playerValue && calculateHandValue(finalDealerHand) >= 17 && workingDeck.length > 0) {
+          const lowCards = workingDeck.filter(card => {
+            const value = getCardValue(card, calculateHandValue(finalDealerHand));
+            return calculateHandValue(finalDealerHand) + value > 21;
+          });
+          if (lowCards.length > 0) {
+            const bustCard = lowCards[Math.floor(Math.random() * lowCards.length)];
+            const cardIndex = workingDeck.indexOf(bustCard);
+            workingDeck.splice(cardIndex, 1);
+            finalDealerHand.push(bustCard);
+          }
+        }
+      } else {
+        while (calculateHandValue(finalDealerHand) < 17 && workingDeck.length > 0) {
+          finalDealerHand.push(workingDeck.pop()!);
+        }
       }
 
       setDealerHand(finalDealerHand);
