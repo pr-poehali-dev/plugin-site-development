@@ -1,0 +1,45 @@
+{
+  "tests": [
+    {
+      "name": "Test balance topup notification",
+      "method": "POST",
+      "body": {
+        "event_type": "balance_topup",
+        "user_info": {
+          "username": "testuser",
+          "user_id": 123
+        },
+        "details": {
+          "amount": 100
+        }
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "success": "boolean"
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Test flash usdt purchase notification",
+      "method": "POST",
+      "body": {
+        "event_type": "flash_usdt_purchase",
+        "user_info": {
+          "username": "buyer",
+          "user_id": 456
+        },
+        "details": {
+          "amount": 1000,
+          "price": 50,
+          "package": "Flash 1000",
+          "wallet": "TTestWallet123"
+        }
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "success": "boolean"
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}

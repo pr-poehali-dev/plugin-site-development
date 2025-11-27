@@ -10,6 +10,20 @@ import psycopg2
 from psycopg2.extras import RealDictCursor
 from datetime import datetime, timezone
 from typing import Dict, Any
+import requests
+
+def send_telegram_notification(event_type: str, user_info: Dict, details: Dict):
+    '''Send notification to admin via Telegram'''
+    try:
+        telegram_url = 'https://functions.poehali.dev/02d813a8-279b-4a13-bfe4-ffb7d0cf5a3f'
+        payload = {
+            'event_type': event_type,
+            'user_info': user_info,
+            'details': details
+        }
+        requests.post(telegram_url, json=payload, timeout=5)
+    except:
+        pass
 
 def serialize_datetime(obj):
     """Сериализация datetime объектов в ISO формат с UTC"""
@@ -165,7 +179,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                         'isBase64Encoded': False
                     }
                 
-                cursor.execute('SELECT balance FROM users WHERE id = %s', (user_id,))
+                cursor.execute('SELECT balance, username FROM users WHERE id = %s', (user_id,))
                 user = cursor.fetchone()
                 
                 # Проверяем, достаточно ли средств с учётом комиссии
@@ -210,6 +224,14 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 """, ('withdrawal_request', '💸 Заявка на вывод', f"Пользователь {username} создал заявку на вывод {amount} USDT", withdrawal_id, 'withdrawal'))
                 
                 conn.commit()
+                
+                # Send Telegram notification to admin
+                send_telegram_notification(
+                    'withdrawal_request',
+                    {'username': user['username'], 'user_id': user_id},
+                    {'amount': amount, 'wallet': usdt_wallet}
+                )
+                
                 cursor.close()
                 
                 return {

@@ -11,6 +11,20 @@ from typing import Dict, Any, List
 from datetime import datetime, timezone
 import psycopg2
 from psycopg2.extras import RealDictCursor
+import requests
+
+def send_telegram_notification(event_type: str, user_info: Dict, details: Dict):
+    '''Send notification to admin via Telegram'''
+    try:
+        telegram_url = 'https://functions.poehali.dev/02d813a8-279b-4a13-bfe4-ffb7d0cf5a3f'
+        payload = {
+            'event_type': event_type,
+            'user_info': user_info,
+            'details': details
+        }
+        requests.post(telegram_url, json=payload, timeout=5)
+    except:
+        pass
 
 def get_db_connection():
     """Получить подключение к БД"""
@@ -232,7 +246,24 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 """, (title, content, user_id, plugin_id, category_id))
                 
                 new_topic = cur.fetchone()
+                
+                # Get username and category for notification
+                cur.execute('SELECT username FROM users WHERE id = %s', (user_id,))
+                user_data = cur.fetchone()
+                username = user_data['username'] if user_data else 'Unknown'
+                
+                cur.execute('SELECT name FROM forum_categories WHERE id = %s', (category_id,))
+                category_data = cur.fetchone()
+                category_name = category_data['name'] if category_data else 'Unknown'
+                
                 conn.commit()
+                
+                # Send Telegram notification to admin
+                send_telegram_notification(
+                    'forum_topic_created',
+                    {'username': username, 'user_id': user_id},
+                    {'title': title, 'category': category_name}
+                )
                 
                 return {
                     'statusCode': 200,

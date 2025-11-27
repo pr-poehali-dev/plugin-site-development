@@ -1,0 +1,134 @@
+"""
+Business: Отправка уведомлений администратору в Telegram о действиях пользователей
+Args: event с httpMethod, body с типом события и данными
+Returns: HTTP response с результатом отправки
+"""
+
+import json
+import os
+from typing import Dict, Any
+import requests
+
+def send_telegram_message(text: str) -> bool:
+    """Отправить сообщение в Telegram"""
+    try:
+        bot_token = os.environ.get('TELEGRAM_BOT_TOKEN')
+        chat_id = os.environ.get('TELEGRAM_ADMIN_CHAT_ID')
+        
+        if not bot_token or not chat_id:
+            print('Telegram credentials not configured')
+            return False
+        
+        url = f'https://api.telegram.org/bot{bot_token}/sendMessage'
+        payload = {
+            'chat_id': chat_id,
+            'text': text,
+            'parse_mode': 'HTML'
+        }
+        
+        response = requests.post(url, json=payload, timeout=10)
+        return response.status_code == 200
+    except Exception as e:
+        print(f'Error sending Telegram message: {e}')
+        return False
+
+def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
+    """
+    Business: Отправка уведомлений администратору о действиях пользователей
+    Args: event - dict с httpMethod, body (event_type, user_info, details)
+          context - объект с атрибутами: request_id, function_name
+    Returns: HTTP response dict
+    """
+    method: str = event.get('httpMethod', 'POST')
+    
+    if method == 'OPTIONS':
+        return {
+            'statusCode': 200,
+            'headers': {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'POST, OPTIONS',
+                'Access-Control-Allow-Headers': 'Content-Type, X-User-Id',
+                'Access-Control-Max-Age': '86400'
+            },
+            'body': '',
+            'isBase64Encoded': False
+        }
+    
+    if method != 'POST':
+        return {
+            'statusCode': 405,
+            'headers': {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*'
+            },
+            'isBase64Encoded': False,
+            'body': json.dumps({'error': 'Method not allowed'})
+        }
+    
+    try:
+        body_data = json.loads(event.get('body', '{}'))
+        event_type = body_data.get('event_type', '')
+        user_info = body_data.get('user_info', {})
+        details = body_data.get('details', {})
+        
+        username = user_info.get('username', 'Unknown')
+        user_id = user_info.get('user_id', 'N/A')
+        
+        # Формируем сообщение в зависимости от типа события
+        message = ''
+        
+        if event_type == 'balance_topup':
+            amount = details.get('amount', 0)
+            message = f"💰 <b>Пополнение баланса</b>\n\n👤 Пользователь: {username} (ID: {user_id})\n💵 Сумма: {amount} USDT"
+        
+        elif event_type == 'withdrawal_request':
+            amount = details.get('amount', 0)
+            wallet = details.get('wallet', 'N/A')
+            message = f"💸 <b>Заявка на вывод</b>\n\n👤 Пользователь: {username} (ID: {user_id})\n💵 Сумма: {amount} USDT\n💼 Кошелек: {wallet}"
+        
+        elif event_type == 'flash_usdt_purchase':
+            amount = details.get('amount', 0)
+            price = details.get('price', 0)
+            package = details.get('package', 'N/A')
+            wallet = details.get('wallet', 'N/A')
+            message = f"⚡ <b>Покупка Flash USDT</b>\n\n👤 Пользователь: {username} (ID: {user_id})\n📦 Пакет: {package}\n💵 Количество: {amount} USDT\n💰 Цена: {price} USDT\n💼 Кошелек: {wallet}"
+        
+        elif event_type == 'deal_created':
+            deal_title = details.get('title', 'N/A')
+            deal_amount = details.get('amount', 0)
+            message = f"🤝 <b>Создание сделки в гаранте</b>\n\n👤 Продавец: {username} (ID: {user_id})\n📋 Название: {deal_title}\n💵 Сумма: {deal_amount} USDT"
+        
+        elif event_type == 'forum_topic_created':
+            topic_title = details.get('title', 'N/A')
+            category = details.get('category', 'N/A')
+            message = f"📝 <b>Новая тема на форуме</b>\n\n👤 Автор: {username} (ID: {user_id})\n📂 Категория: {category}\n📋 Название: {topic_title}"
+        
+        else:
+            message = f"ℹ️ <b>{event_type}</b>\n\n👤 Пользователь: {username} (ID: {user_id})\n📋 Детали: {json.dumps(details, ensure_ascii=False)}"
+        
+        # Отправляем уведомление
+        success = send_telegram_message(message)
+        
+        return {
+            'statusCode': 200,
+            'headers': {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*'
+            },
+            'isBase64Encoded': False,
+            'body': json.dumps({
+                'success': success,
+                'message': 'Notification sent' if success else 'Failed to send notification'
+            })
+        }
+        
+    except Exception as e:
+        return {
+            'statusCode': 500,
+            'headers': {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*'
+            },
+            'isBase64Encoded': False,
+            'body': json.dumps({'error': str(e)})
+        }

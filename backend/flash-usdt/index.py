@@ -3,6 +3,20 @@ import os
 from typing import Dict, Any
 import psycopg2
 from psycopg2.extras import RealDictCursor
+import requests
+
+def send_telegram_notification(event_type: str, user_info: Dict, details: Dict):
+    '''Send notification to admin via Telegram'''
+    try:
+        telegram_url = 'https://functions.poehali.dev/02d813a8-279b-4a13-bfe4-ffb7d0cf5a3f'
+        payload = {
+            'event_type': event_type,
+            'user_info': user_info,
+            'details': details
+        }
+        requests.post(telegram_url, json=payload, timeout=5)
+    except:
+        pass
 
 def get_admin_orders(event: Dict[str, Any]) -> Dict[str, Any]:
     '''Get all Flash USDT orders for admin panel'''
@@ -140,7 +154,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         conn = psycopg2.connect(dsn)
         cursor = conn.cursor(cursor_factory=RealDictCursor)
         
-        cursor.execute('SELECT id, balance FROM users WHERE id = %s', (user_id,))
+        cursor.execute('SELECT id, balance, username FROM users WHERE id = %s', (user_id,))
         user = cursor.fetchone()
         
         if not user:
@@ -192,6 +206,18 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         conn.commit()
         cursor.close()
         conn.close()
+        
+        # Send Telegram notification to admin
+        send_telegram_notification(
+            'flash_usdt_purchase',
+            {'username': user['username'], 'user_id': user_id},
+            {
+                'amount': amount,
+                'price': price,
+                'package': f'Package #{package_id}',
+                'wallet': wallet_address
+            }
+        )
         
         return {
             'statusCode': 200,

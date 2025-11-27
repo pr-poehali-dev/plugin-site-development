@@ -15,6 +15,19 @@ import requests
 
 SCHEMA = 't_p32599880_plugin_site_developm'
 
+def send_telegram_notification(event_type: str, user_info: Dict, details: Dict):
+    '''Send notification to admin via Telegram'''
+    try:
+        telegram_url = 'https://functions.poehali.dev/02d813a8-279b-4a13-bfe4-ffb7d0cf5a3f'
+        payload = {
+            'event_type': event_type,
+            'user_info': user_info,
+            'details': details
+        }
+        requests.post(telegram_url, json=payload, timeout=5)
+    except:
+        pass
+
 def get_db_connection():
     """Получить подключение к БД"""
     database_url = os.environ.get('DATABASE_URL')
@@ -212,6 +225,18 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 cur.execute(
                     f"INSERT INTO {SCHEMA}.transactions (user_id, amount, type, description) VALUES (%s, %s, %s, %s)",
                     (int(user_id), float(payment['amount']), 'crypto_deposit', f"Пополнение через {payment['network']}")
+                )
+                
+                # Get username for notification
+                cur.execute(f"SELECT username FROM {SCHEMA}.users WHERE id = %s", (int(user_id),))
+                user_data = cur.fetchone()
+                username = user_data['username'] if user_data else 'Unknown'
+                
+                # Send Telegram notification
+                send_telegram_notification(
+                    'balance_topup',
+                    {'username': username, 'user_id': user_id},
+                    {'amount': float(payment['amount'])}
                 )
                 
                 # Начисление реферального бонуса (10% от пополнения)
