@@ -178,7 +178,7 @@ const BaccaratGame = ({ user, onShowAuthDialog, onRefreshUserBalance }: Baccarat
         const finalBankerValue = calculateHandValue(finalBankerHand);
 
         let winner: 'player' | 'banker' | 'tie';
-        const shouldWin = Math.random() < 0.4;
+        const shouldWin = Math.random() < 0.37;
         
         if (shouldWin) {
           winner = betType;

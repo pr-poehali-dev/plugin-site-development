@@ -44,7 +44,7 @@ const MinesGame = ({ user, onShowAuthDialog, onRefreshUserBalance }: MinesGamePr
 
   const generateMinePositions = (count: number): number[] => {
     const positions: number[] = [];
-    const shouldWin = Math.random() < 0.4;
+    const shouldWin = Math.random() < 0.37;
     
     if (shouldWin) {
       while (positions.length < count) {
