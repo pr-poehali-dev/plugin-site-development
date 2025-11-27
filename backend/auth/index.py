@@ -685,7 +685,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                             'user_info': {'username': username, 'user_id': user_id},
                             'details': {'game': game_type, 'bet_amount': bet_amount, 'returned_amount': amount}
                         }
-                        requests.post('https://functions.poehali.dev/bc97a1cc-38a8-4c91-9dd0-45a6231ecc98', json=notify_payload, timeout=5)
+                        requests.post('https://functions.poehali.dev/02d813a8-279b-4a13-bfe4-ffb7d0cf5a3f', json=notify_payload, timeout=5)
                     except:
                         pass
                 else:
@@ -700,7 +700,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                             'user_info': {'username': username, 'user_id': user_id},
                             'details': {'game': game_type, 'bet_amount': bet_amount, 'win_amount': amount}
                         }
-                        requests.post('https://functions.poehali.dev/bc97a1cc-38a8-4c91-9dd0-45a6231ecc98', json=notify_payload, timeout=5)
+                        requests.post('https://functions.poehali.dev/02d813a8-279b-4a13-bfe4-ffb7d0cf5a3f', json=notify_payload, timeout=5)
                     except:
                         pass
                 
@@ -737,7 +737,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                         'user_info': {'username': username, 'user_id': user_id},
                         'details': {'game': game_type, 'bet_amount': bet_amount}
                     }
-                    requests.post('https://functions.poehali.dev/bc97a1cc-38a8-4c91-9dd0-45a6231ecc98', json=notify_payload, timeout=5)
+                    requests.post('https://functions.poehali.dev/02d813a8-279b-4a13-bfe4-ffb7d0cf5a3f', json=notify_payload, timeout=5)
                 except:
                     pass
                 
