@@ -101,7 +101,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         action = body_data.get('action')
         
         if action == 'send_code':
-            email = body_data.get('email', '').strip().lower()
+            email = (body_data.get('email') or '').strip().lower()
             
             if not email:
                 return {
@@ -155,8 +155,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             }
         
         elif action == 'verify_code':
-            email = body_data.get('email', '').strip().lower()
-            code = body_data.get('code', '').strip()
+            email = (body_data.get('email') or '').strip().lower()
+            code = (body_data.get('code') or '').strip()
             
             if not email or not code:
                 return {
