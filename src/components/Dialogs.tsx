@@ -269,9 +269,20 @@ const Dialogs = ({
                 </Button>
               </div>
             </div>
-          ) : showEmailVerification && pendingRegistration ? (
+          ) : showEmailVerification ? (
             <EmailVerificationStep
-              email={pendingRegistration.email}
+              email={(() => {
+                const saved = sessionStorage.getItem('pendingRegistration');
+                if (saved) {
+                  try {
+                    const data = JSON.parse(saved);
+                    return data.email || '';
+                  } catch (e) {
+                    return '';
+                  }
+                }
+                return '';
+              })()}
               onVerified={async () => {
                 const savedData = sessionStorage.getItem('pendingRegistration');
                 console.log('onVerified вызван, savedData из sessionStorage:', savedData);
