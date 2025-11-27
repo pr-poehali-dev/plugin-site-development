@@ -401,7 +401,12 @@
     border-radius: 50%;
     filter: blur(60px);
     opacity: 0.15;
-    animation: floatOrb 20s ease-in-out infinite;
+  }
+
+  @media (min-width: 768px) {
+    .auth-orb {
+      animation: floatOrb 20s ease-in-out infinite;
+    }
   }
 
   .auth-orb-1 {
@@ -457,8 +462,14 @@
     }
   }
 
-  .auth-icon-pulse {
-    animation: iconPulse 3s ease-in-out infinite;
+  @media (min-width: 768px) {
+    .auth-icon-pulse {
+      animation: iconPulse 3s ease-in-out infinite;
+    }
+
+    .auth-icon-float {
+      animation: iconFloat 3s ease-in-out infinite;
+    }
   }
 
   @keyframes iconPulse {
@@ -469,10 +480,6 @@
     50% {
       box-shadow: 0 0 0 20px hsla(var(--primary), 0);
     }
-  }
-
-  .auth-icon-float {
-    animation: iconFloat 3s ease-in-out infinite;
   }
 
   @keyframes iconFloat {
@@ -496,7 +503,12 @@
     background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    animation: shimmer 3s ease-in-out infinite;
+  }
+
+  @media (min-width: 768px) {
+    .auth-title-shimmer {
+      animation: shimmer 3s ease-in-out infinite;
+    }
   }
 
   @keyframes shimmer {
@@ -574,11 +586,19 @@
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
-  .auth-input-focus:focus {
-    transform: scale(1.02);
-    box-shadow:
-      0 0 0 3px hsla(var(--primary), 0.15),
-      0 10px 30px hsla(var(--primary), 0.1);
+  @media (min-width: 768px) {
+    .auth-input-focus:focus {
+      transform: scale(1.02);
+      box-shadow:
+        0 0 0 3px hsla(var(--primary), 0.15),
+        0 10px 30px hsla(var(--primary), 0.1);
+    }
+  }
+
+  @media (max-width: 767px) {
+    .auth-input-focus:focus {
+      box-shadow: 0 0 0 2px hsla(var(--primary), 0.15);
+    }
   }
 
   .auth-button-gradient {
@@ -588,14 +608,19 @@
       hsl(var(--accent)) 100%
     );
     background-size: 200% 100%;
-    animation: gradientShift 3s ease infinite;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
-  .auth-button-gradient:hover {
-    animation: gradientShift 1s ease infinite;
-    transform: translateY(-2px);
-    box-shadow: 0 20px 40px hsla(var(--primary), 0.3);
+  @media (min-width: 768px) {
+    .auth-button-gradient {
+      animation: gradientShift 3s ease infinite;
+    }
+
+    .auth-button-gradient:hover {
+      animation: gradientShift 1s ease infinite;
+      transform: translateY(-2px);
+      box-shadow: 0 20px 40px hsla(var(--primary), 0.3);
+    }
   }
 
   @keyframes gradientShift {
@@ -608,8 +633,10 @@
     }
   }
 
-  .auth-glow {
-    animation: authGlow 2s ease-in-out infinite;
+  @media (min-width: 768px) {
+    .auth-glow {
+      animation: authGlow 2s ease-in-out infinite;
+    }
   }
 
   @keyframes authGlow {
