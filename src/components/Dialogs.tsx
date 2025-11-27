@@ -11,7 +11,6 @@ import { useToast } from '@/hooks/use-toast';
 import VerificationForm from '@/components/VerificationForm';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import CreateTopicDialog from '@/components/forum/CreateTopicDialog';
-import EmailVerificationStep from '@/components/EmailVerificationStep';
 
 interface DialogsProps {
   authDialogOpen: boolean;
@@ -74,8 +73,6 @@ const Dialogs = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [showResetPassword, setShowResetPassword] = useState(false);
   const [resetEmail, setResetEmail] = useState('');
-  const [showEmailVerification, setShowEmailVerification] = useState(false);
-  const [pendingRegistration, setPendingRegistration] = useState<{username: string; email: string; password: string; referral_code?: string} | null>(null);
 
   const handleAvatarSelect = () => {
     fileInputRef.current?.click();
@@ -257,190 +254,12 @@ const Dialogs = ({
                 </Button>
               </div>
             </div>
-          ) : showEmailVerification ? (
-            <EmailVerificationStep
-              email={(() => {
-                const saved = sessionStorage.getItem('pendingRegistration');
-                if (saved) {
-                  try {
-                    const data = JSON.parse(saved);
-                    return data.email || '';
-                  } catch (e) {
-                    return '';
-                  }
-                }
-                return '';
-              })()}
-              onVerified={async () => {
-                const savedData = sessionStorage.getItem('pendingRegistration');
-                console.log('onVerified вызван, savedData из sessionStorage:', savedData);
-                
-                let regData;
-                try {
-                  regData = savedData ? JSON.parse(savedData) : null;
-                } catch (e) {
-                  console.error('Ошибка парсинга pendingRegistration:', e);
-                }
-                
-                if (!regData || !regData.email) {
-                  toast({
-                    title: 'Ошибка',
-                    description: 'Данные регистрации потеряны. Попробуйте снова.',
-                    variant: 'destructive'
-                  });
-                  setShowEmailVerification(false);
-                  setPendingRegistration(null);
-                  sessionStorage.removeItem('pendingRegistration');
-                  return;
-                }
-                
-                toast({
-                  title: '✅ Email подтверждён',
-                  description: 'Завершаем регистрацию...'
-                });
-                
-                const registrationData = {
-                  action: 'register',
-                  username: regData.username,
-                  email: regData.email,
-                  password: regData.password,
-                  referral_code: regData.referral_code
-                };
-                
-                console.log('Отправка регистрации:', registrationData);
-                
-                const response = await fetch(AUTH_URL, {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify(registrationData),
-                });
-                
-                const responseText = await response.text();
-                console.log('RAW Response:', responseText);
-                
-                let data;
-                try {
-                  data = JSON.parse(responseText);
-                } catch (e) {
-                  console.error('Parse error:', e);
-                  toast({
-                    title: 'Ошибка парсинга',
-                    description: `Response: ${responseText.substring(0, 200)}`,
-                    variant: 'destructive'
-                  });
-                  setShowEmailVerification(false);
-                  setPendingRegistration(null);
-                  return;
-                }
-                
-                console.log('Parsed Response:', data);
-                
-                if (data.success) {
-                  toast({
-                    title: '🎉 Регистрация завершена',
-                    description: 'Добро пожаловать!'
-                  });
-                  
-                  sessionStorage.removeItem('pendingRegistration');
-                  
-                  const loginForm = document.createElement('form');
-                  const usernameInput = document.createElement('input');
-                  usernameInput.name = 'username';
-                  usernameInput.value = regData.username;
-                  const passwordInput = document.createElement('input');
-                  passwordInput.name = 'password';
-                  passwordInput.value = regData.password;
-                  loginForm.appendChild(usernameInput);
-                  loginForm.appendChild(passwordInput);
-                  
-                  const loginEvent = {
-                    preventDefault: () => {},
-                    currentTarget: loginForm
-                  } as React.FormEvent<HTMLFormElement>;
-                  
-                  setShowEmailVerification(false);
-                  setPendingRegistration(null);
-                  onAuthSubmit(loginEvent);
-                } else {
-                  console.error('Ошибка регистрации:', data.error);
-                  toast({
-                    title: 'Ошибка регистрации',
-                    description: data.error || 'Неизвестная ошибка',
-                    variant: 'destructive'
-                  });
-                  setShowEmailVerification(false);
-                  setPendingRegistration(null);
-                  sessionStorage.removeItem('pendingRegistration');
-                }
-              }}
-            />
           ) : (
             <form onSubmit={(e) => {
               e.preventDefault();
               const formData = new FormData(e.currentTarget);
               
-              console.log('=== FORM SUBMIT ===');
-              console.log('authMode:', authMode);
-              console.log('FormData entries:', Array.from(formData.entries()));
-              
-              const email = (formData.get('email') as string || '').trim();
-              const username = (formData.get('username') as string || '').trim();
-              const password = (formData.get('password') as string || '').trim();
-              const referral_code = (formData.get('referral_code') as string || '').trim();
-              
-              console.log('Extracted values:', { username, email, password, referral_code });
-              
-              if (authMode === 'register' && email) {
-                if (!username || !email || !password) {
-                  toast({
-                    title: 'Ошибка',
-                    description: 'Заполните все обязательные поля',
-                    variant: 'destructive'
-                  });
-                  return;
-                }
-                
-                const pendingData = {
-                  username,
-                  email,
-                  password,
-                  referral_code: referral_code || undefined
-                };
-                
-                console.log('Сохраняю pendingRegistration:', pendingData);
-                sessionStorage.setItem('pendingRegistration', JSON.stringify(pendingData));
-                setPendingRegistration(pendingData);
-                
-                const EMAIL_VERIFY_URL = 'https://functions.poehali.dev/d1025e8d-68f1-4eec-b8e9-30ec5c80d63f';
-                fetch(EMAIL_VERIFY_URL, {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ action: 'send_code', email })
-                }).then(res => res.json()).then(data => {
-                  if (data.success) {
-                    console.log('Код отправлен, pendingRegistration сейчас:', pendingData);
-                    setShowEmailVerification(true);
-                  } else {
-                    toast({
-                      title: 'Ошибка',
-                      description: data.error || 'Не удалось отправить код',
-                      variant: 'destructive'
-                    });
-                    sessionStorage.removeItem('pendingRegistration');
-                    setPendingRegistration(null);
-                  }
-                }).catch(() => {
-                  toast({
-                    title: 'Ошибка',
-                    description: 'Ошибка подключения к серверу',
-                    variant: 'destructive'
-                  });
-                  sessionStorage.removeItem('pendingRegistration');
-                  setPendingRegistration(null);
-                });
-              } else {
-                onAuthSubmit(e);
-              }
+              onAuthSubmit(e);
             }} className="space-y-5 pt-2">
               <div className="space-y-2">
                 <label className="text-sm font-medium text-foreground/90">Имя пользователя</label>

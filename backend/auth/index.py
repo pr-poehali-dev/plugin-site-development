@@ -170,13 +170,11 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             email = str(email_raw).strip() if email_raw else ''
             referral_code = str(referral_code_raw).strip().upper() if referral_code_raw else ''
             
-            print(f"DEBUG register: username='{username}' email='{email}' password='{password}' username_raw={username_raw} email_raw={email_raw}")
-            
             if not username or not email or not password:
                 return {
                     'statusCode': 400,
                     'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                    'body': json.dumps({'error': f'Заполните все поля (username={bool(username)}, email={bool(email)}, password={bool(password)})'}),
+                    'body': json.dumps({'error': 'Заполните все поля'}),
                     'isBase64Encoded': False
                 }
             
@@ -192,20 +190,6 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'statusCode': 400,
                     'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
                     'body': json.dumps({'error': 'Пользователь уже существует'}),
-                    'isBase64Encoded': False
-                }
-            
-            # Проверка email верификации
-            cur.execute(
-                f"SELECT verified FROM {SCHEMA}.email_verifications WHERE email = %s AND verified = TRUE ORDER BY created_at DESC LIMIT 1",
-                (email.lower(),)
-            )
-            verification = cur.fetchone()
-            if not verification:
-                return {
-                    'statusCode': 400,
-                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                    'body': json.dumps({'error': 'Email не подтверждён. Пожалуйста, подтвердите email.'}),
                     'isBase64Encoded': False
                 }
             
