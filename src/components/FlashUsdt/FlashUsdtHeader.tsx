@@ -64,7 +64,7 @@ export const FlashUsdtHeader = ({ onTestPurchase }: FlashUsdtHeaderProps) => {
               <Icon name="Percent" size={20} className="text-yellow-400 sm:w-6 sm:h-6" />
               <h3 className="text-base sm:text-lg font-semibold">Цена</h3>
             </div>
-            <p className="text-2xl sm:text-3xl font-bold text-yellow-400">20%</p>
+            <p className="text-2xl sm:text-3xl font-bold text-yellow-400">23.4%</p>
             <p className="text-xs sm:text-sm text-muted-foreground mt-1">от номинала</p>
           </Card>
           
