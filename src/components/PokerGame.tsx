@@ -241,12 +241,14 @@ const PokerGame = ({ user, onShowAuthDialog, onRefreshUserBalance }: PokerGamePr
   const finishGame = async (dealerRank: { rank: number; name: string }, totalBet: number) => {
     const playerRank = playerHandRank!;
     let won = false;
+    let isDraw = false;
     let winAmount = 0;
 
     if (playerRank.rank > dealerRank.rank) {
       won = true;
       winAmount = totalBet * 2;
     } else if (playerRank.rank === dealerRank.rank) {
+      isDraw = true;
       winAmount = totalBet;
     }
 
@@ -260,8 +262,9 @@ const PokerGame = ({ user, onShowAuthDialog, onRefreshUserBalance }: PokerGamePr
         body: JSON.stringify({
           action: 'complete_game',
           won: won,
+          is_draw: isDraw,
           amount: winAmount,
-          game_type: 'poker'
+          game_type: 'Poker'
         })
       });
 

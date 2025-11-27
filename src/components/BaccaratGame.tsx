@@ -213,7 +213,9 @@ const BaccaratGame = ({ user, onShowAuthDialog, onRefreshUserBalance }: Baccarat
 
   const finishGame = async (won: boolean, winAmount: number, winner: 'player' | 'banker' | 'tie', betAmount: number) => {
     try {
-      if (won || (winner === 'tie' && betType !== 'tie')) {
+      const isTie = winner === 'tie' && betType !== 'tie';
+      
+      if (won || isTie) {
         const response = await fetch(AUTH_URL, {
           method: 'POST',
           headers: {
@@ -222,7 +224,8 @@ const BaccaratGame = ({ user, onShowAuthDialog, onRefreshUserBalance }: Baccarat
           },
           body: JSON.stringify({
             action: 'complete_game',
-            won: won,
+            won: won && !isTie,
+            is_draw: isTie,
             amount: winAmount,
             game_type: 'Baccarat'
           })
