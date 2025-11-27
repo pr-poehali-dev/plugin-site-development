@@ -318,16 +318,13 @@
     position: fixed !important;
     left: 50% !important;
     top: 50% !important;
-    transform: translate3d(-50%, -50%, 0) !important;
-    -webkit-transform: translate3d(-50%, -50%, 0) !important;
+    transform: translate(-50%, -50%) !important;
+    -webkit-transform: translate(-50%, -50%) !important;
     z-index: 9999 !important;
     overscroll-behavior: contain !important;
     -webkit-overflow-scrolling: touch !important;
     max-height: 90vh !important;
     overflow-y: auto !important;
-    backface-visibility: hidden !important;
-    -webkit-backface-visibility: hidden !important;
-    will-change: transform !important;
   }
 
   [data-radix-dialog-content] input,
@@ -367,8 +364,6 @@
     overscroll-behavior: contain !important;
     -webkit-overflow-scrolling: touch !important;
     touch-action: pan-y !important;
-    transform: translate3d(0, 0, 0) !important;
-    -webkit-transform: translate3d(0, 0, 0) !important;
   }
 
   @media (min-width: 768px) {
