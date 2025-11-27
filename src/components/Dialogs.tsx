@@ -282,6 +282,8 @@ const Dialogs = ({
                   body: JSON.stringify(registrationData),
                 });
                 const data = await response.json();
+                console.log('Ответ сервера:', data);
+                
                 if (data.success) {
                   toast({
                     title: '🎉 Регистрация завершена',
@@ -307,11 +309,14 @@ const Dialogs = ({
                   setPendingRegistration(null);
                   onAuthSubmit(loginEvent);
                 } else {
+                  console.error('Ошибка регистрации:', data.error);
                   toast({
-                    title: 'Ошибка',
-                    description: data.error || 'Ошибка регистрации',
+                    title: 'Ошибка регистрации',
+                    description: data.error || 'Неизвестная ошибка',
                     variant: 'destructive'
                   });
+                  setShowEmailVerification(false);
+                  setPendingRegistration(null);
                 }
               }}
               onBack={() => {
