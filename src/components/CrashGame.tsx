@@ -109,6 +109,7 @@ const CrashGame = ({ user, onShowAuthDialog, onRefreshUserBalance }: CrashGamePr
       setHasCashedOut(false);
       setGameState('flying');
       setResult('');
+      setIsProcessing(false);
 
       let currentMultiplier = 1.00;
       const autoCashoutValue = parseFloat(autoCashout);
