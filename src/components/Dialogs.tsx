@@ -203,7 +203,7 @@ const Dialogs = ({
   return (
     <>
       <Dialog open={authDialogOpen} onOpenChange={handleAuthDialogChange}>
-        <DialogContent className="auth-dialog-content border-0 rounded-3xl shadow-2xl bg-card/95 backdrop-blur-xl max-w-md overflow-hidden">
+        <DialogContent className="auth-dialog-content border-0 rounded-3xl shadow-2xl bg-card/95 backdrop-blur-xl max-w-md overflow-y-auto overscroll-none">
           <div className="auth-orbs-container">
             <div className="auth-orb auth-orb-1"></div>
             <div className="auth-orb auth-orb-2"></div>

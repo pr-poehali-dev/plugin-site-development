@@ -10,12 +10,20 @@ const Dialog = (props: React.ComponentProps<typeof DialogPrimitive.Root>) => {
   React.useEffect(() => {
     if (!open) return;
 
-    document.body.style.setProperty('overflow', 'hidden', 'important');
-    document.documentElement.style.setProperty('overflow', 'hidden', 'important');
+    const scrollY = window.scrollY;
+    document.body.style.position = 'fixed';
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.width = '100%';
+    document.body.style.overflow = 'hidden';
+    document.documentElement.style.overflow = 'hidden';
 
     return () => {
-      document.body.style.removeProperty('overflow');
-      document.documentElement.style.removeProperty('overflow');
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.width = '';
+      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
+      window.scrollTo(0, scrollY);
     };
   }, [open]);
 
