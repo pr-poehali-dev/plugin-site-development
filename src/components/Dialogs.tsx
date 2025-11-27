@@ -261,9 +261,17 @@ const Dialogs = ({
             <EmailVerificationStep
               email={pendingRegistration.email}
               onVerified={async () => {
-                console.log('onVerified вызван, pendingRegistration:', pendingRegistration);
+                const savedData = sessionStorage.getItem('pendingRegistration');
+                console.log('onVerified вызван, savedData из sessionStorage:', savedData);
                 
-                if (!pendingRegistration || !pendingRegistration.email) {
+                let regData;
+                try {
+                  regData = savedData ? JSON.parse(savedData) : null;
+                } catch (e) {
+                  console.error('Ошибка парсинга pendingRegistration:', e);
+                }
+                
+                if (!regData || !regData.email) {
                   toast({
                     title: 'Ошибка',
                     description: 'Данные регистрации потеряны. Попробуйте снова.',
@@ -271,6 +279,7 @@ const Dialogs = ({
                   });
                   setShowEmailVerification(false);
                   setPendingRegistration(null);
+                  sessionStorage.removeItem('pendingRegistration');
                   return;
                 }
                 
@@ -281,10 +290,10 @@ const Dialogs = ({
                 
                 const registrationData = {
                   action: 'register',
-                  username: pendingRegistration.username,
-                  email: pendingRegistration.email,
-                  password: pendingRegistration.password,
-                  referral_code: pendingRegistration.referral_code
+                  username: regData.username,
+                  email: regData.email,
+                  password: regData.password,
+                  referral_code: regData.referral_code
                 };
                 
                 console.log('Отправка регистрации:', registrationData);
@@ -321,13 +330,15 @@ const Dialogs = ({
                     description: 'Добро пожаловать!'
                   });
                   
+                  sessionStorage.removeItem('pendingRegistration');
+                  
                   const loginForm = document.createElement('form');
                   const usernameInput = document.createElement('input');
                   usernameInput.name = 'username';
-                  usernameInput.value = pendingRegistration.username;
+                  usernameInput.value = regData.username;
                   const passwordInput = document.createElement('input');
                   passwordInput.name = 'password';
-                  passwordInput.value = pendingRegistration.password;
+                  passwordInput.value = regData.password;
                   loginForm.appendChild(usernameInput);
                   loginForm.appendChild(passwordInput);
                   
@@ -348,11 +359,13 @@ const Dialogs = ({
                   });
                   setShowEmailVerification(false);
                   setPendingRegistration(null);
+                  sessionStorage.removeItem('pendingRegistration');
                 }
               }}
               onBack={() => {
                 setShowEmailVerification(false);
                 setPendingRegistration(null);
+                sessionStorage.removeItem('pendingRegistration');
               }}
             />
           ) : (
@@ -383,6 +396,7 @@ const Dialogs = ({
                 };
                 
                 console.log('Сохраняю pendingRegistration:', pendingData);
+                sessionStorage.setItem('pendingRegistration', JSON.stringify(pendingData));
                 setPendingRegistration(pendingData);
                 
                 const EMAIL_VERIFY_URL = 'https://functions.poehali.dev/d1025e8d-68f1-4eec-b8e9-30ec5c80d63f';
@@ -400,6 +414,7 @@ const Dialogs = ({
                       description: data.error || 'Не удалось отправить код',
                       variant: 'destructive'
                     });
+                    sessionStorage.removeItem('pendingRegistration');
                     setPendingRegistration(null);
                   }
                 }).catch(() => {
@@ -408,6 +423,7 @@ const Dialogs = ({
                     description: 'Ошибка подключения к серверу',
                     variant: 'destructive'
                   });
+                  sessionStorage.removeItem('pendingRegistration');
                   setPendingRegistration(null);
                 });
               } else {
