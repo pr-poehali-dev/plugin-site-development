@@ -85,7 +85,7 @@ export const FlashBtcPackages = ({ packages, onPurchase, selectedPackageId }: Fl
                 </div>
                 <div className="flex items-center gap-1.5">
                   <Icon name="Check" size={10} className="text-green-400 sm:w-3 sm:h-3" />
-                  <span>120 дней использования</span>
+                  <span>42 дня использования</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <Icon name="Check" size={10} className="text-green-400 sm:w-3 sm:h-3" />

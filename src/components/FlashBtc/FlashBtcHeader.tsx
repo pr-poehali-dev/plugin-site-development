@@ -22,7 +22,7 @@ export const FlashBtcHeader = ({ onTestPurchase }: FlashBtcHeaderProps) => {
               <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-orange-400 to-orange-600">
                 Flash BTC
               </h1>
-              <p className="text-xs sm:text-sm md:text-base text-muted-foreground">Мгновенные Bitcoin токены</p>
+              <p className="text-xs sm:text-sm md:text-base text-muted-foreground">Полная копия BTC на 42 дня</p>
             </div>
           </div>
 
@@ -37,7 +37,7 @@ export const FlashBtcHeader = ({ onTestPurchase }: FlashBtcHeaderProps) => {
             </Badge>
             <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30 text-xs sm:text-sm px-2.5 sm:px-3 py-1 sm:py-1.5">
               <Icon name="Clock" size={12} className="mr-1 sm:mr-1.5 sm:w-3.5 sm:h-3.5" />
-              120 дней
+              42 дня
             </Badge>
           </div>
         </div>

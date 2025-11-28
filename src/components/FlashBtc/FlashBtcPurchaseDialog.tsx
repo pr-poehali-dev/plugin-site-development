@@ -64,7 +64,7 @@ export const FlashBtcPurchaseDialog = ({
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-xs sm:text-sm text-muted-foreground">Срок действия:</span>
-                  <Badge className="bg-yellow-500/20 text-yellow-400 text-xs sm:text-sm px-1.5 sm:px-2 py-0.5">120 дней</Badge>
+                  <Badge className="bg-yellow-500/20 text-yellow-400 text-xs sm:text-sm px-1.5 sm:px-2 py-0.5">42 дня</Badge>
                 </div>
               </div>
             </Card>
@@ -94,7 +94,8 @@ export const FlashBtcPurchaseDialog = ({
                   <p className="font-semibold text-foreground">Важно:</p>
                   <ul className="space-y-0.5 sm:space-y-1">
                     <li>• Проверьте правильность адреса перед оплатой</li>
-                    <li>• Токены придут в течение 1-3 минут в зависимости от загруженности сети Bitcoin</li>
+                    <li>• Flash BTC — полная копия оригинального Bitcoin</li>
+                    <li>• Токены работают 42 дня, затем автоматически исчезают</li>
                     <li>• Срок действия начнется с момента получения</li>
                   </ul>
                 </div>
