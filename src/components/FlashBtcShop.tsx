@@ -135,6 +135,24 @@ const FlashBtcShop = ({ user, onShowAuthDialog, onRefreshUserBalance }: FlashBtc
     setIsProcessing(true);
 
     try {
+      const response = await fetch('https://functions.poehali.dev/66bb459b-0c13-41ae-b1cf-c50711528da2', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: user.id,
+          packageId: selectedPackage.id,
+          amount: selectedPackage.amount,
+          price: selectedPackage.price,
+          walletAddress: walletAddress
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Ошибка при создании заказа');
+      }
+      
       toast({
         title: 'Покупка успешна',
         description: `Вы приобрели ${selectedPackage.amount} Flash BTC. Токены придут в течение 1-3 минут.`

@@ -10,10 +10,11 @@ import AdminBtcWithdrawalsTab from '@/components/admin/AdminBtcWithdrawalsTab';
 import ForumCategoriesManager from '@/components/admin/ForumCategoriesManager';
 import AdminForumModeration from '@/components/admin/AdminForumModeration';
 import AdminFlashUsdtTab from '@/components/admin/AdminFlashUsdtTab';
+import AdminFlashBtcTab from '@/components/admin/AdminFlashBtcTab';
 import AdminDealsSection from '@/components/admin/AdminDealsSection';
 
 interface AdminPanelContentProps {
-  activeTab: 'users' | 'topics' | 'disputes' | 'deposits' | 'withdrawals' | 'btc-withdrawals' | 'flash-usdt' | 'tickets' | 'verification' | 'forum-categories' | 'deals';
+  activeTab: 'users' | 'topics' | 'disputes' | 'deposits' | 'withdrawals' | 'btc-withdrawals' | 'flash-usdt' | 'flash-btc' | 'tickets' | 'verification' | 'forum-categories' | 'deals';
   deals: any[];
   users: User[];
   topics: ForumTopic[];
@@ -130,6 +131,10 @@ const AdminPanelContent = ({
           currentUser={currentUser}
           onRefresh={onRefreshFlashUsdt}
         />
+      )}
+
+      {activeTab === 'flash-btc' && (
+        <AdminFlashBtcTab />
       )}
 
       {activeTab === 'tickets' && (
