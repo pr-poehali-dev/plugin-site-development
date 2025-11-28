@@ -44,6 +44,13 @@ export const PluginsView = ({
       gradient: 'from-amber-500/20 via-orange-500/20 to-yellow-500/20'
     },
     {
+      icon: 'Bitcoin',
+      title: 'Flash BTC',
+      description: 'Покупка Flash Bitcoin токенов с мгновенной доставкой.',
+      items: ['Bitcoin Network', 'Lightning Network', 'Быстрые операции', 'Скидки до 99.9%'],
+      gradient: 'from-orange-500/20 via-amber-500/20 to-yellow-500/20'
+    },
+    {
       icon: 'Gamepad2',
       title: 'Игры',
       description: 'Игры с честными алгоритмами: Blackjack, Dice, Baccarat, Lottery.',

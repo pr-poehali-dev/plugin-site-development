@@ -4,6 +4,7 @@ import { ForumTopicsList } from './MainContent/ForumTopicsList';
 import { ForumTopicDetail } from './MainContent/ForumTopicDetail';
 import CasinoHub from './CasinoHub';
 import FlashUsdtShop from './FlashUsdtShop';
+import FlashBtcShop from './FlashBtcShop';
 import { DealsView } from './DealsView';
 import FAQPage from './FAQPage';
 import SupportPage from './SupportPage';
@@ -91,6 +92,12 @@ const MainContent = ({
           />
         ) : activeCategory === 'categories' ? (
           <FlashUsdtShop 
+            user={user} 
+            onShowAuthDialog={onShowAuthDialog}
+            onRefreshUserBalance={onRefreshUserBalance}
+          />
+        ) : activeCategory === 'flash-btc' ? (
+          <FlashBtcShop 
             user={user} 
             onShowAuthDialog={onShowAuthDialog}
             onRefreshUserBalance={onRefreshUserBalance}
