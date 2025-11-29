@@ -718,6 +718,317 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 'isBase64Encoded': False
             }
         
+        elif action == 'get_lottery':
+            cur.execute(
+                f"SELECT id, status, total_tickets, prize_pool, draw_time, winner_ticket_number, winner_username, created_at FROM {SCHEMA}.lottery_rounds WHERE status IN ('active', 'drawing') ORDER BY created_at DESC LIMIT 1"
+            )
+            round_data = cur.fetchone()
+            
+            if not round_data:
+                cur.execute(
+                    f"INSERT INTO {SCHEMA}.lottery_rounds (status, total_tickets, prize_pool, created_at) VALUES ('active', 0, 0, NOW()) RETURNING id, status, total_tickets, prize_pool, draw_time, winner_ticket_number, winner_username, created_at"
+                )
+                round_data = cur.fetchone()
+                conn.commit()
+            
+            cur.execute(
+                f"SELECT id, user_id, username, ticket_number, purchased_at FROM {SCHEMA}.lottery_tickets WHERE round_id = {round_data['id']} ORDER BY ticket_number"
+            )
+            tickets = cur.fetchall()
+            
+            return {
+                'statusCode': 200,
+                'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                'body': json.dumps({
+                    'success': True,
+                    'round': dict(round_data),
+                    'tickets': [dict(t) for t in tickets]
+                }, default=str),
+                'isBase64Encoded': False
+            }
+        
+        elif action == 'buy_lottery_ticket':
+            headers = event.get('headers', {})
+            user_id = headers.get('X-User-Id') or headers.get('x-user-id')
+            
+            if not user_id:
+                return {
+                    'statusCode': 401,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'success': False, 'message': 'Требуется авторизация'}),
+                    'isBase64Encoded': False
+                }
+            
+            ticket_price = body_data.get('amount', 50)
+            
+            cur.execute(
+                f"SELECT id, status, total_tickets FROM {SCHEMA}.lottery_rounds WHERE status = 'active' ORDER BY created_at DESC LIMIT 1"
+            )
+            round_data = cur.fetchone()
+            
+            if not round_data:
+                return {
+                    'statusCode': 400,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'success': False, 'message': 'Нет активного раунда'}),
+                    'isBase64Encoded': False
+                }
+            
+            if round_data['total_tickets'] >= 10:
+                return {
+                    'statusCode': 400,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'success': False, 'message': 'Все билеты проданы'}),
+                    'isBase64Encoded': False
+                }
+            
+            cur.execute(
+                f"SELECT balance, username FROM {SCHEMA}.users WHERE id = {int(user_id)}"
+            )
+            user_data = cur.fetchone()
+            
+            if not user_data or user_data['balance'] < ticket_price:
+                return {
+                    'statusCode': 400,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'success': False, 'message': 'Недостаточно средств'}),
+                    'isBase64Encoded': False
+                }
+            
+            ticket_number = round_data['total_tickets'] + 1
+            
+            cur.execute(
+                f"UPDATE {SCHEMA}.users SET balance = balance - {float(ticket_price)} WHERE id = {int(user_id)}"
+            )
+            
+            cur.execute(
+                f"INSERT INTO {SCHEMA}.lottery_tickets (round_id, user_id, username, ticket_number, purchased_at) VALUES ({round_data['id']}, {int(user_id)}, {escape_sql_string(user_data['username'])}, {ticket_number}, NOW())"
+            )
+            
+            cur.execute(
+                f"UPDATE {SCHEMA}.lottery_rounds SET total_tickets = total_tickets + 1, prize_pool = prize_pool + {float(ticket_price)} WHERE id = {round_data['id']}"
+            )
+            
+            cur.execute(
+                f"INSERT INTO {SCHEMA}.transactions (user_id, amount, type, description) VALUES ({int(user_id)}, {-float(ticket_price)}, 'lottery', {escape_sql_string(f'Покупка билета #{ticket_number} в лотерею')})"
+            )
+            
+            if ticket_number == 10:
+                draw_time = datetime.datetime.now() + datetime.timedelta(minutes=1)
+                cur.execute(
+                    f"UPDATE {SCHEMA}.lottery_rounds SET status = 'drawing', draw_time = {escape_sql_string(draw_time.strftime('%Y-%m-%d %H:%M:%S'))} WHERE id = {round_data['id']}"
+                )
+            
+            conn.commit()
+            
+            return {
+                'statusCode': 200,
+                'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                'body': json.dumps({
+                    'success': True,
+                    'ticket_number': ticket_number
+                }),
+                'isBase64Encoded': False
+            }
+        
+        elif action == 'check_lottery_draw':
+            cur.execute(
+                f"SELECT id, draw_time FROM {SCHEMA}.lottery_rounds WHERE status = 'drawing' AND draw_time <= NOW()"
+            )
+            rounds = cur.fetchall()
+            
+            processed = 0
+            for round_data in rounds:
+                cur.execute(
+                    f"SELECT id, user_id, username, ticket_number FROM {SCHEMA}.lottery_tickets WHERE round_id = {round_data['id']} ORDER BY ticket_number"
+                )
+                tickets = cur.fetchall()
+                
+                if len(tickets) > 0:
+                    import random
+                    winner = random.choice(tickets)
+                    
+                    prize = 400
+                    winner_id = winner['user_id']
+                    winner_ticket = winner['ticket_number']
+                    winner_name = winner['username']
+                    
+                    cur.execute(
+                        f"UPDATE {SCHEMA}.users SET balance = balance + {float(prize)} WHERE id = {winner_id}"
+                    )
+                    
+                    cur.execute(
+                        f"UPDATE {SCHEMA}.lottery_rounds SET status = 'completed', winner_ticket_number = {winner_ticket}, winner_user_id = {winner_id}, winner_username = {escape_sql_string(winner_name)}, completed_at = NOW() WHERE id = {round_data['id']}"
+                    )
+                    
+                    win_desc = f'Выигрыш в лотерее (билет #{winner_ticket})'
+                    cur.execute(
+                        f"INSERT INTO {SCHEMA}.transactions (user_id, amount, type, description) VALUES ({winner_id}, {float(prize)}, 'lottery_win', {escape_sql_string(win_desc)})"
+                    )
+                    
+                    for ticket in tickets:
+                        if ticket['user_id'] == winner_id:
+                            msg = f'Победитель: {winner_name} (билет #{winner_ticket}). Приз: {prize} USDT'
+                        else:
+                            msg = f'Победитель: {winner_name} (билет #{winner_ticket})'
+                        
+                        cur.execute(
+                            f"INSERT INTO {SCHEMA}.lottery_notifications (user_id, round_id, message, is_read, created_at) VALUES ({ticket['user_id']}, {round_data['id']}, {escape_sql_string(msg)}, FALSE, NOW())"
+                        )
+                    
+                    processed += 1
+            
+            if processed > 0:
+                conn.commit()
+            
+            return {
+                'statusCode': 200,
+                'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                'body': json.dumps({
+                    'success': True,
+                    'processed_rounds': processed
+                }),
+                'isBase64Encoded': False
+            }
+        
+        elif action == 'get_lottery_notifications':
+            headers = event.get('headers', {})
+            user_id = headers.get('X-User-Id') or headers.get('x-user-id')
+            
+            if not user_id:
+                return {
+                    'statusCode': 401,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'error': 'Требуется авторизация'}),
+                    'isBase64Encoded': False
+                }
+            
+            cur.execute(
+                f"SELECT id, round_id, message, is_read, created_at FROM {SCHEMA}.lottery_notifications WHERE user_id = {int(user_id)} ORDER BY created_at DESC LIMIT 10"
+            )
+            notifications = cur.fetchall()
+            
+            return {
+                'statusCode': 200,
+                'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                'body': json.dumps({
+                    'success': True,
+                    'notifications': [dict(n) for n in notifications]
+                }, default=str),
+                'isBase64Encoded': False
+            }
+        
+        elif action == 'mark_notifications_read':
+            headers = event.get('headers', {})
+            user_id = headers.get('X-User-Id') or headers.get('x-user-id')
+            
+            if not user_id:
+                return {
+                    'statusCode': 401,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'error': 'Требуется авторизация'}),
+                    'isBase64Encoded': False
+                }
+            
+            cur.execute(
+                f"UPDATE {SCHEMA}.lottery_notifications SET is_read = TRUE WHERE user_id = {int(user_id)}"
+            )
+            conn.commit()
+            
+            return {
+                'statusCode': 200,
+                'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                'body': json.dumps({'success': True}),
+                'isBase64Encoded': False
+            }
+        
+        elif action == 'get_lottery_history':
+            cur.execute(
+                f"SELECT id, status, total_tickets, prize_pool, winner_ticket_number, winner_user_id, winner_username, created_at, completed_at FROM {SCHEMA}.lottery_rounds WHERE status = 'completed' ORDER BY completed_at DESC LIMIT 20"
+            )
+            history = cur.fetchall()
+            
+            return {
+                'statusCode': 200,
+                'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                'body': json.dumps({
+                    'success': True,
+                    'history': [dict(h) for h in history]
+                }, default=str),
+                'isBase64Encoded': False
+            }
+        
+        elif action == 'get_lottery_chat':
+            cur.execute(
+                f"SELECT id, user_id, username, message, created_at FROM {SCHEMA}.lottery_chat ORDER BY created_at DESC LIMIT 50"
+            )
+            messages = cur.fetchall()
+            
+            return {
+                'statusCode': 200,
+                'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                'body': json.dumps({
+                    'success': True,
+                    'messages': [dict(m) for m in messages][::-1]
+                }, default=str),
+                'isBase64Encoded': False
+            }
+        
+        elif action == 'send_lottery_chat':
+            headers = event.get('headers', {})
+            user_id = headers.get('X-User-Id') or headers.get('x-user-id')
+            
+            if not user_id:
+                return {
+                    'statusCode': 401,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'success': False, 'message': 'Требуется авторизация'}),
+                    'isBase64Encoded': False
+                }
+            
+            message = body_data.get('message', '').strip()
+            
+            if not message:
+                return {
+                    'statusCode': 400,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'success': False, 'message': 'Сообщение не может быть пустым'}),
+                    'isBase64Encoded': False
+                }
+            
+            if len(message) > 500:
+                return {
+                    'statusCode': 400,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'success': False, 'message': 'Сообщение слишком длинное'}),
+                    'isBase64Encoded': False
+                }
+            
+            cur.execute(
+                f"SELECT username FROM {SCHEMA}.users WHERE id = {int(user_id)}"
+            )
+            user_data = cur.fetchone()
+            
+            if not user_data:
+                return {
+                    'statusCode': 400,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'success': False, 'message': 'Пользователь не найден'}),
+                    'isBase64Encoded': False
+                }
+            
+            cur.execute(
+                f"INSERT INTO {SCHEMA}.lottery_chat (user_id, username, message, created_at) VALUES ({int(user_id)}, {escape_sql_string(user_data['username'])}, {escape_sql_string(message)}, NOW())"
+            )
+            conn.commit()
+            
+            return {
+                'statusCode': 200,
+                'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                'body': json.dumps({'success': True}),
+                'isBase64Encoded': False
+            }
+        
         elif action == 'withdraw_btc':
             headers = event.get('headers', {})
             user_id = headers.get('X-User-Id') or headers.get('x-user-id')

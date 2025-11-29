@@ -31,8 +31,8 @@ const LotteryTicketPurchase = ({
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-indigo-800/5 via-transparent to-transparent"></div>
       
       <div className="relative space-y-4 sm:space-y-6">
-        <div className="flex items-center justify-between gap-4 p-4 bg-indigo-800/20 border border-indigo-700/30 rounded-lg mb-4">
-          <div className="text-center flex-1">
+        <div className="p-4 bg-indigo-800/20 border border-indigo-700/30 rounded-lg mb-4">
+          <div className="text-center mb-4">
             <div className="inline-block p-3 sm:p-4 bg-indigo-600/20 rounded-2xl mb-2">
               <Icon name="Ticket" size={36} className="text-indigo-400 sm:w-12 sm:h-12" />
             </div>
@@ -42,9 +42,9 @@ const LotteryTicketPurchase = ({
               <span className="text-muted-foreground">USDT</span>
             </div>
           </div>
-          <div className="text-right">
+          <div className="text-center pt-3 border-t border-indigo-700/30">
             <div className="text-sm text-muted-foreground mb-1">Ваш баланс</div>
-            <div className="text-2xl font-bold text-primary">
+            <div className="text-xl sm:text-2xl font-bold text-primary">
               {user ? `${Number(user.balance || 0).toFixed(2)} USDT` : '0.00 USDT'}
             </div>
           </div>
