@@ -73,7 +73,7 @@ export const ReferralStatsCard = ({ stats, loading }: ReferralStatsCardProps) =>
             <span className="text-sm text-muted-foreground">Всего заработано</span>
           </div>
           <span className="text-lg font-bold text-green-400">
-            {loading ? '...' : stats.total_earned.toFixed(2)} USDT
+            {loading ? '...' : Number(stats.total_earned || 0).toFixed(2)} USDT
           </span>
         </div>
         <div className="flex items-center justify-between p-3 bg-blue-500/10 rounded-lg border border-blue-500/20">
@@ -82,7 +82,7 @@ export const ReferralStatsCard = ({ stats, loading }: ReferralStatsCardProps) =>
             <span className="text-sm text-muted-foreground">Получено</span>
           </div>
           <span className="text-lg font-bold text-blue-400">
-            {loading ? '...' : stats.total_claimed.toFixed(2)} USDT
+            {loading ? '...' : Number(stats.total_claimed || 0).toFixed(2)} USDT
           </span>
         </div>
       </div>
