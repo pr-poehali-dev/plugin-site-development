@@ -59,7 +59,7 @@ export const ReferralCodeCard = ({ referralCode, onCopyCode, onCopyLink }: Refer
             <div className="space-y-2 text-sm text-muted-foreground">
               <p>Пригласите друзей и зарабатывайте:</p>
               <ul className="space-y-1 list-disc list-inside">
-                <li>5% от каждого пополнения друга</li>
+                <li>10% от каждого пополнения друга</li>
                 <li>Награда начисляется автоматически</li>
                 <li>Минимум для вывода 10 USDT</li>
               </ul>

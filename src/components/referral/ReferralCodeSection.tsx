@@ -31,7 +31,7 @@ export const ReferralCodeSection = ({
                 <p className="font-semibold text-primary">Получайте бонусы за приглашение друзей!</p>
                 <ul className="space-y-1 text-muted-foreground list-disc list-inside">
                   <li>Приглашенный получает 2 USDT при регистрации</li>
-                  <li>Вы получаете 5% от всех пополнений реферала</li>
+                  <li>Вы получаете 10% от всех пополнений реферала</li>
                   <li>Бонусы начисляются автоматически</li>
                   <li>Выплаты без ограничений</li>
                 </ul>
