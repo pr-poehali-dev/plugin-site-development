@@ -528,6 +528,93 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'isBase64Encoded': False
                 }
             
+            elif action == 'admin_delete_reply':
+                if not is_admin(cur, user_id):
+                    return {
+                        'statusCode': 403,
+                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({'error': 'Доступ запрещен'}),
+                        'isBase64Encoded': False
+                    }
+                
+                reply_id = body_data.get('reply_id')
+                
+                if not reply_id:
+                    return {
+                        'statusCode': 400,
+                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({'error': 'Не указан ID ответа'}),
+                        'isBase64Encoded': False
+                    }
+                
+                cur.execute("""
+                    UPDATE forum_comments 
+                    SET removed_at = NOW()
+                    WHERE id = %s
+                """, (reply_id,))
+                
+                conn.commit()
+                
+                return {
+                    'statusCode': 200,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'success': True}),
+                    'isBase64Encoded': False
+                }
+            
+            elif action == 'admin_boost_views':
+                if not is_admin(cur, user_id):
+                    return {
+                        'statusCode': 403,
+                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({'error': 'Доступ запрещен'}),
+                        'isBase64Encoded': False
+                    }
+                
+                topic_id = body_data.get('topic_id')
+                views_count = body_data.get('views_count')
+                
+                if not topic_id or views_count is None:
+                    return {
+                        'statusCode': 400,
+                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({'error': 'Не указаны topic_id и views_count'}),
+                        'isBase64Encoded': False
+                    }
+                
+                try:
+                    views_count = int(views_count)
+                    if views_count < 0:
+                        raise ValueError()
+                except (ValueError, TypeError):
+                    return {
+                        'statusCode': 400,
+                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({'error': 'views_count должен быть положительным числом'}),
+                        'isBase64Encoded': False
+                    }
+                
+                cur.execute("SELECT id FROM forum_topics WHERE id = %s AND removed_at IS NULL", (topic_id,))
+                topic = cur.fetchone()
+                
+                if not topic:
+                    return {
+                        'statusCode': 404,
+                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({'error': 'Тема не найдена'}),
+                        'isBase64Encoded': False
+                    }
+                
+                cur.execute("UPDATE forum_topics SET views = views + %s WHERE id = %s", (views_count, topic_id))
+                conn.commit()
+                
+                return {
+                    'statusCode': 200,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'success': True}),
+                    'isBase64Encoded': False
+                }
+            
             elif action == 'admin_manage_categories':
                 if not is_admin(cur, user_id):
                     return {
