@@ -148,7 +148,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         cur.close()
         conn.close()
         
-        file_url = f"https://functions.poehali.dev/2bef49b4-3b41-4785-8bef-19bfef20ccd7?id={file_id}"
+        file_url = f"https://functions.poehali.dev/f7005917-2e56-4bcc-9e6e-66d33cab3caa?id={file_id}"
         
         return {
             'statusCode': 200,
