@@ -288,9 +288,105 @@ const ReferralProgramPage = ({ user }: ReferralProgramPageProps) => {
           <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
             Реферальная программа
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-muted-foreground max-w-2xl mx-auto">
             Приглашайте друзей и зарабатывайте вместе
           </p>
+        </div>
+
+        <div className="bg-gradient-to-br from-primary/10 to-blue-500/10 rounded-2xl p-6 md:p-8 border border-primary/20 mb-6">
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
+                <span className="text-3xl">💰</span>
+                Как работает программа
+              </h2>
+              <p className="text-muted-foreground leading-relaxed">
+                Зарабатывайте на каждом пополнении ваших рефералов автоматически. Чем больше активных рефералов — тем выше ваш доход!
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="bg-background/50 backdrop-blur-sm rounded-xl p-5 border border-border/50">
+                <div className="flex items-start gap-3 mb-3">
+                  <div className="p-2 bg-green-500/10 rounded-lg">
+                    <span className="text-2xl">🎁</span>
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-lg mb-1">Для приглашающего</h3>
+                    <p className="text-sm text-muted-foreground">Вы получаете постоянный доход</p>
+                  </div>
+                </div>
+                <ul className="space-y-2 text-sm">
+                  <li className="flex items-start gap-2">
+                    <span className="text-green-400 mt-0.5">✓</span>
+                    <span><strong>10% от каждого пополнения</strong> вашего реферала</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-green-400 mt-0.5">✓</span>
+                    <span>Бонус начисляется <strong>мгновенно и автоматически</strong></span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-green-400 mt-0.5">✓</span>
+                    <span><strong>Неограниченное количество</strong> рефералов</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-green-400 mt-0.5">✓</span>
+                    <span>Доход от <strong>каждого пополнения</strong>, без лимитов</span>
+                  </li>
+                </ul>
+              </div>
+
+              <div className="bg-background/50 backdrop-blur-sm rounded-xl p-5 border border-border/50">
+                <div className="flex items-start gap-3 mb-3">
+                  <div className="p-2 bg-blue-500/10 rounded-lg">
+                    <span className="text-2xl">🎉</span>
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-lg mb-1">Для приглашенного</h3>
+                    <p className="text-sm text-muted-foreground">Бонус за регистрацию</p>
+                  </div>
+                </div>
+                <ul className="space-y-2 text-sm">
+                  <li className="flex items-start gap-2">
+                    <span className="text-blue-400 mt-0.5">✓</span>
+                    <span>Бонус <strong>$3 USDT</strong> за первое пополнение</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-blue-400 mt-0.5">✓</span>
+                    <span>Минимальное пополнение: <strong>$10</strong></span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-blue-400 mt-0.5">✓</span>
+                    <span>Бонус можно получить через кнопку <strong>"Получить бонус"</strong></span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-blue-400 mt-0.5">✓</span>
+                    <span>Разовый бонус при выполнении условия</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-xl p-4">
+              <div className="flex items-start gap-3">
+                <span className="text-2xl">💡</span>
+                <div className="flex-1">
+                  <h4 className="font-semibold mb-1">Пример расчета</h4>
+                  <p className="text-sm text-muted-foreground">
+                    Ваш реферал пополнил счет на <strong>$100</strong> → вы получаете <strong>$10</strong> (10%). 
+                    Реферал пополнил еще на <strong>$200</strong> → вы получаете еще <strong>$20</strong>. 
+                    И так с каждого пополнения!
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="text-center pt-2">
+              <p className="text-sm text-muted-foreground">
+                📊 Вся статистика по рефералам и заработок доступны ниже на этой странице
+              </p>
+            </div>
+          </div>
         </div>
 
         <ReferralStatsCard stats={stats} loading={loading} />
