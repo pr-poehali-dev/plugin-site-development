@@ -226,6 +226,82 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                             'body': json.dumps({'success': False, 'error': 'Ticket not found'}),
                             'isBase64Encoded': False
                         }
+            
+            elif action == 'get_messages':
+                # Получить все сообщения тикета
+                ticket_id = body_data.get('ticket_id')
+                
+                if not ticket_id:
+                    return {
+                        'statusCode': 400,
+                        'headers': headers,
+                        'body': json.dumps({'success': False, 'error': 'ticket_id required'}),
+                        'isBase64Encoded': False
+                    }
+                
+                with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                    cur.execute("""
+                        SELECT id, ticket_id, user_id, author_username, message, is_admin, created_at
+                        FROM ticket_messages
+                        WHERE ticket_id = %s
+                        ORDER BY created_at ASC
+                    """, (int(ticket_id),))
+                    messages = cur.fetchall()
+                    
+                    for msg in messages:
+                        if msg.get('created_at'):
+                            msg['created_at'] = msg['created_at'].isoformat()
+                    
+                    return {
+                        'statusCode': 200,
+                        'headers': headers,
+                        'body': json.dumps({'success': True, 'messages': messages}),
+                        'isBase64Encoded': False
+                    }
+            
+            elif action == 'send_message':
+                # Отправить сообщение в тикет
+                ticket_id = body_data.get('ticket_id')
+                user_id = body_data.get('user_id')
+                author_username = body_data.get('author_username')
+                message = body_data.get('message')
+                is_admin = body_data.get('is_admin', False)
+                
+                if not all([ticket_id, author_username, message]):
+                    return {
+                        'statusCode': 400,
+                        'headers': headers,
+                        'body': json.dumps({'success': False, 'error': 'Missing required fields'}),
+                        'isBase64Encoded': False
+                    }
+                
+                with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                    # Вставляем сообщение
+                    cur.execute("""
+                        INSERT INTO ticket_messages 
+                        (ticket_id, user_id, author_username, message, is_admin, created_at)
+                        VALUES (%s, %s, %s, %s, %s, NOW())
+                        RETURNING id, ticket_id, user_id, author_username, message, is_admin, created_at
+                    """, (int(ticket_id), user_id, author_username, message, is_admin))
+                    new_message = cur.fetchone()
+                    
+                    # Обновляем статус тикета если пользователь отвечает
+                    if not is_admin:
+                        cur.execute("""
+                            UPDATE support_tickets
+                            SET status = 'open', updated_at = NOW()
+                            WHERE id = %s
+                        """, (int(ticket_id),))
+                    
+                    if new_message.get('created_at'):
+                        new_message['created_at'] = new_message['created_at'].isoformat()
+                    
+                    return {
+                        'statusCode': 200,
+                        'headers': headers,
+                        'body': json.dumps({'success': True, 'message': new_message}),
+                        'isBase64Encoded': False
+                    }
         
         return {
             'statusCode': 400,

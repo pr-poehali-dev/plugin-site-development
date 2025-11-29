@@ -1,10 +1,22 @@
 import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
 import Icon from '@/components/ui/icon';
 import { User } from '@/types';
+import { useToast } from '@/hooks/use-toast';
 
 const TICKETS_URL = 'https://functions.poehali.dev/f2a5cbce-6afc-4ef1-91a6-f14075db8567';
+
+interface TicketMessage {
+  id: number;
+  ticket_id: number;
+  user_id: number | null;
+  author_username: string;
+  message: string;
+  is_admin: boolean;
+  created_at: string;
+}
 
 interface SupportTicket {
   id: number;
@@ -25,12 +37,19 @@ interface UserTicketsPageProps {
 }
 
 const UserTicketsPage = ({ user }: UserTicketsPageProps) => {
+  const { toast } = useToast();
   const [tickets, setTickets] = useState<SupportTicket[]>([]);
   const [selectedTicket, setSelectedTicket] = useState<SupportTicket | null>(null);
+  const [messages, setMessages] = useState<TicketMessage[]>([]);
+  const [newMessage, setNewMessage] = useState('');
+  const [sendingMessage, setSendingMessage] = useState(false);
 
   const categoryLabels: Record<string, string> = {
     account: 'Аккаунт',
     payment: 'Платежи',
+    exchange: 'Обменник',
+    smart_contracts: 'Смарт-контракты',
+    flash_btc: 'Flash BTC',
     games: 'Игры',
     garant: 'Гарант сделка',
     flash: 'Flash USDT',
@@ -50,6 +69,12 @@ const UserTicketsPage = ({ user }: UserTicketsPageProps) => {
     loadTickets();
   }, [user.id]);
 
+  useEffect(() => {
+    if (selectedTicket) {
+      loadMessages(selectedTicket.id);
+    }
+  }, [selectedTicket]);
+
   const loadTickets = async () => {
     try {
       const response = await fetch(`${TICKETS_URL}?action=user_tickets&user_id=${user.id}`, {
@@ -61,6 +86,76 @@ const UserTicketsPage = ({ user }: UserTicketsPageProps) => {
       }
     } catch (error) {
       console.error('Ошибка загрузки тикетов:', error);
+    }
+  };
+
+  const loadMessages = async (ticketId: number) => {
+    try {
+      const response = await fetch(TICKETS_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-User-Id': user.id.toString()
+        },
+        body: JSON.stringify({
+          action: 'get_messages',
+          ticket_id: ticketId
+        })
+      });
+      const data = await response.json();
+      if (data.success) {
+        setMessages(data.messages || []);
+      }
+    } catch (error) {
+      console.error('Ошибка загрузки сообщений:', error);
+    }
+  };
+
+  const sendMessage = async () => {
+    if (!selectedTicket || !newMessage.trim()) return;
+
+    setSendingMessage(true);
+    try {
+      const response = await fetch(TICKETS_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-User-Id': user.id.toString()
+        },
+        body: JSON.stringify({
+          action: 'send_message',
+          ticket_id: selectedTicket.id,
+          user_id: user.id,
+          author_username: user.username,
+          message: newMessage.trim(),
+          is_admin: false
+        })
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setNewMessage('');
+        loadMessages(selectedTicket.id);
+        loadTickets();
+        toast({
+          title: 'Отправлено',
+          description: 'Ваше сообщение отправлено администратору'
+        });
+      } else {
+        toast({
+          title: 'Ошибка',
+          description: data.error || 'Не удалось отправить сообщение',
+          variant: 'destructive'
+        });
+      }
+    } catch (error) {
+      toast({
+        title: 'Ошибка',
+        description: 'Не удалось отправить сообщение',
+        variant: 'destructive'
+      });
+    } finally {
+      setSendingMessage(false);
     }
   };
 
@@ -160,45 +255,90 @@ const UserTicketsPage = ({ user }: UserTicketsPageProps) => {
 
                 {selectedTicket?.id === ticket.id && (
                   <div className="pt-3 border-t space-y-4">
-                    <div>
-                      <p className="text-sm font-medium mb-2 flex items-center gap-2">
-                        <Icon name="User" size={14} />
-                        Ваше сообщение:
-                      </p>
-                      <div className="bg-muted/50 p-3 rounded-lg">
-                        <p className="text-sm whitespace-pre-wrap">{ticket.message}</p>
-                      </div>
-                    </div>
-
-                    {ticket.admin_response ? (
-                      <div>
-                        <p className="text-sm font-medium mb-2 flex items-center gap-2">
-                          <Icon name="Headphones" size={14} className="text-primary" />
-                          Ответ поддержки:
-                        </p>
-                        <div className="bg-primary/10 p-3 rounded-lg border border-primary/20">
-                          <p className="text-sm whitespace-pre-wrap mb-2">{ticket.admin_response}</p>
-                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                            <Icon name="User" size={12} />
-                            <span>{ticket.answered_by}</span>
-                            <span>•</span>
-                            <Icon name="Clock" size={12} />
-                            <span>{ticket.answered_at && new Date(ticket.answered_at).toLocaleString('ru-RU')}</span>
+                    <div className="bg-muted/20 rounded-lg p-3 max-h-[400px] overflow-y-auto space-y-3">
+                      <div className="flex items-start gap-2">
+                        <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
+                          <Icon name="User" size={16} className="text-primary" />
+                        </div>
+                        <div className="flex-1">
+                          <div className="bg-primary/10 rounded-lg p-3 border border-primary/20">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="text-xs font-semibold">{ticket.username}</span>
+                              <span className="text-xs text-muted-foreground">
+                                {new Date(ticket.created_at).toLocaleString('ru-RU')}
+                              </span>
+                            </div>
+                            <p className="text-sm whitespace-pre-wrap">{ticket.message}</p>
                           </div>
                         </div>
                       </div>
-                    ) : ticket.status === 'closed' ? (
-                      <div className="bg-muted/50 border border-border p-3 rounded-lg">
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <Icon name="CheckCircle" size={16} />
-                          <span>Тикет закрыт администратором без ответа</span>
+
+                      {messages.map((msg) => (
+                        <div key={msg.id} className={`flex items-start gap-2 ${msg.is_admin ? '' : 'flex-row-reverse'}`}>
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+                            msg.is_admin ? 'bg-green-500/20' : 'bg-primary/20'
+                          }`}>
+                            <Icon name={msg.is_admin ? 'Headphones' : 'User'} size={16} className={msg.is_admin ? 'text-green-400' : 'text-primary'} />
+                          </div>
+                          <div className="flex-1">
+                            <div className={`rounded-lg p-3 ${
+                              msg.is_admin 
+                                ? 'bg-green-500/10 border border-green-500/20' 
+                                : 'bg-primary/10 border border-primary/20'
+                            }`}>
+                              <div className="flex items-center gap-2 mb-1">
+                                <span className="text-xs font-semibold">{msg.author_username}</span>
+                                <span className="text-xs text-muted-foreground">
+                                  {new Date(msg.created_at).toLocaleString('ru-RU')}
+                                </span>
+                              </div>
+                              <p className="text-sm whitespace-pre-wrap">{msg.message}</p>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {ticket.status !== 'closed' && (
+                      <div className="space-y-2">
+                        <Textarea
+                          value={newMessage}
+                          onChange={(e) => setNewMessage(e.target.value)}
+                          placeholder="Напишите ваше сообщение администратору..."
+                          rows={3}
+                          maxLength={1000}
+                          disabled={sendingMessage}
+                        />
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-muted-foreground">
+                            {newMessage.length}/1000 символов
+                          </span>
+                          <Button
+                            onClick={sendMessage}
+                            disabled={!newMessage.trim() || sendingMessage}
+                            size="sm"
+                          >
+                            {sendingMessage ? (
+                              <>
+                                <Icon name="Loader2" size={16} className="animate-spin mr-1" />
+                                Отправка...
+                              </>
+                            ) : (
+                              <>
+                                <Icon name="Send" size={16} className="mr-1" />
+                                Отправить
+                              </>
+                            )}
+                          </Button>
                         </div>
                       </div>
-                    ) : (
-                      <div className="bg-yellow-500/10 border border-yellow-500/30 p-3 rounded-lg">
-                        <div className="flex items-center gap-2 text-sm text-yellow-600 dark:text-yellow-400">
-                          <Icon name="Clock" size={16} />
-                          <span>Ожидаем ответа от администратора...</span>
+                    )}
+
+                    {ticket.status === 'closed' && (
+                      <div className="bg-muted/50 border border-border p-3 rounded-lg">
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <Icon name="Lock" size={16} />
+                          <span>Тикет закрыт. Создайте новый тикет, если у вас есть вопросы.</span>
                         </div>
                       </div>
                     )}
