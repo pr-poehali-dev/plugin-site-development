@@ -99,40 +99,57 @@ export const ForumTopicDetail = ({
     
     try {
       const reader = new FileReader();
-      reader.readAsDataURL(file);
       
       reader.onload = async () => {
-        const base64 = reader.result as string;
-        const base64Data = base64.split(',')[1];
-        
-        const response = await fetch('https://functions.poehali.dev/2bef49b4-3b41-4785-8bef-19bfef20ccd7', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            file_data: base64Data,
-            filename: file.name,
-            content_type: file.type
-          })
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-          setAttachment({
-            url: data.url,
-            filename: data.filename,
-            size: data.size,
-            type: data.content_type
+        try {
+          const base64 = reader.result as string;
+          const base64Data = base64.split(',')[1];
+          
+          const response = await fetch('https://functions.poehali.dev/2bef49b4-3b41-4785-8bef-19bfef20ccd7', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              file_data: base64Data,
+              filename: file.name,
+              content_type: file.type
+            })
           });
-        } else {
-          alert('Ошибка загрузки файла: ' + data.error);
+          
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+          }
+          
+          const data = await response.json();
+          
+          if (data.success) {
+            setAttachment({
+              url: data.url,
+              filename: data.filename,
+              size: data.size,
+              type: data.content_type
+            });
+          } else {
+            alert('Ошибка загрузки файла: ' + (data.error || 'Неизвестная ошибка'));
+          }
+        } catch (error) {
+          console.error('Upload error:', error);
+          alert('Ошибка загрузки файла: ' + (error instanceof Error ? error.message : 'Сетевая ошибка'));
+        } finally {
+          setUploading(false);
         }
       };
+      
+      reader.onerror = () => {
+        alert('Ошибка чтения файла');
+        setUploading(false);
+      };
+      
+      reader.readAsDataURL(file);
     } catch (error) {
-      alert('Ошибка загрузки файла');
-    } finally {
+      console.error('File reader error:', error);
+      alert('Ошибка обработки файла');
       setUploading(false);
     }
   };
