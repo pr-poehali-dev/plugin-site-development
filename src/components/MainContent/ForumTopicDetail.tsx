@@ -117,15 +117,16 @@ export const ForumTopicDetail = ({
             })
           });
           
-          if (!response.ok) {
-            throw new Error(`HTTP ${response.status}`);
-          }
-          
           let data;
           try {
             data = await response.json();
           } catch (parseError) {
             throw new Error(`Ответ сервера не является JSON (статус ${response.status})`);
+          }
+          
+          if (!response.ok) {
+            const errorMsg = data.error || `HTTP ${response.status}`;
+            throw new Error(errorMsg);
           }
           
           if (data.success) {
