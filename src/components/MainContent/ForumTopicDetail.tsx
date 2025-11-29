@@ -121,7 +121,12 @@ export const ForumTopicDetail = ({
             throw new Error(`HTTP ${response.status}`);
           }
           
-          const data = await response.json();
+          let data;
+          try {
+            data = await response.json();
+          } catch (parseError) {
+            throw new Error(`Ответ сервера не является JSON (статус ${response.status})`);
+          }
           
           if (data.success) {
             setAttachment({
@@ -131,11 +136,14 @@ export const ForumTopicDetail = ({
               type: data.content_type
             });
           } else {
-            alert('Ошибка загрузки файла: ' + (data.error || 'Неизвестная ошибка'));
+            const errorMsg = data.error || 'Неизвестная ошибка';
+            console.error('Server error:', errorMsg);
+            alert('Ошибка загрузки файла: ' + errorMsg);
           }
         } catch (error) {
           console.error('Upload error:', error);
-          alert('Ошибка загрузки файла: ' + (error instanceof Error ? error.message : 'Сетевая ошибка'));
+          const errorMsg = error instanceof Error ? error.message : 'Сетевая ошибка';
+          alert('Ошибка загрузки файла: ' + errorMsg);
         } finally {
           setUploading(false);
         }
