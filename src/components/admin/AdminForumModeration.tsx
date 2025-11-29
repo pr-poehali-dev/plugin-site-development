@@ -722,5 +722,4 @@ export const AdminForumModeration = ({ topics, onRefresh, currentUserId }: Admin
   );
 };
 
-export { AdminForumModeration };
 export default AdminForumModeration;
