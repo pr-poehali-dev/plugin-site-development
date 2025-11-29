@@ -27,11 +27,12 @@ export const ReferralCodeCard = ({ referralCode, onCopyCode, onCopyLink }: Refer
           <label className="text-sm font-medium mb-2 block">Реферальный код</label>
           <div className="flex gap-2">
             <Input
-              value={referralCode}
+              value={referralCode || ''}
               readOnly
+              placeholder={referralCode ? '' : 'Загрузка...'}
               className="font-mono text-lg"
             />
-            <Button onClick={onCopyCode} variant="outline" size="icon" className="shrink-0">
+            <Button onClick={onCopyCode} variant="outline" size="icon" className="shrink-0" disabled={!referralCode}>
               <Icon name="Copy" size={18} />
             </Button>
           </div>
@@ -41,11 +42,12 @@ export const ReferralCodeCard = ({ referralCode, onCopyCode, onCopyLink }: Refer
           <label className="text-sm font-medium mb-2 block">Реферальная ссылка</label>
           <div className="flex gap-2">
             <Input
-              value={`https://gitcrypto.pro/?ref=${referralCode}`}
+              value={referralCode ? `https://gitcrypto.pro/?ref=${referralCode}` : ''}
               readOnly
+              placeholder={referralCode ? '' : 'Загрузка...'}
               className="font-mono text-sm"
             />
-            <Button onClick={onCopyLink} variant="outline" size="icon" className="shrink-0">
+            <Button onClick={onCopyLink} variant="outline" size="icon" className="shrink-0" disabled={!referralCode}>
               <Icon name="Copy" size={18} />
             </Button>
           </div>

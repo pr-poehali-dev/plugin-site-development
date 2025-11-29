@@ -426,6 +426,15 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 f"SELECT code FROM {SCHEMA}.referral_codes WHERE user_id = {int(user_id)} AND is_active = TRUE LIMIT 1"
             )
             code_result = cur.fetchone()
+            referral_code = code_result['code'] if code_result else None
+            
+            if not referral_code:
+                new_code = generate_referral_code()
+                cur.execute(
+                    f"INSERT INTO {SCHEMA}.referral_codes (user_id, code) VALUES ({int(user_id)}, {escape_sql_string(new_code)})"
+                )
+                conn.commit()
+                referral_code = new_code
             
             cur.execute(
                 f"""
@@ -451,7 +460,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
                 'body': json.dumps({
                     'success': True,
-                    'referral_code': code_result['code'] if code_result else '',
+                    'referral_code': referral_code,
                     'referrals': [dict(r) for r in referrals],
                     'stats': {
                         'total_referrals': total_referrals,
