@@ -292,6 +292,11 @@ const LotteryGame = ({ user, onShowAuthDialog, onRefreshUserBalance }: LotteryGa
         tickets={tickets}
         myTickets={myTickets}
         maxTickets={MAX_TICKETS}
+        ticketPrice={TICKET_PRICE}
+        showHistory={showHistory}
+        history={history}
+        prizeAmount={PRIZE_AMOUNT}
+        onToggleHistory={handleToggleHistory}
       />
 
       {showHistory && (
