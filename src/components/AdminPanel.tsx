@@ -674,6 +674,48 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
     setShowBtcBalanceDialog(true);
   };
 
+  const handleVerifyUser = async (userId: number, username: string) => {
+    if (!confirm(`Вы уверены, что хотите верифицировать пользователя ${username}?`)) {
+      return;
+    }
+
+    try {
+      const response = await fetch(ADMIN_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-User-Id': currentUser.id.toString()
+        },
+        body: JSON.stringify({
+          action: 'verify_user',
+          user_id: userId
+        })
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        toast({
+          title: 'Успешно',
+          description: `Пользователь ${username} верифицирован`
+        });
+        fetchUsers();
+      } else {
+        toast({
+          title: 'Ошибка',
+          description: data.error || 'Ошибка верификации',
+          variant: 'destructive'
+        });
+      }
+    } catch (error) {
+      console.error('Ошибка верификации:', error);
+      toast({
+        title: 'Ошибка',
+        description: 'Ошибка подключения к серверу',
+        variant: 'destructive'
+      });
+    }
+  };
+
   const handleBtcBalanceSubmit = async (action: 'add' | 'subtract', amount: number) => {
     setBtcBalanceLoading(true);
     try {
@@ -843,6 +885,7 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
           onDeleteUser={handleDeleteUser}
           onChangeForumRole={handleChangeForumRole}
           onManageBtc={handleManageBtc}
+          onVerifyUser={handleVerifyUser}
           onEditTopic={handleEditTopic}
           onDeleteTopic={handleDeleteTopic}
           onUpdateViews={handleUpdateViews}

@@ -10,6 +10,7 @@ interface AdminUsersTabProps {
   onChangeForumRole: (userId: number, forumRole: string) => void;
   onDeleteUser: (userId: number, username: string) => void;
   onManageBtc: (userId: number, username: string, currentBalance: number) => void;
+  onVerifyUser: (userId: number, username: string) => void;
 }
 
 const AdminUsersTab = ({ 
@@ -19,7 +20,8 @@ const AdminUsersTab = ({
   onUnblockUser, 
   onChangeForumRole,
   onDeleteUser,
-  onManageBtc
+  onManageBtc,
+  onVerifyUser
 }: AdminUsersTabProps) => {
   const isUserOnline = (lastSeenAt: string | null) => {
     if (!lastSeenAt) return false;
@@ -85,6 +87,12 @@ const AdminUsersTab = ({
                       ₿ {Number(user.btc_balance || 0).toFixed(8)} BTC
                     </span>
                   )}
+                  {user.is_verified && (
+                    <span className="text-xs font-medium text-blue-500 flex items-center gap-1">
+                      <Icon name="CheckCircle" size={12} />
+                      Верифицирован
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
@@ -118,6 +126,18 @@ const AdminUsersTab = ({
               )}
               {user.id !== currentUser.id && (
                 <div className="flex gap-2 w-full sm:w-auto">
+                  {!user.is_verified && (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => onVerifyUser(user.id, user.username)}
+                      className="text-xs flex-1 sm:flex-none text-blue-500 hover:text-blue-600"
+                      title="Верифицировать пользователя"
+                    >
+                      <Icon name="ShieldCheck" size={14} className="sm:mr-1" />
+                      <span className="hidden sm:inline">Верифицировать</span>
+                    </Button>
+                  )}
                   <Button
                     size="sm"
                     variant="ghost"

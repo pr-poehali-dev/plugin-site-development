@@ -702,6 +702,46 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'isBase64Encoded': False
                 }
             
+            elif action == 'verify_user':
+                target_user_id = body_data.get('user_id')
+                
+                if not target_user_id:
+                    return {
+                        'statusCode': 400,
+                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({'error': 'user_id обязателен'}),
+                        'isBase64Encoded': False
+                    }
+                
+                cur.execute(f"SELECT id, username FROM {SCHEMA}.users WHERE id = %s", (target_user_id,))
+                target_user = cur.fetchone()
+                
+                if not target_user:
+                    return {
+                        'statusCode': 404,
+                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({'error': 'Пользователь не найден'}),
+                        'isBase64Encoded': False
+                    }
+                
+                cur.execute(
+                    f"UPDATE {SCHEMA}.users SET is_verified = TRUE WHERE id = %s",
+                    (target_user_id,)
+                )
+                
+                log_admin_action(user_id, 'verify_user', 'user', target_user_id, f'Verified user: {target_user["username"]}', cur)
+                conn.commit()
+                
+                return {
+                    'statusCode': 200,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({
+                        'success': True,
+                        'username': target_user['username']
+                    }),
+                    'isBase64Encoded': False
+                }
+            
             elif action == 'delete_topic':
                 topic_id = body_data.get('topic_id')
                 
