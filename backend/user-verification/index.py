@@ -106,7 +106,17 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 }
         
         elif method == 'POST':
-            body = json.loads(event.get('body', '{}'))
+            try:
+                body = json.loads(event.get('body', '{}'))
+            except json.JSONDecodeError as e:
+                print(f"JSON decode error: {e}")
+                return {
+                    'statusCode': 400,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'error': 'Некорректный формат данных'}),
+                    'isBase64Encoded': False
+                }
+            
             action = body.get('action')
             
             if action == 'submit':
@@ -115,11 +125,29 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 passport_photo = body.get('passport_photo', '')
                 selfie_photo = body.get('selfie_photo', '')
                 
+                print(f"Verification request from user {user_id}: name={full_name}, passport_size={len(passport_photo)}, selfie_size={len(selfie_photo)}")
+                
                 if not all([full_name, birth_date, passport_photo]):
                     return {
                         'statusCode': 400,
                         'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
                         'body': json.dumps({'error': 'Заполните все обязательные поля'}),
+                        'isBase64Encoded': False
+                    }
+                
+                if len(passport_photo) > 5000000:
+                    return {
+                        'statusCode': 400,
+                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({'error': 'Размер фото паспорта слишком большой. Пожалуйста, загрузите изображение меньшего размера.'}),
+                        'isBase64Encoded': False
+                    }
+                
+                if selfie_photo and len(selfie_photo) > 5000000:
+                    return {
+                        'statusCode': 400,
+                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({'error': 'Размер селфи слишком большой. Пожалуйста, загрузите изображение меньшего размера.'}),
                         'isBase64Encoded': False
                     }
                 
@@ -141,6 +169,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 passport_esc = escape_sql_string(passport_photo)
                 selfie_esc = escape_sql_string(selfie_photo) if selfie_photo else 'NULL'
                 
+                print(f"Inserting verification request for user {user_id}")
                 cur.execute(
                     f"""INSERT INTO {SCHEMA}.verification_requests 
                     (user_id, full_name, birth_date, passport_photo, selfie_photo, status)
@@ -148,6 +177,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     RETURNING id"""
                 )
                 request_id = cur.fetchone()['id']
+                print(f"Created verification request {request_id}")
                 
                 cur.execute(f"SELECT username FROM {SCHEMA}.users WHERE id = {user_id}")
                 user_info = cur.fetchone()
@@ -162,6 +192,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 )
                 
                 conn.commit()
+                print(f"Verification request {request_id} committed successfully")
                 
                 return {
                     'statusCode': 200,

@@ -68,7 +68,38 @@ const VerificationForm = ({ user, onVerified }: VerificationFormProps) => {
     }
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, type: 'passport' | 'selfie') => {
+  const compressImage = (file: File, maxWidth: number = 1200): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+
+          if (width > maxWidth) {
+            height = (height * maxWidth) / width;
+            width = maxWidth;
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx?.drawImage(img, 0, 0, width, height);
+          
+          const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
+          resolve(compressedBase64);
+        };
+        img.onerror = reject;
+        img.src = e.target?.result as string;
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>, type: 'passport' | 'selfie') => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -81,25 +112,30 @@ const VerificationForm = ({ user, onVerified }: VerificationFormProps) => {
       return;
     }
 
-    if (file.size > 10 * 1024 * 1024) {
+    if (file.size > 5 * 1024 * 1024) {
       toast({
         title: 'Ошибка',
-        description: 'Размер файла не должен превышать 10 МБ',
+        description: 'Размер файла не должен превышать 5 МБ',
         variant: 'destructive'
       });
       return;
     }
 
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const base64 = reader.result as string;
+    try {
+      const compressedBase64 = await compressImage(file);
+      
       if (type === 'passport') {
-        setPassportPhoto(base64);
+        setPassportPhoto(compressedBase64);
       } else {
-        setSelfiePhoto(base64);
+        setSelfiePhoto(compressedBase64);
       }
-    };
-    reader.readAsDataURL(file);
+    } catch (error) {
+      toast({
+        title: 'Ошибка',
+        description: 'Ошибка обработки изображения',
+        variant: 'destructive'
+      });
+    }
   };
 
   const handleSubmit = async () => {
