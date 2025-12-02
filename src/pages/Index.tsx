@@ -43,42 +43,45 @@ const Index = () => {
     }
     
     const savedUser = localStorage.getItem('user');
+    
+    const syncUserData = async () => {
+      const userToSync = savedUser ? JSON.parse(savedUser) : null;
+      if (!userToSync) return;
+      
+      try {
+        const response = await fetch(AUTH_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-User-Id': userToSync.id.toString()
+          },
+          body: JSON.stringify({ action: 'get_user' })
+        });
+        const data = await response.json();
+        if (data.success && data.user) {
+          if (data.user.is_blocked) {
+            localStorage.removeItem('user');
+            state.setUser(null);
+            state.setAuthDialogOpen(true);
+            state.toast({
+              title: '🚫 Аккаунт заблокирован',
+              description: 'Ваш аккаунт был заблокирован администратором',
+              variant: 'destructive',
+              duration: 10000
+            });
+            return;
+          }
+          state.setUser(data.user);
+          localStorage.setItem('user', JSON.stringify(data.user));
+        }
+      } catch (error) {
+        console.error('Ошибка синхронизации данных пользователя:', error);
+      }
+    };
+    
     if (savedUser) {
       const parsedUser = JSON.parse(savedUser);
       state.setUser(parsedUser);
-      
-      const syncUserData = async () => {
-        try {
-          const response = await fetch(AUTH_URL, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'X-User-Id': parsedUser.id.toString()
-            },
-            body: JSON.stringify({ action: 'get_user' })
-          });
-          const data = await response.json();
-          if (data.success && data.user) {
-            if (data.user.is_blocked) {
-              localStorage.removeItem('user');
-              state.setUser(null);
-              state.setAuthDialogOpen(true);
-              state.toast({
-                title: '🚫 Аккаунт заблокирован',
-                description: 'Ваш аккаунт был заблокирован администратором',
-                variant: 'destructive',
-                duration: 10000
-              });
-              return;
-            }
-            state.setUser(data.user);
-            localStorage.setItem('user', JSON.stringify(data.user));
-          }
-        } catch (error) {
-          console.error('Ошибка синхронизации данных пользователя:', error);
-        }
-      };
-      
       syncUserData();
     } else {
       state.setAuthDialogOpen(true);
@@ -86,6 +89,21 @@ const Index = () => {
         state.setAuthMode('register');
       }
     }
+    
+    const handleVisibilityChange = () => {
+      if (!document.hidden && localStorage.getItem('user')) {
+        syncUserData();
+      }
+    };
+    
+    const handleFocus = () => {
+      if (localStorage.getItem('user')) {
+        syncUserData();
+      }
+    };
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('focus', handleFocus);
     
     if ('Notification' in window && Notification.permission === 'default') {
       Notification.requestPermission();
@@ -107,6 +125,8 @@ const Index = () => {
     
     return () => {
       window.removeEventListener('beforeunload', saveScrollPosition);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleFocus);
     };
   }, []);
 

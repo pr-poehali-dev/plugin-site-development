@@ -200,6 +200,17 @@ const UserProfile = ({ user, isOwnProfile, onClose, onTopUpBalance, onUpdateProf
           
           setCheckingStatus('Платёж подтверждён! Баланс пополнен.');
           
+          if (onUpdateProfile) {
+            onUpdateProfile({ balance: newBalance });
+          }
+          
+          const savedUser = localStorage.getItem('user');
+          if (savedUser) {
+            const parsedUser = JSON.parse(savedUser);
+            parsedUser.balance = newBalance;
+            localStorage.setItem('user', JSON.stringify(parsedUser));
+          }
+          
           if (onRefreshBalance) {
             await onRefreshBalance();
           }

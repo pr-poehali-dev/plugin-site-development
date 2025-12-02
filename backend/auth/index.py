@@ -185,6 +185,48 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         body_data = json.loads(event.get('body', '{}'))
         action = body_data.get('action')
         
+        # Get user data action
+        if action == 'get_user':
+            headers = event.get('headers', {})
+            user_id = headers.get('X-User-Id') or headers.get('x-user-id')
+            
+            if not user_id:
+                return {
+                    'statusCode': 401,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'error': 'Требуется авторизация'}),
+                    'isBase64Encoded': False
+                }
+            
+            cur.execute(
+                f"""SELECT id, username, email, avatar_url, role, forum_role, balance, 
+                   created_at, referred_by_code, referral_bonus_claimed, vip_until, is_blocked, 
+                   is_verified
+                   FROM {SCHEMA}.users WHERE id = {int(user_id)}"""
+            )
+            user = cur.fetchone()
+            
+            if not user:
+                return {
+                    'statusCode': 404,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'error': 'Пользователь не найден'}),
+                    'isBase64Encoded': False
+                }
+            
+            user_dict = dict(user)
+            user_dict['balance'] = float(user_dict.get('balance', 0))
+            
+            return {
+                'statusCode': 200,
+                'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                'body': json.dumps({
+                    'success': True,
+                    'user': user_dict
+                }, default=str),
+                'isBase64Encoded': False
+            }
+        
         # Get client IP for registration and login
         client_ip = get_client_ip(event)
         
