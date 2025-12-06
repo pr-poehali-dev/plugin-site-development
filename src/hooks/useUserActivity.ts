@@ -31,6 +31,11 @@ export const useUserActivity = ({
   useEffect(() => {
     if (user) {
       const updateActivity = () => {
+        // Обновляем активность только если прошло больше 2 минут
+        const lastActivity = sessionStorage.getItem('lastActivityUpdate');
+        const now = Date.now();
+        if (lastActivity && now - parseInt(lastActivity) < 120000) return;
+        
         fetch(AUTH_URL, {
           method: 'POST',
           headers: { 
@@ -39,6 +44,8 @@ export const useUserActivity = ({
           },
           body: JSON.stringify({ action: 'update_activity' })
         }).catch(() => {});
+        
+        sessionStorage.setItem('lastActivityUpdate', now.toString());
       };
 
       const fetchUnreadCount = async () => {
@@ -235,14 +242,28 @@ export const useUserActivity = ({
         ]);
       };
 
+      // Проверяем только если вкладка активна
+      const isTabActive = () => !document.hidden;
+
       runAllChecks();
 
+      // Увеличиваем интервалы для снижения нагрузки на БД
       const balanceCheckInterval = setInterval(() => {
-        checkBalanceUpdates();
-      }, 30000);
+        if (isTabActive()) checkBalanceUpdates();
+      }, 60000); // 1 минута вместо 30 секунд
+
+      const notificationsCheckInterval = setInterval(() => {
+        if (isTabActive()) fetchUnreadCount();
+      }, 120000); // 2 минуты вместо 30 секунд
+
+      const paymentsCheckInterval = setInterval(() => {
+        if (isTabActive()) checkPendingPayments();
+      }, 90000); // 1.5 минуты вместо 30 секунд
 
       return () => {
         clearInterval(balanceCheckInterval);
+        clearInterval(notificationsCheckInterval);
+        clearInterval(paymentsCheckInterval);
       };
     }
   }, [user]);

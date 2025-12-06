@@ -48,10 +48,12 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     cur = conn.cursor()
     
     try:
+        # Обновляем last_seen_at только если прошло больше 60 секунд с последнего обновления
         cur.execute("""
             UPDATE users
             SET last_seen_at = NOW()
-            WHERE id = %s
+            WHERE id = %s 
+            AND (last_seen_at IS NULL OR last_seen_at < NOW() - INTERVAL '60 seconds')
         """, (user_id,))
         conn.commit()
         if method == 'GET':
