@@ -243,6 +243,27 @@ const UserTicketsPage = ({ user }: UserTicketsPageProps) => {
                       <Icon name="Calendar" size={12} />
                       {new Date(ticket.created_at).toLocaleString('ru-RU')}
                     </p>
+                    {ticket.status === 'answered' && ticket.answered_by && (
+                      <div className="mt-3 p-2.5 bg-gradient-to-r from-green-500/10 to-emerald-500/10 border-l-2 border-green-500/50 rounded-r">
+                        <div className="flex items-center gap-1.5 mb-1">
+                          <Icon name="UserCheck" size={12} className="text-green-400" />
+                          <span className="text-xs font-bold text-green-400">
+                            Администратор {ticket.answered_by} ответил
+                          </span>
+                          {ticket.answered_at && (
+                            <span className="text-xs text-muted-foreground">
+                              • {new Date(ticket.answered_at).toLocaleString('ru-RU', {
+                                day: 'numeric',
+                                month: 'short',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })}
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-xs text-muted-foreground">Откройте тикет ниже, чтобы прочитать все сообщения</p>
+                      </div>
+                    )}
                   </div>
                   <Button
                     variant="outline"
@@ -273,26 +294,65 @@ const UserTicketsPage = ({ user }: UserTicketsPageProps) => {
                         </div>
                       </div>
 
+                      {ticket.admin_response && messages.length === 0 && (
+                        <div className="flex items-start gap-2">
+                          <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 bg-gradient-to-br from-green-500 to-emerald-600 ring-2 ring-green-500/30">
+                            <Icon name="UserCheck" size={16} className="text-white" />
+                          </div>
+                          <div className="flex-1">
+                            <div className="rounded-lg p-3 bg-gradient-to-br from-green-500/10 to-emerald-500/10 border-l-4 border-green-500/50 shadow-sm">
+                              <div className="flex items-center gap-2 mb-1 flex-wrap">
+                                <span className="text-xs font-semibold">{ticket.answered_by || 'Администратор'}</span>
+                                <span className="px-2 py-0.5 bg-gradient-to-r from-green-500/20 to-emerald-500/20 text-green-400 text-[10px] rounded-full font-bold border border-green-500/30 uppercase">
+                                  ★ Администратор
+                                </span>
+                                {ticket.answered_at && (
+                                  <span className="text-xs text-muted-foreground">
+                                    {new Date(ticket.answered_at).toLocaleString('ru-RU', {
+                                      day: 'numeric',
+                                      month: 'short',
+                                      hour: '2-digit',
+                                      minute: '2-digit'
+                                    })}
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-sm whitespace-pre-wrap text-foreground font-medium">{ticket.admin_response}</p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
                       {messages.map((msg) => (
                         <div key={msg.id} className={`flex items-start gap-2 ${msg.is_admin ? '' : 'flex-row-reverse'}`}>
                           <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
-                            msg.is_admin ? 'bg-green-500/20' : 'bg-primary/20'
+                            msg.is_admin ? 'bg-gradient-to-br from-green-500 to-emerald-600 ring-2 ring-green-500/30' : 'bg-primary/20'
                           }`}>
-                            <Icon name={msg.is_admin ? 'Headphones' : 'User'} size={16} className={msg.is_admin ? 'text-green-400' : 'text-primary'} />
+                            <Icon name={msg.is_admin ? 'UserCheck' : 'User'} size={16} className={msg.is_admin ? 'text-white' : 'text-primary'} />
                           </div>
                           <div className="flex-1">
                             <div className={`rounded-lg p-3 ${
                               msg.is_admin 
-                                ? 'bg-green-500/10 border border-green-500/20' 
+                                ? 'bg-gradient-to-br from-green-500/10 to-emerald-500/10 border-l-4 border-green-500/50 shadow-sm' 
                                 : 'bg-primary/10 border border-primary/20'
                             }`}>
-                              <div className="flex items-center gap-2 mb-1">
+                              <div className="flex items-center gap-2 mb-1 flex-wrap">
                                 <span className="text-xs font-semibold">{msg.author_username}</span>
+                                {msg.is_admin && (
+                                  <span className="px-2 py-0.5 bg-gradient-to-r from-green-500/20 to-emerald-500/20 text-green-400 text-[10px] rounded-full font-bold border border-green-500/30 uppercase">
+                                    ★ Администратор
+                                  </span>
+                                )}
                                 <span className="text-xs text-muted-foreground">
-                                  {new Date(msg.created_at).toLocaleString('ru-RU')}
+                                  {new Date(msg.created_at).toLocaleString('ru-RU', {
+                                    day: 'numeric',
+                                    month: 'short',
+                                    hour: '2-digit',
+                                    minute: '2-digit'
+                                  })}
                                 </span>
                               </div>
-                              <p className="text-sm whitespace-pre-wrap">{msg.message}</p>
+                              <p className={`text-sm whitespace-pre-wrap ${msg.is_admin ? 'text-foreground font-medium' : ''}`}>{msg.message}</p>
                             </div>
                           </div>
                         </div>
