@@ -48,7 +48,7 @@ const VerificationForm = ({ user, onVerified }: VerificationFormProps) => {
       });
       const data = await response.json();
       
-      if (data.is_verified && (!status || !status.is_verified)) {
+      if (data.is_verified && status !== null && !status.is_verified) {
         onVerified();
       }
       
