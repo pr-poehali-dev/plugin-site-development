@@ -35,8 +35,8 @@ const Snowfall = () => {
         x: Math.random() * canvas.width,
         y: Math.random() * canvas.height,
         radius: Math.random() * 3 + 1,
-        speed: Math.random() * 1 + 0.5,
-        drift: Math.random() * 0.5 - 0.25,
+        speed: Math.random() * 0.5 + 0.25,
+        drift: Math.random() * 0.25 - 0.125,
         opacity: Math.random() * 0.6 + 0.4
       });
     }
