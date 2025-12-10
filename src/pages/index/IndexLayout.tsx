@@ -2,6 +2,7 @@ import { memo } from 'react';
 import Sidebar from '@/components/Sidebar';
 import Header from '@/components/Header';
 import MainContent from '@/components/MainContent';
+import { ShaderAnimation } from '@/components/ui/shader-animation';
 import { Plugin, Category, User, ForumTopic, ForumComment, SearchResult } from '@/types';
 
 interface IndexLayoutProps {
@@ -87,6 +88,12 @@ const IndexLayout = ({
 }: IndexLayoutProps) => {
   return (
     <>
+      {authDialogOpen && (
+        <div className="fixed inset-0 z-0">
+          <ShaderAnimation />
+        </div>
+      )}
+      
       <Sidebar
         sidebarOpen={sidebarOpen && !authDialogOpen}
         activeCategory={activeCategory}
