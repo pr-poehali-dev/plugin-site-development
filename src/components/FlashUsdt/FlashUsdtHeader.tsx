@@ -24,7 +24,7 @@ export const FlashUsdtHeader = ({ onTestPurchase }: FlashUsdtHeaderProps) => {
               Flash USDT Token
             </h1>
             <p className="text-sm sm:text-base md:text-lg lg:text-xl text-muted-foreground mb-3">
-              Временный токен TRC20 со скидкой 76.6%
+              Временный токен TRC20 со скидкой 74.4%
             </p>
             <div className="flex items-start gap-2 p-3 sm:p-4 rounded-lg bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/30">
               <Icon name="Shield" size={18} className="text-blue-400 mt-0.5 flex-shrink-0 sm:w-5 sm:h-5" />
@@ -64,7 +64,7 @@ export const FlashUsdtHeader = ({ onTestPurchase }: FlashUsdtHeaderProps) => {
               <Icon name="Percent" size={20} className="text-yellow-400 sm:w-6 sm:h-6" />
               <h3 className="text-base sm:text-lg font-semibold">Цена</h3>
             </div>
-            <p className="text-2xl sm:text-3xl font-bold text-yellow-400">23.4%</p>
+            <p className="text-2xl sm:text-3xl font-bold text-yellow-400">25.56%</p>
             <p className="text-xs sm:text-sm text-muted-foreground mt-1">от номинала</p>
           </Card>
           

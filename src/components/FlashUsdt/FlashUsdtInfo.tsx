@@ -34,7 +34,7 @@ export const FlashUsdtInfo = () => {
                 </li>
                 <li className="flex items-start gap-2">
                   <Icon name="DollarSign" size={16} className="text-yellow-400 mt-0.5 flex-shrink-0" />
-                  <span><strong>Выгодная цена:</strong> Всего 23.4% от номинальной стоимости USDT</span>
+                  <span><strong>Выгодная цена:</strong> Всего 25.56% от номинальной стоимости USDT</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <Icon name="Rocket" size={16} className="text-yellow-400 mt-0.5 flex-shrink-0" />
@@ -109,7 +109,7 @@ export const FlashUsdtInfo = () => {
             </li>
             <li className="flex items-start gap-2">
               <Icon name="AlertCircle" size={16} className="text-red-400 mt-0.5 flex-shrink-0" />
-              <span>Минимальная сумма покупки: 100,000 Flash USDT (23,400 USDT)</span>
+              <span>Минимальная сумма покупки: 100,000 Flash USDT (25,560 USDT)</span>
             </li>
           </ul>
         </div>
