@@ -43,8 +43,18 @@ const CryptoChecker = () => {
       }
     };
 
+    // Вызываем сразу при загрузке
     checkPendingPayments();
     updateUserRoles();
+
+    // Устанавливаем интервалы: крипто-чекер каждые 5 минут, роль-обновление каждый час
+    const cryptoInterval = setInterval(checkPendingPayments, 5 * 60 * 1000);
+    const roleInterval = setInterval(updateUserRoles, 60 * 60 * 1000);
+
+    return () => {
+      clearInterval(cryptoInterval);
+      clearInterval(roleInterval);
+    };
   }, []);
 
   return null;
