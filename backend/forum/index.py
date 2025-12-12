@@ -350,6 +350,18 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 cur.execute("UPDATE forum_topics SET updated_at = CURRENT_TIMESTAMP WHERE id = %s", (topic_id,))
                 conn.commit()
                 
+                # Отправляем уведомление в Telegram
+                if commenter and topic_data:
+                    send_telegram_notification(
+                        'forum_comment',
+                        {'username': commenter['username'], 'user_id': user_id},
+                        {
+                            'topic_id': topic_id,
+                            'topic_title': topic_data['title'],
+                            'comment': content
+                        }
+                    )
+                
                 return {
                     'statusCode': 200,
                     'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},

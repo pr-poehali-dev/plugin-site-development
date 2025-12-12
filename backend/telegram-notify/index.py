@@ -148,6 +148,27 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             returned_amount = details.get('returned_amount', 0)
             message = f"🎰 <b>Ничья в казино</b>\n\n👤 Пользователь: {username} (ID: {user_id})\n🎮 Игра: {game}\n💰 Ставка: {bet_amount} USDT\n↩️ Возврат: {returned_amount} USDT"
         
+        elif event_type == 'support_ticket_created':
+            category = details.get('category', 'N/A')
+            subject = details.get('subject', 'N/A')
+            message_text = details.get('message', 'N/A')
+            ticket_id = details.get('ticket_id', 'N/A')
+            message = f"🎫 <b>Новый тикет поддержки</b>\n\n👤 Пользователь: {username} (ID: {user_id})\n🆔 Тикет: #{ticket_id}\n📂 Категория: {category}\n📋 Тема: {subject}\n💬 Сообщение: {message_text[:100]}{'...' if len(message_text) > 100 else ''}"
+        
+        elif event_type == 'casino_bet':
+            game = details.get('game', 'N/A')
+            bet_amount = details.get('bet_amount', 0)
+            message = f"🎲 <b>Ставка в казино</b>\n\n👤 Пользователь: {username} (ID: {user_id})\n🎮 Игра: {game}\n💰 Ставка: {bet_amount} USDT"
+        
+        elif event_type == 'forum_comment':
+            topic_title = details.get('topic_title', 'N/A')
+            comment_text = details.get('comment', 'N/A')
+            topic_id = details.get('topic_id', 'N/A')
+            message = f"💬 <b>Новый комментарий на форуме</b>\n\n👤 Автор: {username} (ID: {user_id})\n📋 Тема: {topic_title}\n🆔 ID темы: {topic_id}\n💭 Комментарий: {comment_text[:100]}{'...' if len(comment_text) > 100 else ''}"
+        
+        elif event_type == 'user_online':
+            message = f"🟢 <b>Пользователь онлайн</b>\n\n👤 Пользователь: {username} (ID: {user_id})\n⏰ Вход в систему"
+        
         else:
             message = f"ℹ️ <b>{event_type}</b>\n\n👤 Пользователь: {username} (ID: {user_id})\n📋 Детали: {json.dumps(details, ensure_ascii=False)}"
         

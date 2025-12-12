@@ -9,6 +9,24 @@ import os
 from typing import Dict, Any
 import psycopg2
 from psycopg2.extras import RealDictCursor
+import requests
+
+TELEGRAM_NOTIFY_URL = 'https://functions.poehali.dev/02d813a8-279b-4a13-bfe4-ffb7d0cf5a3f'
+
+def send_telegram_notification(event_type: str, user_info: dict, details: dict):
+    """Отправить уведомление в Telegram"""
+    try:
+        requests.post(
+            TELEGRAM_NOTIFY_URL,
+            json={
+                'event_type': event_type,
+                'user_info': user_info,
+                'details': details
+            },
+            timeout=5
+        )
+    except Exception as e:
+        print(f'Failed to send telegram notification: {e}')
 
 def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     method: str = event.get('httpMethod', 'GET')
@@ -139,6 +157,18 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     
                     if ticket.get('created_at'):
                         ticket['created_at'] = ticket['created_at'].isoformat()
+                    
+                    # Отправляем уведомление в Telegram
+                    send_telegram_notification(
+                        'support_ticket_created',
+                        {'username': username, 'user_id': user_id},
+                        {
+                            'ticket_id': ticket['id'],
+                            'category': category,
+                            'subject': subject,
+                            'message': message
+                        }
+                    )
                     
                     return {
                         'statusCode': 200,

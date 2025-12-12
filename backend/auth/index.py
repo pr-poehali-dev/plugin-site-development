@@ -407,6 +407,13 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             
             token = generate_token()
             
+            # Отправляем уведомление в Telegram о входе пользователя
+            send_telegram_notification(
+                'user_online',
+                {'username': user['username'], 'user_id': user['id']},
+                {}
+            )
+            
             return {
                 'statusCode': 200,
                 'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
@@ -622,6 +629,18 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             )
             
             conn.commit()
+            
+            # Получаем имя пользователя для уведомления
+            cur.execute(f"SELECT username FROM {SCHEMA}.users WHERE id = {int(user_id)}")
+            user_info = cur.fetchone()
+            
+            # Отправляем уведомление в Telegram о ставке в казино
+            if user_info:
+                send_telegram_notification(
+                    'casino_bet',
+                    {'username': user_info['username'], 'user_id': user_id},
+                    {'game': game_type, 'bet_amount': amount}
+                )
             
             return {
                 'statusCode': 200,
