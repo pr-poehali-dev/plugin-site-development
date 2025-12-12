@@ -31,16 +31,23 @@ export const CryptoPaymentDialog = ({
       <DialogContent className="max-w-4xl max-h-[95vh] md:max-h-[90vh] overflow-y-auto p-4 md:p-6">
         <DialogHeader className="space-y-2 md:space-y-3 pb-3 md:pb-4">
           <div className="flex items-center gap-3 md:gap-4">
-            {/* USDT Logo */}
+            {/* USDT Logo with Tron Badge */}
             <div className="relative">
-              <img 
-                src="https://cryptologos.cc/logos/tether-usdt-logo.svg" 
-                alt="USDT"
-                className="w-12 h-12 md:w-16 md:h-16"
-              />
-              {/* TRC20 Badge */}
-              <div className="absolute -bottom-1 -right-1 bg-gradient-to-r from-red-600 to-red-500 text-white text-[8px] md:text-[10px] font-bold px-1.5 md:px-2 py-0.5 rounded border-2 border-background shadow-md">
-                TRC20
+              {/* USDT Circle */}
+              <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-[#26A17B] flex items-center justify-center shadow-lg p-2 md:p-2.5">
+                <img 
+                  src="https://cryptologos.cc/logos/tether-usdt-logo.svg" 
+                  alt="USDT"
+                  className="w-full h-full"
+                />
+              </div>
+              {/* Tron Logo Badge */}
+              <div className="absolute -bottom-0.5 -right-0.5 md:-bottom-1 md:-right-1 w-5 h-5 md:w-7 md:h-7 rounded-full bg-white flex items-center justify-center shadow-md border-2 border-background">
+                <img 
+                  src="https://cryptologos.cc/logos/tron-trx-logo.svg" 
+                  alt="Tron"
+                  className="w-full h-full rounded-full"
+                />
               </div>
             </div>
             <div>
