@@ -191,8 +191,8 @@ const Auth = () => {
         </div>
 
         <div className="w-full max-w-md mx-auto lg:mx-0">
-          <div className="bg-card/40 backdrop-blur-sm rounded-2xl p-6 border border-border/30">
-          <div className="auth-orbs-container">
+          <div className="bg-card/40 backdrop-blur-sm rounded-2xl p-6 border border-border/30 relative overflow-hidden">
+          <div className="auth-orbs-container rounded-2xl">
             <div className="auth-orb auth-orb-1"></div>
             <div className="auth-orb auth-orb-2"></div>
             <div className="auth-orb auth-orb-3"></div>
