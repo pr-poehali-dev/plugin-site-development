@@ -35,12 +35,20 @@ export const FlashBtcPackages = ({ packages, onPurchase, selectedPackageId }: Fl
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        {packages.map((pkg) => (
+        {packages.map((pkg) => {
+          const getBorderColor = (id: number) => {
+            if (id === 1) return 'border-2 border-orange-400/60 shadow-lg shadow-orange-400/30';
+            if (id === 2) return 'border-2 border-purple-400/60 shadow-lg shadow-purple-400/30';
+            if (id === 3) return 'border-2 border-pink-400/60 shadow-lg shadow-pink-400/30';
+            return 'border-2 border-cyan-400/60 shadow-lg shadow-cyan-400/30';
+          };
+          
+          return (
           <Card 
             key={pkg.id}
-            className={`relative overflow-hidden transition-all duration-300 sm:hover:scale-105 ${
+            className={`relative overflow-hidden transition-all duration-300 sm:hover:scale-105 ${getBorderColor(pkg.id)} ${
               pkg.popular ? 'ring-2 ring-yellow-500/50' : ''
-            } ${selectedPackageId === pkg.id ? 'ring-2 ring-green-500/50' : ''} ${pkg.borderColor}`}
+            } ${selectedPackageId === pkg.id ? 'ring-2 ring-green-500/50' : ''}`}
           >
             {pkg.popular && (
               <div className="absolute top-0 right-0 z-10">
@@ -126,7 +134,7 @@ export const FlashBtcPackages = ({ packages, onPurchase, selectedPackageId }: Fl
               </Button>
             </div>
           </Card>
-        ))}
+        )}))}
       </div>
     </div>
   );
