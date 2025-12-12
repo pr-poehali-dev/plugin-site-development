@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import Icon from '@/components/ui/icon';
-import { Input } from '@/components/ui/input';
 import { User } from '@/types';
 import { useToast } from '@/hooks/use-toast';
+import { PlayingCard, createDeck, calculateHandValue } from './blackjack/blackjack-utils';
+import { BlackjackCard } from './blackjack/BlackjackCard';
+import { BlackjackControls } from './blackjack/BlackjackControls';
 
 const AUTH_URL = 'https://functions.poehali.dev/2497448a-6aff-4df5-97ef-9181cf792f03';
 
@@ -13,61 +14,6 @@ interface BlackjackGameProps {
   onShowAuthDialog: () => void;
   onRefreshUserBalance?: () => void;
 }
-
-type Suit = '♠' | '♥' | '♦' | '♣';
-type Rank = 'A' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | '10' | 'J' | 'Q' | 'K';
-
-interface PlayingCard {
-  suit: Suit;
-  rank: Rank;
-}
-
-const createDeck = (): PlayingCard[] => {
-  const suits: Suit[] = ['♠', '♥', '♦', '♣'];
-  const ranks: Rank[] = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
-  const deck: PlayingCard[] = [];
-  
-  for (const suit of suits) {
-    for (const rank of ranks) {
-      deck.push({ suit, rank });
-    }
-  }
-  
-  return deck.sort(() => Math.random() - 0.5);
-};
-
-const getCardValue = (card: PlayingCard, currentTotal: number): number => {
-  if (card.rank === 'A') {
-    return currentTotal + 11 > 21 ? 1 : 11;
-  }
-  if (['J', 'Q', 'K'].includes(card.rank)) {
-    return 10;
-  }
-  return parseInt(card.rank);
-};
-
-const calculateHandValue = (hand: PlayingCard[]): number => {
-  let total = 0;
-  let aces = 0;
-  
-  for (const card of hand) {
-    if (card.rank === 'A') {
-      aces += 1;
-      total += 11;
-    } else if (['J', 'Q', 'K'].includes(card.rank)) {
-      total += 10;
-    } else {
-      total += parseInt(card.rank);
-    }
-  }
-  
-  while (total > 21 && aces > 0) {
-    total -= 10;
-    aces -= 1;
-  }
-  
-  return total;
-};
 
 export const BlackjackGame = ({ user, onShowAuthDialog, onRefreshUserBalance }: BlackjackGameProps) => {
   const { toast } = useToast();
@@ -388,38 +334,6 @@ export const BlackjackGame = ({ user, onShowAuthDialog, onRefreshUserBalance }: 
     loadSession();
   }, [user, sessionLoaded]);
 
-  const CardDisplay = ({ card, hidden = false }: { card: PlayingCard; hidden?: boolean }) => {
-    const isRed = card.suit === '♥' || card.suit === '♦';
-    
-    return (
-      <div className={`
-        w-14 h-20 sm:w-16 sm:h-24 md:w-20 md:h-28 
-        bg-white rounded-lg shadow-lg 
-        flex flex-col items-center justify-between 
-        p-1 sm:p-1.5 md:p-2
-        ${hidden ? 'bg-gradient-to-br from-primary to-primary/80' : ''}
-      `}>
-        {hidden ? (
-          <div className="w-full h-full flex items-center justify-center">
-            <div className="w-8 h-10 sm:w-10 sm:h-12 border-2 border-white/30 rounded"></div>
-          </div>
-        ) : (
-          <>
-            <div className={`text-base sm:text-lg md:text-xl font-bold ${isRed ? 'text-red-500' : 'text-gray-900'}`}>
-              {card.rank}
-            </div>
-            <div className={`text-xl sm:text-2xl md:text-3xl ${isRed ? 'text-red-500' : 'text-gray-900'}`}>
-              {card.suit}
-            </div>
-            <div className={`text-base sm:text-lg md:text-xl font-bold ${isRed ? 'text-red-500' : 'text-gray-900'}`}>
-              {card.rank}
-            </div>
-          </>
-        )}
-      </div>
-    );
-  };
-
   return (
     <div className="max-w-2xl mx-auto space-y-4">
       <div className="text-center space-y-2">
@@ -444,7 +358,7 @@ export const BlackjackGame = ({ user, onShowAuthDialog, onRefreshUserBalance }: 
               </div>
               <div className="flex gap-2 flex-wrap justify-center min-h-[5rem] sm:min-h-[6rem] md:min-h-[7rem]">
                 {dealerHand.map((card, index) => (
-                  <CardDisplay 
+                  <BlackjackCard 
                     key={index} 
                     card={card} 
                     hidden={gameState === 'playing' && index === 1}
@@ -465,107 +379,25 @@ export const BlackjackGame = ({ user, onShowAuthDialog, onRefreshUserBalance }: 
               </div>
               <div className="flex gap-2 flex-wrap justify-center min-h-[5rem] sm:min-h-[6rem] md:min-h-[7rem]">
                 {playerHand.map((card, index) => (
-                  <CardDisplay key={index} card={card} />
+                  <BlackjackCard key={index} card={card} />
                 ))}
               </div>
             </div>
           )}
 
-          {/* Betting Section */}
-          {gameState === 'betting' && (
-            <div className="space-y-3">
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <label className="text-sm font-medium">Ставка</label>
-                  {user && (
-                    <span className="text-xs text-muted-foreground">
-                      Баланс: {Number(user.balance || 0).toFixed(2)} USDT
-                    </span>
-                  )}
-                </div>
-                <div className="relative">
-                  <Input
-                    type="number"
-                    value={bet}
-                    onChange={(e) => setBet(e.target.value)}
-                    className="h-10 pr-14"
-                    min="1"
-                    step="1"
-                  />
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground pointer-events-none">
-                    USDT
-                  </span>
-                </div>
-                <div className="grid grid-cols-4 gap-2">
-                  {[10, 50, 100, 500].map((amount) => (
-                    <Button
-                      key={amount}
-                      variant="outline"
-                      size="sm"
-                      className="h-8 text-xs"
-                      onClick={() => setBet(amount.toString())}
-                    >
-                      {amount}
-                    </Button>
-                  ))}
-                </div>
-              </div>
-
-              <Button
-                onClick={startNewGame}
-                className="w-full h-12 md:h-14 text-base font-semibold"
-                disabled={isProcessing}
-              >
-                {isProcessing ? (
-                  <Icon name="loader-2" className="w-5 h-5 animate-spin" />
-                ) : (
-                  'Начать игру'
-                )}
-              </Button>
-            </div>
-          )}
-
-          {/* Game Actions */}
-          {gameState === 'playing' && (
-            <div className="grid grid-cols-2 gap-2">
-              <Button
-                onClick={hit}
-                className="h-11 text-sm font-semibold"
-                disabled={isProcessing}
-              >
-                Взять карту
-              </Button>
-              <Button
-                onClick={() => stand()}
-                variant="outline"
-                className="h-11 text-sm font-semibold"
-                disabled={isProcessing}
-              >
-                Хватит
-              </Button>
-            </div>
-          )}
-
-          {/* Result */}
-          {gameState === 'finished' && result && (
-            <div className="space-y-3">
-              <div className={`text-center text-base font-medium p-3 rounded-lg ${
-                result.includes('выиграли') || result.includes('перебрал')
-                  ? 'bg-green-500/10 text-green-500' 
-                  : result.includes('Ничья')
-                  ? 'bg-yellow-500/10 text-yellow-500'
-                  : 'bg-red-500/10 text-red-500'
-              }`}>
-                {result}
-              </div>
-              <Button
-                onClick={resetGame}
-                className="w-full h-12 md:h-14 text-base font-semibold"
-              >
-                Новая игра
-              </Button>
-            </div>
-          )}
+          {/* Controls */}
+          <BlackjackControls
+            gameState={gameState}
+            bet={bet}
+            setBet={setBet}
+            user={user}
+            isProcessing={isProcessing}
+            result={result}
+            onStartNewGame={startNewGame}
+            onHit={hit}
+            onStand={() => stand()}
+            onResetGame={resetGame}
+          />
         </div>
       </Card>
 

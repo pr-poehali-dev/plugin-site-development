@@ -36,19 +36,29 @@ export const FlashUsdtPackages = ({ packages, onPurchase, selectedPackageId }: F
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {packages.map((pkg) => {
-          const getBorderColor = (id: number) => {
-            if (id === 1) return 'border-2 border-cyan-400/60 shadow-lg shadow-cyan-400/30';
-            if (id === 2) return 'border-2 border-purple-400/60 shadow-lg shadow-purple-400/30';
-            if (id === 3) return 'border-2 border-green-400/60 shadow-lg shadow-green-400/30';
-            return 'border-2 border-orange-400/60 shadow-lg shadow-orange-400/30';
+          const getGlowColor = (id: number): 'blue' | 'purple' | 'green' | 'orange' => {
+            if (id === 1) return 'blue';
+            if (id === 2) return 'purple';
+            if (id === 3) return 'green';
+            return 'orange';
+          };
+
+          const getHoverShadow = (id: number) => {
+            if (id === 1) return 'hover:shadow-xl hover:shadow-cyan-400/20';
+            if (id === 2) return 'hover:shadow-xl hover:shadow-purple-400/20';
+            if (id === 3) return 'hover:shadow-xl hover:shadow-green-400/20';
+            return 'hover:shadow-xl hover:shadow-orange-400/20';
           };
           
           return (
           <Card 
             key={pkg.id}
-            className={`relative overflow-hidden transition-all duration-300 sm:hover:scale-105 ${getBorderColor(pkg.id)} ${
+            className={`relative overflow-hidden transition-all duration-300 sm:hover:scale-105 ${getHoverShadow(pkg.id)} ${
               pkg.popular ? 'ring-2 ring-yellow-500/50' : ''
-            } ${selectedPackageId === pkg.id ? 'ring-2 ring-green-500/50' : ''}`}
+            } ${selectedPackageId === pkg.id ? 'ring-2 ring-green-500/50' : ''} group`}
+            style={{
+              ['--glow-color' as string]: pkg.id === 1 ? 'cyan' : pkg.id === 2 ? 'purple' : pkg.id === 3 ? 'green' : 'orange'
+            }}
           >
             {pkg.popular && (
               <div className="absolute top-0 right-0 z-10">
