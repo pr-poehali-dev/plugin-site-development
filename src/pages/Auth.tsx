@@ -106,8 +106,91 @@ const Auth = () => {
 
   return (
     <BeamsBackground intensity="medium">
-      <div className="w-full max-w-md px-4">
-        <div className="bg-card/80 backdrop-blur-xl rounded-3xl shadow-2xl p-8 border border-border/50">
+      <div className="w-full max-w-6xl px-4 grid lg:grid-cols-2 gap-8 items-center">
+        <div className="hidden lg:block space-y-8">
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/30 to-primary/10 flex items-center justify-center">
+                <Icon name="Sparkles" size={32} className="text-primary" />
+              </div>
+              <div>
+                <h2 className="text-4xl font-bold bg-gradient-to-r from-zinc-200 via-zinc-400 to-zinc-600 bg-clip-text text-transparent">
+                  Git Crypto
+                </h2>
+                <p className="text-muted-foreground">Криптовалютная платформа</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-6 bg-card/40 backdrop-blur-sm rounded-2xl p-6 border border-border/30">
+            <h3 className="text-xl font-semibold text-foreground">Что вас ждёт:</h3>
+            
+            <div className="space-y-4">
+              <div className="flex gap-4 items-start group">
+                <div className="w-10 h-10 rounded-xl bg-cyan-500/10 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                  <Icon name="Zap" size={20} className="text-cyan-400" />
+                </div>
+                <div>
+                  <h4 className="font-semibold text-foreground mb-1">Flash USDT & BTC</h4>
+                  <p className="text-sm text-muted-foreground">Криптовалюта для тестирования бирж и кошельков со скидками до 76%</p>
+                </div>
+              </div>
+
+              <div className="flex gap-4 items-start group">
+                <div className="w-10 h-10 rounded-xl bg-orange-500/10 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                  <Icon name="ShieldCheck" size={20} className="text-orange-400" />
+                </div>
+                <div>
+                  <h4 className="font-semibold text-foreground mb-1">Гарант-сервис</h4>
+                  <p className="text-sm text-muted-foreground">Безопасные сделки между пользователями с защитой средств</p>
+                </div>
+              </div>
+
+              <div className="flex gap-4 items-start group">
+                <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                  <Icon name="ArrowLeftRight" size={20} className="text-purple-400" />
+                </div>
+                <div>
+                  <h4 className="font-semibold text-foreground mb-1">Обменник криптовалют</h4>
+                  <p className="text-sm text-muted-foreground">Быстрый обмен между различными криптовалютами</p>
+                </div>
+              </div>
+
+              <div className="flex gap-4 items-start group">
+                <div className="w-10 h-10 rounded-xl bg-green-500/10 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                  <Icon name="Users" size={20} className="text-green-400" />
+                </div>
+                <div>
+                  <h4 className="font-semibold text-foreground mb-1">Реферальная программа</h4>
+                  <p className="text-sm text-muted-foreground">Зарабатывайте на приглашении друзей и знакомых</p>
+                </div>
+              </div>
+
+              <div className="flex gap-4 items-start group">
+                <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                  <Icon name="MessageSquare" size={20} className="text-blue-400" />
+                </div>
+                <div>
+                  <h4 className="font-semibold text-foreground mb-1">Сообщество и поддержка</h4>
+                  <p className="text-sm text-muted-foreground">Форум, чат и круглосуточная техническая поддержка</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-primary/5 backdrop-blur-sm rounded-2xl p-5 border border-primary/20">
+            <div className="flex items-center gap-3 mb-3">
+              <Icon name="Shield" size={24} className="text-primary" />
+              <h4 className="font-semibold text-foreground">Безопасность превыше всего</h4>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Мы используем современные технологии шифрования и двухфакторную аутентификацию для защиты ваших данных и средств.
+            </p>
+          </div>
+        </div>
+
+        <div className="w-full max-w-md mx-auto lg:mx-0">
+          <div className="bg-card/80 backdrop-blur-xl rounded-3xl shadow-2xl p-8 border border-border/50">
           <div className="auth-orbs-container">
             <div className="auth-orb auth-orb-1"></div>
             <div className="auth-orb auth-orb-2"></div>
@@ -244,6 +327,7 @@ const Auth = () => {
               </form>
             )}
           </div>
+        </div>
         </div>
       </div>
     </BeamsBackground>
