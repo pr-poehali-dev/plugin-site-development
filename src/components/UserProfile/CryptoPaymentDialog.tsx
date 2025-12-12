@@ -33,11 +33,13 @@ export const CryptoPaymentDialog = ({
           <div className="flex items-center gap-3 md:gap-4">
             {/* USDT Logo */}
             <div className="relative">
-              <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-[#26A17B] flex items-center justify-center shadow-lg">
-                <span className="text-white font-bold text-lg md:text-2xl">₮</span>
-              </div>
+              <img 
+                src="https://cryptologos.cc/logos/tether-usdt-logo.svg" 
+                alt="USDT"
+                className="w-12 h-12 md:w-16 md:h-16"
+              />
               {/* TRC20 Badge */}
-              <div className="absolute -bottom-1 -right-1 bg-blue-600 text-white text-[8px] md:text-[10px] font-bold px-1.5 md:px-2 py-0.5 rounded-full border-2 border-background shadow-sm">
+              <div className="absolute -bottom-1 -right-1 bg-gradient-to-r from-red-600 to-red-500 text-white text-[8px] md:text-[10px] font-bold px-1.5 md:px-2 py-0.5 rounded border-2 border-background shadow-md">
                 TRC20
               </div>
             </div>
