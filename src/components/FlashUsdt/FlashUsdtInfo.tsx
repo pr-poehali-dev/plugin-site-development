@@ -3,7 +3,7 @@ import Icon from '@/components/ui/icon';
 
 export const FlashUsdtInfo = () => {
   return (
-    <>
+    <div className="space-y-4 sm:space-y-6 md:space-y-8">
       <Card className="p-4 sm:p-6 md:p-8 border-yellow-500/20 bg-yellow-500/5">
         <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
           <Icon name="Info" size={24} className="text-yellow-400 sm:w-7 sm:h-7" />
@@ -163,6 +163,6 @@ export const FlashUsdtInfo = () => {
           </div>
         </div>
       </Card>
-    </>
+    </div>
   );
 };
