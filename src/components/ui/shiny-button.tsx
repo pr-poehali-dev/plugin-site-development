@@ -62,7 +62,7 @@ export function ShinyButton({ children, onClick, className = "", type = "button"
           line-height: 1.2;
           font-weight: 500;
           border: 1px solid transparent;
-          border-radius: 360px;
+          border-radius: 0.75rem;
           color: var(--shiny-cta-fg);
           background: linear-gradient(var(--shiny-cta-bg), var(--shiny-cta-bg)) padding-box,
             conic-gradient(
