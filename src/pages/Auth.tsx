@@ -107,7 +107,7 @@ const Auth = () => {
 
   return (
     <BeamsBackground intensity="medium">
-      <div className="w-full max-w-6xl px-4 grid lg:grid-cols-2 gap-8 items-center">
+      <div className="w-full max-w-6xl px-4 grid lg:grid-cols-2 gap-8 items-center overflow-y-auto lg:overflow-visible max-h-screen lg:max-h-none">
         <div className="hidden lg:block space-y-8">
           <div className="space-y-4">
             <div className="flex items-center gap-3">
@@ -299,7 +299,7 @@ const Auth = () => {
 
                 <ShinyButton 
                   type="submit" 
-                  className="w-full"
+                  className="w-full bg-gradient-to-r from-cyan-500 to-teal-500 hover:from-cyan-600 hover:to-teal-600"
                 >
                   {authMode === 'login' ? 'Войти' : 'Создать аккаунт'}
                 </ShinyButton>
