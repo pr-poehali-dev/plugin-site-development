@@ -3,9 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import Icon from '@/components/ui/icon';
-import { DottedSurface } from '@/components/ui/dotted-surface';
 import { useState } from 'react';
-import { motion } from 'motion/react';
 import { cn } from '@/lib/utils';
 
 interface TopUpDialogProps {
@@ -43,134 +41,133 @@ export const TopUpDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl overflow-hidden border-2 border-primary/20 bg-background/95 backdrop-blur-xl">
-        {/* 3D Dotted Wave Background */}
-        <div className="absolute inset-0 w-full h-full overflow-hidden">
-          <DottedSurface className="absolute inset-0" />
-          <div className="absolute inset-0 w-full h-full bg-gradient-to-br from-background/60 via-background/40 to-background/60 z-20 pointer-events-none" />
-        </div>
-
-        <DialogHeader className="relative z-30 space-y-3">
-          <DialogTitle className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-green-400 via-emerald-400 to-teal-400 bg-clip-text text-transparent">
+      <DialogContent className="max-w-4xl">
+        <DialogHeader className="space-y-4 pb-6">
+          <DialogTitle className="text-3xl font-bold">
             Пополнение баланса
           </DialogTitle>
           <DialogDescription className="text-base">
-            Выберите сумму для пополнения вашего баланса
+            Выберите сумму для пополнения вашего баланса USDT
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-6 relative z-30">
-          {/* Current amount display */}
-          <motion.div 
-            className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-green-900/30 via-emerald-900/20 to-teal-900/30 border border-green-500/30 p-6 text-center"
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.3 }}
-          >
-            <div className="absolute inset-0 bg-grid-white/5 [mask-image:radial-gradient(white,transparent_85%)]" />
-            <Label className="text-sm text-muted-foreground mb-2 block relative z-10">Сумма пополнения</Label>
-            <motion.div 
-              className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-green-300 via-emerald-300 to-teal-300 bg-clip-text text-transparent relative z-10"
-              key={currentAmount}
-              initial={{ scale: 1.2 }}
-              animate={{ scale: 1 }}
-              transition={{ type: "spring", stiffness: 300, damping: 20 }}
-            >
-              {currentAmount.toLocaleString('ru-RU')} USDT
-            </motion.div>
-            <div className="text-xs text-muted-foreground mt-2 relative z-10">
-              ≈ ${currentAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+        <div className="grid md:grid-cols-2 gap-8">
+          {/* Left column - Amount display and slider */}
+          <div className="space-y-6">
+            {/* Current amount display */}
+            <div className="rounded-2xl bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/20 p-8 text-center">
+              <Label className="text-sm font-medium text-muted-foreground mb-3 block">
+                Сумма пополнения
+              </Label>
+              <div className="text-5xl font-bold text-foreground mb-2">
+                {currentAmount.toLocaleString('ru-RU')}
+              </div>
+              <div className="text-2xl font-semibold text-primary">
+                USDT
+              </div>
+              <div className="text-sm text-muted-foreground mt-4 pt-4 border-t border-primary/10">
+                ≈ ${currentAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD
+              </div>
             </div>
-          </motion.div>
 
-          {/* Slider */}
-          <div className="space-y-4 px-1">
-            <div className="flex justify-between text-xs text-muted-foreground">
-              <span>100 USDT</span>
-              <span>300,000 USDT</span>
+            {/* Slider section */}
+            <div className="space-y-6 rounded-xl bg-muted/30 p-6 border border-border">
+              <div>
+                <Label className="text-sm font-medium mb-4 block">
+                  Точная сумма
+                </Label>
+                <div className="flex justify-between text-xs text-muted-foreground mb-3">
+                  <span className="font-medium">100</span>
+                  <span className="font-medium">300,000</span>
+                </div>
+                <Slider
+                  value={sliderValue}
+                  onValueChange={handleSliderChange}
+                  min={100}
+                  max={300000}
+                  step={100}
+                  className="w-full"
+                />
+              </div>
             </div>
-            <Slider
-              value={sliderValue}
-              onValueChange={handleSliderChange}
-              min={100}
-              max={300000}
-              step={100}
-              className="w-full"
-            />
-            <div className="flex justify-between text-xs text-muted-foreground px-2">
-              <span>Минимум</span>
-              <span>Максимум</span>
+
+            {/* Info block */}
+            <div className="flex items-start gap-3 text-sm text-muted-foreground bg-blue-500/5 rounded-lg p-4 border border-blue-500/20">
+              <Icon name="Info" size={18} className="shrink-0 mt-0.5 text-blue-500" />
+              <div>
+                <p className="font-medium text-foreground mb-1">Способ оплаты</p>
+                <p className="text-xs">
+                  После подтверждения откроется окно с адресом кошелька для перевода USDT (TRC-20)
+                </p>
+              </div>
             </div>
           </div>
 
-          {/* Quick amount buttons */}
-          <div className="space-y-3">
-            <Label className="text-sm text-muted-foreground">Быстрый выбор</Label>
-            <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-              {quickAmounts.map((amount, index) => (
-                <motion.div
-                  key={amount}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.05 }}
-                >
+          {/* Right column - Quick amounts and button */}
+          <div className="space-y-6">
+            {/* Quick amounts */}
+            <div className="space-y-4">
+              <Label className="text-sm font-medium">
+                Быстрый выбор суммы
+              </Label>
+              <div className="grid grid-cols-2 gap-3">
+                {quickAmounts.map((amount) => (
                   <Button
+                    key={amount}
                     variant="outline"
                     onClick={() => handleQuickAmount(amount)}
                     className={cn(
-                      "w-full h-auto py-3 px-2 text-xs sm:text-sm font-semibold transition-all duration-300 hover:scale-105",
+                      "h-24 flex flex-col items-center justify-center gap-2 text-base font-semibold transition-all",
                       currentAmount === amount 
-                        ? "bg-gradient-to-r from-green-800 to-emerald-800 border-green-500 text-white shadow-lg shadow-green-500/30" 
-                        : "hover:bg-green-900/20 hover:border-green-500/50"
+                        ? "bg-primary text-primary-foreground border-primary shadow-md" 
+                        : "hover:bg-muted hover:border-primary/50"
                     )}
                   >
-                    <div className="flex flex-col items-center gap-1">
-                      <Icon name="Coins" size={16} className="sm:w-5 sm:h-5" />
-                      <span>{(amount / 1000).toFixed(amount >= 1000 ? 0 : 1)}K</span>
+                    <Icon 
+                      name={amount >= 50000 ? "Trophy" : amount >= 10000 ? "Star" : "Coins"} 
+                      size={24} 
+                    />
+                    <div className="flex flex-col items-center">
+                      <span className="text-xl font-bold">
+                        {amount >= 1000 ? `${(amount / 1000)}K` : amount}
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        USDT
+                      </span>
                     </div>
                   </Button>
-                </motion.div>
-              ))}
+                ))}
+              </div>
+            </div>
+
+            {/* Payment button */}
+            <div className="space-y-3 pt-4">
+              <Button 
+                onClick={onTopUp}
+                disabled={isLoading || !topUpAmount || currentAmount < 100}
+                size="lg"
+                className="w-full h-16 text-lg font-bold"
+              >
+                {isLoading ? (
+                  <>
+                    <Icon name="Loader2" size={20} className="mr-2 animate-spin" />
+                    Обработка платежа...
+                  </>
+                ) : (
+                  <>
+                    <Icon name="ArrowRight" size={20} className="mr-2" />
+                    Пополнить на {currentAmount.toLocaleString('ru-RU')} USDT
+                  </>
+                )}
+              </Button>
+              
+              {currentAmount < 100 && (
+                <p className="text-xs text-center text-destructive">
+                  Минимальная сумма пополнения: 100 USDT
+                </p>
+              )}
             </div>
           </div>
-
-          {/* Payment button */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-          >
-            <Button 
-              onClick={onTopUp}
-              disabled={isLoading || !topUpAmount || currentAmount < 100}
-              className="w-full h-14 text-lg font-bold bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 hover:from-green-500 hover:via-emerald-500 hover:to-teal-500 shadow-lg shadow-green-500/30 hover:shadow-xl hover:shadow-green-500/40 transition-all duration-300 disabled:opacity-50"
-            >
-              {isLoading ? (
-                <>
-                  <Icon name="Loader2" size={20} className="mr-2 animate-spin" />
-                  Обработка...
-                </>
-              ) : (
-                <>
-                  <Icon name="Zap" size={20} className="mr-2" />
-                  Пополнить на {currentAmount.toLocaleString('ru-RU')} USDT
-                </>
-              )}
-            </Button>
-          </motion.div>
-
-          {/* Payment info */}
-          <motion.div 
-            className="flex items-center gap-2 text-xs text-muted-foreground bg-primary/5 rounded-lg p-3 border border-primary/10"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5 }}
-          >
-            <Icon name="Info" size={14} className="shrink-0" />
-            <p>
-              После нажатия кнопки откроется окно с адресом для перевода USDT (TRC-20)
-            </p>
-          </motion.div>
         </div>
       </DialogContent>
     </Dialog>
