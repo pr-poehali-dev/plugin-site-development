@@ -2,6 +2,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
+import { Warp } from '@paper-design/shaders-react';
 
 export interface Package {
   id: number;
@@ -50,12 +51,35 @@ export const FlashUsdtPackages = ({ packages, onPurchase, selectedPackageId }: F
               </div>
             )}
 
-            <div className={`bg-gradient-to-br ${pkg.color} p-3 sm:p-4 md:p-5 lg:p-6 text-white`}>
-              <Icon name={pkg.icon as any} size={28} className="mb-2 sm:mb-3 md:mb-4 opacity-80 sm:w-9 sm:h-9 md:w-10 md:h-10 lg:w-12 lg:h-12" />
-              <h3 className="text-xl sm:text-2xl md:text-3xl font-bold mb-1">
-                {pkg.amount.toLocaleString('ru-RU')}
-              </h3>
-              <p className="text-[10px] sm:text-xs opacity-80">Flash USDT</p>
+            <div className="relative overflow-hidden">
+              <div className="absolute inset-0">
+                <Warp
+                  style={{ height: '100%', width: '100%' }}
+                  proportion={0.3 + (pkg.id * 0.05)}
+                  softness={0.8 + (pkg.id * 0.1)}
+                  distortion={0.15 + (pkg.id * 0.02)}
+                  swirl={0.6 + (pkg.id * 0.05)}
+                  swirlIterations={8 + pkg.id}
+                  shape={pkg.id % 2 === 0 ? 'checks' : 'dots'}
+                  shapeScale={0.08 + (pkg.id * 0.01)}
+                  scale={1}
+                  rotation={0}
+                  speed={0.5}
+                  colors={[
+                    pkg.id === 1 ? 'hsl(200, 100%, 25%)' : pkg.id === 2 ? 'hsl(280, 100%, 30%)' : pkg.id === 3 ? 'hsl(120, 100%, 25%)' : 'hsl(30, 100%, 35%)',
+                    pkg.id === 1 ? 'hsl(180, 100%, 65%)' : pkg.id === 2 ? 'hsl(320, 100%, 60%)' : pkg.id === 3 ? 'hsl(140, 100%, 60%)' : 'hsl(50, 100%, 65%)',
+                    pkg.id === 1 ? 'hsl(160, 90%, 35%)' : pkg.id === 2 ? 'hsl(340, 90%, 40%)' : pkg.id === 3 ? 'hsl(100, 90%, 30%)' : 'hsl(40, 90%, 40%)',
+                    pkg.id === 1 ? 'hsl(190, 100%, 75%)' : pkg.id === 2 ? 'hsl(300, 100%, 70%)' : pkg.id === 3 ? 'hsl(130, 100%, 70%)' : 'hsl(45, 100%, 75%)'
+                  ]}
+                />
+              </div>
+              <div className="relative z-10 bg-black/70 p-3 sm:p-4 md:p-5 lg:p-6 text-white">
+                <Icon name={pkg.icon as any} size={28} className="mb-2 sm:mb-3 md:mb-4 opacity-80 sm:w-9 sm:h-9 md:w-10 md:h-10 lg:w-12 lg:h-12 drop-shadow-lg" />
+                <h3 className="text-xl sm:text-2xl md:text-3xl font-bold mb-1 drop-shadow-lg">
+                  {pkg.amount.toLocaleString('ru-RU')}
+                </h3>
+                <p className="text-[10px] sm:text-xs opacity-80">Flash USDT</p>
+              </div>
             </div>
 
             <div className="p-3 sm:p-4 md:p-5 lg:p-6 space-y-2 sm:space-y-3">
