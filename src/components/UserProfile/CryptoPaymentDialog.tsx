@@ -28,77 +28,78 @@ export const CryptoPaymentDialog = ({
 }: CryptoPaymentDialogProps) => {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl">
-        <DialogHeader className="space-y-4 pb-6">
-          <DialogTitle className="text-3xl font-bold">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader className="space-y-3 md:space-y-4 pb-4 md:pb-6">
+          <DialogTitle className="text-2xl md:text-3xl font-bold">
             Перевод USDT
           </DialogTitle>
-          <DialogDescription className="text-base">
+          <DialogDescription className="text-sm md:text-base">
             Отправьте ровно {cryptoPayment?.amount} USDT на указанный адрес кошелька
           </DialogDescription>
         </DialogHeader>
 
         {cryptoPayment && (
-          <div className="grid md:grid-cols-2 gap-8">
+          <div className="grid md:grid-cols-2 gap-4 md:gap-8">
             {/* Left column - Payment info and QR */}
-            <div className="space-y-6">
+            <div className="space-y-4 md:space-y-6">
               {/* Amount and Network Card */}
-              <div className="rounded-2xl bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/20 p-8">
-                <div className="space-y-6">
+              <div className="rounded-xl md:rounded-2xl bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/20 p-4 md:p-8">
+                <div className="space-y-4 md:space-y-6">
                   <div>
-                    <Label className="text-sm font-medium text-muted-foreground mb-2 block">
+                    <Label className="text-xs md:text-sm font-medium text-muted-foreground mb-2 block">
                       Сумма к оплате
                     </Label>
-                    <div className="text-5xl font-bold text-foreground">
+                    <div className="text-3xl md:text-5xl font-bold text-foreground">
                       {cryptoPayment.amount}
                     </div>
-                    <div className="text-2xl font-semibold text-primary mt-1">
+                    <div className="text-xl md:text-2xl font-semibold text-primary mt-1">
                       USDT
                     </div>
                   </div>
                   
-                  <div className="pt-4 border-t border-primary/10">
-                    <Label className="text-sm font-medium text-muted-foreground mb-2 block">
+                  <div className="pt-3 md:pt-4 border-t border-primary/10">
+                    <Label className="text-xs md:text-sm font-medium text-muted-foreground mb-2 block">
                       Сеть блокчейна
                     </Label>
                     <div className="flex items-center gap-2">
-                      <Icon name="Link" size={20} className="text-primary" />
-                      <span className="text-xl font-semibold">{cryptoPayment.network}</span>
+                      <Icon name="Link" size={18} className="text-primary md:w-5 md:h-5" />
+                      <span className="text-base md:text-xl font-semibold">{cryptoPayment.network}</span>
                     </div>
                   </div>
                 </div>
               </div>
 
               {/* QR Code */}
-              <div className="rounded-xl bg-muted/30 p-8 border border-border flex flex-col items-center">
-                <Label className="text-sm font-medium mb-4 block text-center">
+              <div className="rounded-lg md:rounded-xl bg-muted/30 p-4 md:p-8 border border-border flex flex-col items-center">
+                <Label className="text-xs md:text-sm font-medium mb-3 md:mb-4 block text-center">
                   QR-код для сканирования
                 </Label>
-                <div className="bg-white p-4 rounded-lg">
+                <div className="bg-white p-3 md:p-4 rounded-lg">
                   <QRCodeSVG 
                     value={cryptoPayment.wallet_address}
-                    size={200}
+                    size={160}
                     level="M"
                     fgColor="#000000"
                     bgColor="#ffffff"
+                    className="md:w-[200px] md:h-[200px]"
                   />
                 </div>
-                <p className="text-xs text-muted-foreground mt-3 text-center">
+                <p className="text-xs text-muted-foreground mt-2 md:mt-3 text-center">
                   Отсканируйте камерой телефона
                 </p>
               </div>
             </div>
 
             {/* Right column - Wallet address and warnings */}
-            <div className="space-y-6">
+            <div className="space-y-4 md:space-y-6">
               {/* Wallet Address */}
-              <div className="space-y-3">
-                <Label className="text-sm font-medium">
+              <div className="space-y-2 md:space-y-3">
+                <Label className="text-xs md:text-sm font-medium">
                   Адрес кошелька
                 </Label>
                 <div className="space-y-2">
                   <code 
-                    className="block p-4 bg-muted rounded-lg text-sm break-all cursor-pointer select-all hover:bg-muted/80 transition-colors border border-border"
+                    className="block p-3 md:p-4 bg-muted rounded-lg text-xs md:text-sm break-all cursor-pointer select-all hover:bg-muted/80 transition-colors border border-border"
                     onClick={(e) => {
                       const range = document.createRange();
                       range.selectNodeContents(e.currentTarget);
@@ -115,47 +116,47 @@ export const CryptoPaymentDialog = ({
                   <Button
                     size="lg"
                     variant="outline"
-                    className="w-full"
+                    className="w-full h-10 md:h-12 text-sm md:text-base"
                     onClick={() => {
                       navigator.clipboard.writeText(cryptoPayment.wallet_address);
                       onCopyToClipboard(cryptoPayment.wallet_address);
                     }}
                   >
-                    <Icon name="Copy" size={18} className="mr-2" />
+                    <Icon name="Copy" size={16} className="mr-2 md:w-[18px] md:h-[18px]" />
                     Скопировать адрес
                   </Button>
                 </div>
               </div>
 
               {/* Warnings */}
-              <div className="space-y-3">
-                <div className="flex items-start gap-3 p-4 bg-destructive/10 border border-destructive/30 rounded-lg">
-                  <Icon name="AlertTriangle" size={20} className="text-destructive shrink-0 mt-0.5" />
-                  <div className="text-sm space-y-1">
+              <div className="space-y-2 md:space-y-3">
+                <div className="flex items-start gap-2 md:gap-3 p-3 md:p-4 bg-destructive/10 border border-destructive/30 rounded-lg">
+                  <Icon name="AlertTriangle" size={18} className="text-destructive shrink-0 mt-0.5 md:w-5 md:h-5" />
+                  <div className="text-xs md:text-sm space-y-1">
                     <p className="font-semibold text-destructive">
                       Отправляйте ТОЧНО {cryptoPayment.amount} USDT
                     </p>
-                    <p className="text-muted-foreground text-xs">
+                    <p className="text-muted-foreground text-[10px] md:text-xs">
                       Биржи берут комиссию — учитывайте это! Отправьте чуть больше, чтобы после комиссии пришло ровно {cryptoPayment.amount} USDT
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-3 p-4 bg-orange-500/10 border border-orange-500/30 rounded-lg">
-                  <Icon name="Ban" size={20} className="text-orange-500 shrink-0 mt-0.5" />
-                  <div className="text-sm">
+                <div className="flex items-start gap-2 md:gap-3 p-3 md:p-4 bg-orange-500/10 border border-orange-500/30 rounded-lg">
+                  <Icon name="Ban" size={18} className="text-orange-500 shrink-0 mt-0.5 md:w-5 md:h-5" />
+                  <div className="text-xs md:text-sm">
                     <p className="font-semibold text-orange-600 dark:text-orange-400 mb-1">
                       Другая сумма = обращение в поддержку
                     </p>
-                    <p className="text-muted-foreground text-xs">
+                    <p className="text-muted-foreground text-[10px] md:text-xs">
                       Неверная сумма не зачислится автоматически. Напишите в поддержку с данными транзакции
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-3 p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
-                  <Icon name="Info" size={20} className="text-blue-500 shrink-0 mt-0.5" />
-                  <p className="text-sm text-muted-foreground">
+                <div className="flex items-start gap-2 md:gap-3 p-3 md:p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+                  <Icon name="Info" size={18} className="text-blue-500 shrink-0 mt-0.5 md:w-5 md:h-5" />
+                  <p className="text-xs md:text-sm text-muted-foreground">
                     Только <span className="font-semibold text-foreground">{cryptoPayment.network}</span> • Другая сеть = потеря средств
                   </p>
                 </div>
@@ -206,21 +207,22 @@ export const CryptoPaymentDialog = ({
               )}
 
               {/* Action buttons */}
-              <div className="space-y-3 pt-4">
+              <div className="space-y-2 md:space-y-3 pt-2 md:pt-4">
                 <Button
                   onClick={onConfirmPayment}
                   disabled={isLoading}
                   size="lg"
-                  className="w-full h-14 text-lg font-bold"
+                  className="w-full h-12 md:h-14 text-base md:text-lg font-bold"
                 >
                   {isLoading ? (
                     <>
-                      <Icon name="Loader2" size={20} className="mr-2 animate-spin" />
-                      Проверка транзакции...
+                      <Icon name="Loader2" size={18} className="mr-2 animate-spin md:w-5 md:h-5" />
+                      <span className="hidden sm:inline">Проверка транзакции...</span>
+                      <span className="sm:hidden">Проверка...</span>
                     </>
                   ) : (
                     <>
-                      <Icon name="Check" size={20} className="mr-2" />
+                      <Icon name="Check" size={18} className="mr-2 md:w-5 md:h-5" />
                       Я отправил USDT
                     </>
                   )}
@@ -230,7 +232,7 @@ export const CryptoPaymentDialog = ({
                   variant="outline"
                   onClick={() => onOpenChange(false)}
                   size="lg"
-                  className="w-full"
+                  className="w-full h-10 md:h-12 text-sm md:text-base"
                 >
                   Отменить
                 </Button>
