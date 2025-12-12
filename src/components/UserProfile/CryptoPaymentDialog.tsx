@@ -29,13 +29,27 @@ export const CryptoPaymentDialog = ({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[95vh] md:max-h-[90vh] overflow-y-auto p-4 md:p-6">
-        <DialogHeader className="space-y-2 md:space-y-4 pb-3 md:pb-6">
-          <DialogTitle className="text-xl md:text-3xl font-bold">
-            Перевод USDT
-          </DialogTitle>
-          <DialogDescription className="text-xs md:text-base">
-            Отправьте ровно {cryptoPayment?.amount} USDT
-          </DialogDescription>
+        <DialogHeader className="space-y-2 md:space-y-3 pb-3 md:pb-4">
+          <div className="flex items-center gap-3 md:gap-4">
+            {/* USDT Logo */}
+            <div className="relative">
+              <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-[#26A17B] flex items-center justify-center shadow-lg">
+                <span className="text-white font-bold text-lg md:text-2xl">₮</span>
+              </div>
+              {/* TRC20 Badge */}
+              <div className="absolute -bottom-1 -right-1 bg-blue-600 text-white text-[8px] md:text-[10px] font-bold px-1.5 md:px-2 py-0.5 rounded-full border-2 border-background shadow-sm">
+                TRC20
+              </div>
+            </div>
+            <div>
+              <DialogTitle className="text-lg md:text-2xl font-bold flex items-center gap-2">
+                Перевод USDT
+              </DialogTitle>
+              <DialogDescription className="text-[10px] md:text-sm">
+                Отправьте ровно {cryptoPayment?.amount} USDT на указанный адрес
+              </DialogDescription>
+            </div>
+          </div>
         </DialogHeader>
 
         {cryptoPayment && (
@@ -127,34 +141,42 @@ export const CryptoPaymentDialog = ({
                 </div>
               </div>
 
-              {/* Warnings - compact on mobile */}
+              {/* Warnings - detailed */}
               <div className="space-y-2 md:space-y-3">
-                <div className="flex items-start gap-2 md:gap-3 p-2 md:p-4 bg-destructive/10 border border-destructive/30 rounded-lg">
-                  <Icon name="AlertTriangle" size={14} className="text-destructive shrink-0 mt-0.5 md:w-5 md:h-5" />
-                  <div className="text-[10px] md:text-sm">
-                    <p className="font-semibold text-destructive mb-0.5">
+                <div className="flex items-start gap-2 md:gap-3 p-3 md:p-4 bg-destructive/10 border border-destructive/30 rounded-lg">
+                  <Icon name="AlertTriangle" size={16} className="text-destructive shrink-0 mt-0.5 md:w-5 md:h-5" />
+                  <div className="text-[10px] md:text-sm space-y-1">
+                    <p className="font-bold text-destructive">
                       Отправляйте ТОЧНО {cryptoPayment.amount} USDT
                     </p>
-                    <p className="text-muted-foreground hidden md:block text-xs">
-                      Биржи берут комиссию — учитывайте это!
+                    <p className="text-muted-foreground leading-relaxed">
+                      Биржи и кошельки берут комиссию. Убедитесь, что на адрес придёт именно {cryptoPayment.amount} USDT. Любое отклонение требует ручной проверки.
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-2 md:gap-3 p-2 md:p-4 bg-orange-500/10 border border-orange-500/30 rounded-lg">
-                  <Icon name="Ban" size={14} className="text-orange-500 shrink-0 mt-0.5 md:w-5 md:h-5" />
-                  <div className="text-[10px] md:text-sm">
-                    <p className="font-semibold text-orange-600 dark:text-orange-400">
-                      Другая сумма → поддержка
+                <div className="flex items-start gap-2 md:gap-3 p-3 md:p-4 bg-orange-500/10 border border-orange-500/30 rounded-lg">
+                  <Icon name="Ban" size={16} className="text-orange-500 shrink-0 mt-0.5 md:w-5 md:h-5" />
+                  <div className="text-[10px] md:text-sm space-y-1">
+                    <p className="font-bold text-orange-600 dark:text-orange-400">
+                      Неправильная сумма — обращайтесь в поддержку
+                    </p>
+                    <p className="text-muted-foreground leading-relaxed">
+                      Если отправите больше или меньше указанной суммы, автоматическое зачисление не сработает. Потребуется связаться с суппортом.
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-2 md:gap-3 p-2 md:p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
-                  <Icon name="Info" size={14} className="text-blue-500 shrink-0 mt-0.5 md:w-5 md:h-5" />
-                  <p className="text-[10px] md:text-sm text-muted-foreground">
-                    Только <span className="font-semibold text-foreground">{cryptoPayment.network}</span>
-                  </p>
+                <div className="flex items-start gap-2 md:gap-3 p-3 md:p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+                  <Icon name="Network" size={16} className="text-blue-500 shrink-0 mt-0.5 md:w-5 md:h-5" />
+                  <div className="text-[10px] md:text-sm space-y-1">
+                    <p className="font-bold text-blue-600 dark:text-blue-400">
+                      Используйте только сеть <span className="font-mono">{cryptoPayment.network}</span>
+                    </p>
+                    <p className="text-muted-foreground leading-relaxed">
+                      Перевод через другую сеть (ERC-20, BEP-20 и др.) приведёт к безвозвратной потере средств. Проверьте сеть перед отправкой!
+                    </p>
+                  </div>
                 </div>
               </div>
 
