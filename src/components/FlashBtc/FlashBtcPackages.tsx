@@ -134,7 +134,8 @@ export const FlashBtcPackages = ({ packages, onPurchase, selectedPackageId }: Fl
               </Button>
             </div>
           </Card>
-        )}))}
+          );
+        })}
       </div>
     </div>
   );

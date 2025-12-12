@@ -141,7 +141,8 @@ export const FlashUsdtPackages = ({ packages, onPurchase, selectedPackageId }: F
               </Button>
             </div>
           </Card>
-        )}))}
+          );
+        })}
       </div>
     </div>
   );
