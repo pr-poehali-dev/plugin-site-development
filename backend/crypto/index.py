@@ -183,6 +183,38 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                         'isBase64Encoded': False
                     }
                 
+                # Проверяем, не истёк ли срок заявки
+                if payment['status'] == 'cancelled':
+                    return {
+                        'statusCode': 400,
+                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({
+                            'success': False, 
+                            'error': 'Срок заявки на пополнение истёк (1 час). Создайте новую заявку.'
+                        }),
+                        'isBase64Encoded': False
+                    }
+                
+                # Проверяем срок expires_at
+                expires_at = payment.get('expires_at')
+                if expires_at and datetime.utcnow() > expires_at:
+                    # Срок истёк - отменяем заявку
+                    cur.execute(
+                        f"UPDATE {SCHEMA}.crypto_payments SET status = 'cancelled' WHERE id = %s",
+                        (int(payment_id),)
+                    )
+                    conn.commit()
+                    
+                    return {
+                        'statusCode': 400,
+                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({
+                            'success': False,
+                            'error': 'Срок заявки на пополнение истёк (1 час). Создайте новую заявку.'
+                        }),
+                        'isBase64Encoded': False
+                    }
+                
                 created_timestamp = int(payment['created_at'].timestamp() * 1000)
                 
                 tron_tx = check_tron_transaction(

@@ -91,9 +91,20 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         )
         pending_payments = cur.fetchall()
         
+        # Получаем отменённые платежи (чтобы проверить, не оплатил ли пользователь после истечения срока)
+        cur.execute(
+            """SELECT * FROM crypto_payments 
+               WHERE status = 'cancelled' 
+               AND created_at > NOW() - INTERVAL '24 hours'
+               ORDER BY created_at ASC
+               LIMIT 50"""
+        )
+        cancelled_payments = cur.fetchall()
+        
         processed_count = 0
         confirmed_count = 0
         expired_count = 0
+        rejected_late_count = 0
         
         for payment in pending_payments:
             payment_id = payment['id']
@@ -159,6 +170,48 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 confirmed_count += 1
                 processed_count += 1
         
+        # Проверяем отменённые платежи на случай, если пользователь оплатил после истечения срока
+        for payment in cancelled_payments:
+            payment_id = payment['id']
+            user_id = payment['user_id']
+            
+            created_timestamp = int(payment['created_at'].timestamp() * 1000)
+            
+            tron_tx = check_tron_transaction(
+                payment['wallet_address'],
+                float(payment['amount']),
+                created_timestamp
+            )
+            
+            if tron_tx:
+                # Транзакция найдена, но заявка уже отменена - НЕ зачисляем средства
+                cur.execute(
+                    """UPDATE crypto_payments 
+                       SET status = %s, tx_hash = %s, confirmed_at = CURRENT_TIMESTAMP 
+                       WHERE id = %s""",
+                    ('expired_paid', tron_tx['tx_hash'], payment_id)
+                )
+                
+                cur.execute(
+                    "INSERT INTO notifications (user_id, type, title, message) VALUES (%s, %s, %s, %s)",
+                    (user_id, 'error', 'Оплата после истечения срока', 
+                     f"Платёж на {float(payment['amount']):.2f} USDT был оплачен после истечения срока заявки (1 час). "
+                     f"Средства не зачислены. Обратитесь в поддержку для возврата. TX: {tron_tx['tx_hash'][:16]}...")
+                )
+                
+                cur.execute("SELECT username FROM users WHERE id = %s", (user_id,))
+                user_info = cur.fetchone()
+                username = user_info['username'] if user_info else f"ID {user_id}"
+                
+                cur.execute(
+                    "INSERT INTO admin_notifications (type, title, message, related_id, related_type) VALUES (%s, %s, %s, %s, %s)",
+                    ('payment_late', '⚠️ Оплата после истечения', 
+                     f"Пользователь {username} оплатил {float(payment['amount']):.2f} USDT ПОСЛЕ истечения срока заявки. "
+                     f"Средства НЕ зачислены. TX: {tron_tx['tx_hash']}", payment_id, 'payment')
+                )
+                
+                rejected_late_count += 1
+        
         conn.commit()
         cur.close()
         conn.close()
@@ -170,7 +223,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 'success': True,
                 'processed': processed_count,
                 'confirmed': confirmed_count,
-                'expired': expired_count
+                'expired': expired_count,
+                'rejected_late': rejected_late_count
             }),
             'isBase64Encoded': False
         }
