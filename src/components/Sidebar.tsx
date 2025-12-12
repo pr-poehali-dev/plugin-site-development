@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
 import { Category } from '@/types';
 import GitCryptoLogo from '@/components/GitCryptoLogo';
+import { AnimatedMenuButton } from '@/components/ui/animated-menu-button';
 
 interface SidebarProps {
   sidebarOpen: boolean;
@@ -87,92 +88,76 @@ const Sidebar = ({
             { icon: 'FileCode', label: 'Смарт-контракты', id: 'smart-contracts', view: 'plugins' },
             { icon: 'MessageSquare', label: 'Форум', id: 'forum', view: 'forum' },
           ].map(item => (
-            <button
+            <AnimatedMenuButton
               key={item.id}
+              icon={item.icon}
+              label={item.label}
+              isActive={activeView === item.view && (item.view === 'forum' || activeCategory === item.id)}
               onClick={() => {
                 onCategoryChange(item.id, item.view as 'plugins' | 'forum');
                 if (window.innerWidth < 768 && onToggleSidebar) {
                   onToggleSidebar();
                 }
               }}
-              className={`w-full flex items-center gap-2 md:gap-3 px-3 md:px-4 py-2 md:py-2.5 rounded-lg transition-all duration-200 tap-highlight ${
-                (activeView === item.view && (item.view === 'forum' || activeCategory === item.id)) ? 'bg-sidebar-accent text-sidebar-accent-foreground' : 'hover:bg-sidebar-accent/50 active:bg-sidebar-accent/70'
-              }`}
-            >
-              <Icon name={item.icon as any} size={18} />
-              <span className="text-sm font-medium">{item.label}</span>
-            </button>
+            />
           ))}
           
           {user && (
             <>
               <div className="border-t border-sidebar-border/50 mt-2 pt-2">
-                <button
+                <AnimatedMenuButton
+                  icon="Mail"
+                  label="Сообщения"
+                  isActive={false}
+                  badge={messagesUnread}
                   onClick={() => {
                     onShowMessagesPanel?.();
                     if (window.innerWidth < 768 && onToggleSidebar) {
                       onToggleSidebar();
                     }
                   }}
-                  className="w-full flex items-center gap-2 md:gap-3 px-3 md:px-4 py-2 md:py-2.5 rounded-lg transition-all duration-200 tap-highlight hover:bg-sidebar-accent/50 active:bg-sidebar-accent/70 relative"
-                >
-                  <Icon name="Mail" size={18} />
-                  <span className="text-sm font-medium">Сообщения</span>
-                  {messagesUnread > 0 && (
-                    <span className="absolute right-3 px-1.5 py-0.5 text-xs bg-red-500 text-white rounded-full">
-                      {messagesUnread}
-                    </span>
-                  )}
-                </button>
-                <button
+                />
+                <AnimatedMenuButton
+                  icon="User"
+                  label="Личный кабинет"
+                  isActive={false}
                   onClick={() => {
                     onShowProfileDialog();
                     if (window.innerWidth < 768 && onToggleSidebar) {
                       onToggleSidebar();
                     }
                   }}
-                  className="w-full flex items-center gap-2 md:gap-3 px-3 md:px-4 py-2 md:py-2.5 rounded-lg transition-all duration-200 tap-highlight hover:bg-sidebar-accent/50 active:bg-sidebar-accent/70"
-                >
-                  <Icon name="User" size={18} />
-                  <span className="text-sm font-medium">Личный кабинет</span>
-                </button>
-                <button
+                />
+                <AnimatedMenuButton
+                  icon="BookOpen"
+                  label="Правила"
+                  isActive={activeCategory === 'rules'}
                   onClick={() => {
                     onCategoryChange('rules', 'plugins');
                     if (window.innerWidth < 768 && onToggleSidebar) {
                       onToggleSidebar();
                     }
                   }}
-                  className={`w-full flex items-center gap-2 md:gap-3 px-3 md:px-4 py-2 md:py-2.5 rounded-lg transition-all duration-200 tap-highlight ${
-                    activeCategory === 'rules' ? 'bg-sidebar-accent text-sidebar-accent-foreground' : 'hover:bg-sidebar-accent/50 active:bg-sidebar-accent/70'
-                  }`}
-                >
-                  <Icon name="BookOpen" size={18} />
-                  <span className="text-sm font-medium">Правила</span>
-                </button>
+                />
               </div>
               {user.role === 'admin' && (
                 <div className="mt-2 pt-2 border-t border-sidebar-border/50">
                   <div className="px-3 md:px-4 py-1 mb-1">
                     <span className="text-xs font-semibold text-primary">АДМИНИСТРАТОР</span>
                   </div>
-                  <button
+                  <AnimatedMenuButton
+                    icon="Shield"
+                    label="Админ-панель"
+                    isActive={false}
+                    badge={adminNotificationsUnread}
+                    variant="admin"
                     onClick={() => {
                       onShowAdminPanel?.();
                       if (window.innerWidth < 768 && onToggleSidebar) {
                         onToggleSidebar();
                       }
                     }}
-                    className="w-full flex items-center gap-2 md:gap-3 px-3 md:px-4 py-2 md:py-2.5 rounded-lg transition-all duration-200 tap-highlight hover:bg-sidebar-accent/50 active:bg-sidebar-accent/70 bg-primary/10 border border-primary/30 relative"
-                  >
-                    <Icon name="Shield" size={18} className="text-primary" />
-                    <span className="text-sm font-medium text-primary">Админ-панель</span>
-                    {adminNotificationsUnread > 0 && (
-                      <span className="absolute right-3 px-1.5 py-0.5 text-xs bg-red-500 text-white rounded-full">
-                        {adminNotificationsUnread}
-                      </span>
-                    )}
-                  </button>
+                  />
                 </div>
               )}
             </>
