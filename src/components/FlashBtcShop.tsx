@@ -5,6 +5,7 @@ import { FlashBtcHeader } from './FlashBtc/FlashBtcHeader';
 import { FlashBtcInfo } from './FlashBtc/FlashBtcInfo';
 import { FlashBtcPackages, type Package } from './FlashBtc/FlashBtcPackages';
 import { FlashBtcPurchaseDialog } from './FlashBtc/FlashBtcPurchaseDialog';
+import { Waves } from '@/components/ui/wave-background';
 
 interface FlashBtcShopProps {
   user: User | null;
@@ -183,8 +184,20 @@ const FlashBtcShop = ({ user, onShowAuthDialog, onRefreshUserBalance }: FlashBtc
   };
 
   return (
-    <div className="w-full max-w-7xl mx-auto space-y-3 sm:space-y-4 md:space-y-6 animate-fade-in px-2 sm:px-0">
-      <FlashBtcHeader onTestPurchase={handleTestPurchase} />
+    <div className="relative w-full max-w-7xl mx-auto space-y-3 sm:space-y-4 md:space-y-6 animate-fade-in px-2 sm:px-0">
+      {/* Wave background - только для desktop */}
+      <div className="hidden lg:block fixed inset-0 pointer-events-none" style={{ zIndex: 0 }}>
+        <Waves 
+          className="w-full h-full" 
+          strokeColor="#ff880015" 
+          backgroundColor="transparent"
+          pointerSize={0.3}
+        />
+      </div>
+
+      {/* Content поверх эффекта */}
+      <div className="relative" style={{ zIndex: 1 }}>
+        <FlashBtcHeader onTestPurchase={handleTestPurchase} />
       
       <FlashBtcInfo />
 
@@ -194,15 +207,16 @@ const FlashBtcShop = ({ user, onShowAuthDialog, onRefreshUserBalance }: FlashBtc
         selectedPackageId={selectedPackage?.id}
       />
 
-      <FlashBtcPurchaseDialog
-        open={showPurchaseDialog}
-        selectedPackage={selectedPackage}
-        walletAddress={walletAddress}
-        isProcessing={isProcessing}
-        onOpenChange={handleCloseDialog}
-        onWalletAddressChange={setWalletAddress}
-        onConfirmPurchase={handleConfirmPurchase}
-      />
+        <FlashBtcPurchaseDialog
+          open={showPurchaseDialog}
+          selectedPackage={selectedPackage}
+          walletAddress={walletAddress}
+          isProcessing={isProcessing}
+          onOpenChange={handleCloseDialog}
+          onWalletAddressChange={setWalletAddress}
+          onConfirmPurchase={handleConfirmPurchase}
+        />
+      </div>
     </div>
   );
 };

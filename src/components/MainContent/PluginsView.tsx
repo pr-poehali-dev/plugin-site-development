@@ -2,6 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import Icon from '@/components/ui/icon';
 import { Plugin, Category } from '@/types';
+import { Waves } from '@/components/ui/wave-background';
 
 interface PluginsViewProps {
   activeCategory: string;
@@ -16,6 +17,8 @@ export const PluginsView = ({
   categories,
   onNavigateToForum
 }: PluginsViewProps) => {
+  const isHomePage = activeCategory === 'all';
+  
   const filteredPlugins = plugins.filter(p => 
     activeCategory === 'all' || p.category_name === categories.find(c => c.slug === activeCategory)?.name
   );
@@ -116,8 +119,22 @@ export const PluginsView = ({
   ];
 
   return (
-    <>
-      {activeCategory !== 'all' && (
+    <div className="relative">
+      {/* Wave background - только для desktop на главной */}
+      {isHomePage && (
+        <div className="hidden lg:block fixed inset-0 pointer-events-none" style={{ zIndex: 0 }}>
+          <Waves 
+            className="w-full h-full" 
+            strokeColor="#10b98115" 
+            backgroundColor="transparent"
+            pointerSize={0.3}
+          />
+        </div>
+      )}
+
+      {/* Content поверх эффекта */}
+      <div className="relative" style={{ zIndex: 1 }}>
+        {activeCategory !== 'all' && (
         <div className="mb-3 sm:mb-4 md:mb-6 animate-slide-up">
           <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-1 sm:mb-2">
             {activeCategory === 'new' ? 'Новинки' : 
@@ -297,6 +314,7 @@ export const PluginsView = ({
           ))}
         </div>
       )}
-    </>
+      </div>
+    </div>
   );
 };

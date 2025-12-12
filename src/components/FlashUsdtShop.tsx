@@ -5,6 +5,7 @@ import { FlashUsdtHeader } from './FlashUsdt/FlashUsdtHeader';
 import { FlashUsdtInfo } from './FlashUsdt/FlashUsdtInfo';
 import { FlashUsdtPackages, type Package } from './FlashUsdt/FlashUsdtPackages';
 import { FlashUsdtPurchaseDialog } from './FlashUsdt/FlashUsdtPurchaseDialog';
+import { Waves } from '@/components/ui/wave-background';
 
 interface FlashUsdtShopProps {
   user: User | null;
@@ -182,8 +183,20 @@ const FlashUsdtShop = ({ user, onShowAuthDialog, onRefreshUserBalance }: FlashUs
   };
 
   return (
-    <div className="w-full max-w-7xl mx-auto space-y-3 sm:space-y-4 md:space-y-6 animate-fade-in px-2 sm:px-0">
-      <FlashUsdtHeader onTestPurchase={handleTestPurchase} />
+    <div className="relative w-full max-w-7xl mx-auto space-y-3 sm:space-y-4 md:space-y-6 animate-fade-in px-2 sm:px-0">
+      {/* Wave background - только для desktop */}
+      <div className="hidden lg:block fixed inset-0 pointer-events-none" style={{ zIndex: 0 }}>
+        <Waves 
+          className="w-full h-full" 
+          strokeColor="#ffffff15" 
+          backgroundColor="transparent"
+          pointerSize={0.3}
+        />
+      </div>
+
+      {/* Content поверх эффекта */}
+      <div className="relative" style={{ zIndex: 1 }}>
+        <FlashUsdtHeader onTestPurchase={handleTestPurchase} />
       
       <FlashUsdtInfo />
 
@@ -193,15 +206,16 @@ const FlashUsdtShop = ({ user, onShowAuthDialog, onRefreshUserBalance }: FlashUs
         selectedPackageId={selectedPackage?.id}
       />
 
-      <FlashUsdtPurchaseDialog
-        open={showPurchaseDialog}
-        selectedPackage={selectedPackage}
-        walletAddress={walletAddress}
-        isProcessing={isProcessing}
-        onOpenChange={handleCloseDialog}
-        onWalletAddressChange={setWalletAddress}
-        onConfirmPurchase={handleConfirmPurchase}
-      />
+        <FlashUsdtPurchaseDialog
+          open={showPurchaseDialog}
+          selectedPackage={selectedPackage}
+          walletAddress={walletAddress}
+          isProcessing={isProcessing}
+          onOpenChange={handleCloseDialog}
+          onWalletAddressChange={setWalletAddress}
+          onConfirmPurchase={handleConfirmPurchase}
+        />
+      </div>
     </div>
   );
 };
