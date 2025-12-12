@@ -12,6 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 const AUTH_URL = 'https://functions.poehali.dev/2497448a-6aff-4df5-97ef-9181cf792f03';
 const CRYPTO_URL = 'https://functions.poehali.dev/8caa3b76-72e5-42b5-9415-91d1f9b05210';
 const ADMIN_URL = 'https://functions.poehali.dev/d4678b1c-2acd-40bb-b8c5-cefe8d14fad4';
+const CARD_PAYMENT_URL = 'https://functions.poehali.dev/c57ea81e-068c-45b2-95ef-97a0d61bcc9d';
 
 interface UserProfileProps {
   user: User;
@@ -158,6 +159,61 @@ const UserProfile = ({ user, isOwnProfile, onClose, onTopUpBalance, onUpdateProf
       }
     } catch (error) {
       console.error('Ошибка создания платежа:', error);
+      toast({
+        title: 'Ошибка',
+        description: 'Ошибка создания платежа',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleCardPayment = async (amount: number) => {
+    if (isNaN(amount) || amount <= 0) {
+      toast({
+        title: 'Ошибка',
+        description: 'Введите корректную сумму',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const response = await fetch(CARD_PAYMENT_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-User-Id': user.id.toString()
+        },
+        body: JSON.stringify({
+          action: 'create_payment',
+          user_id: user.id,
+          amount: amount
+        })
+      });
+      
+      const data = await response.json();
+      if (data.success && data.payment_url) {
+        setShowTopUpDialog(false);
+        setTopUpAmount('');
+        
+        toast({
+          title: 'Переход к оплате',
+          description: 'Открываем страницу оплаты...'
+        });
+        
+        window.open(data.payment_url, '_blank');
+      } else {
+        toast({
+          title: 'Ошибка',
+          description: data.error || 'Не удалось создать платеж',
+          variant: 'destructive'
+        });
+      }
+    } catch (error) {
+      console.error('Ошибка создания платежа картой:', error);
       toast({
         title: 'Ошибка',
         description: 'Ошибка создания платежа',
@@ -474,6 +530,7 @@ const UserProfile = ({ user, isOwnProfile, onClose, onTopUpBalance, onUpdateProf
         onOpenChange={setShowTopUpDialog}
         onAmountChange={setTopUpAmount}
         onTopUp={handleTopUp}
+        onCardPayment={handleCardPayment}
       />
 
       <CryptoPaymentDialog

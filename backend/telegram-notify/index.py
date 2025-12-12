@@ -79,7 +79,13 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         
         if event_type == 'balance_topup':
             amount = details.get('amount', 0)
-            message = f"💰 <b>Пополнение баланса</b>\n\n👤 Пользователь: {username} (ID: {user_id})\n💵 Сумма: {amount} USDT"
+            method = details.get('method', 'unknown')
+            method_text = {
+                'card': '💳 Банковская карта',
+                'crypto': '₿ Криптовалюта',
+                'unknown': '❓ Неизвестно'
+            }.get(method, '❓ Неизвестно')
+            message = f"💰 <b>Пополнение баланса</b>\n\n👤 Пользователь: {username} (ID: {user_id})\n💵 Сумма: {amount} USDT\n💳 Способ: {method_text}"
         
         elif event_type == 'withdrawal_request':
             amount = details.get('amount', 0)
