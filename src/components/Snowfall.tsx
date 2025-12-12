@@ -34,7 +34,7 @@ const Snowfall = () => {
       snowflakes.push({
         x: Math.random() * canvas.width,
         y: Math.random() * canvas.height,
-        radius: Math.random() * 3 + 1,
+        radius: (Math.random() * 3 + 1) / 2,
         speed: Math.random() * 0.5 + 0.25,
         drift: Math.random() * 0.25 - 0.125,
         opacity: Math.random() * 0.6 + 0.4
@@ -42,6 +42,20 @@ const Snowfall = () => {
     }
 
     let animationFrameId: number;
+    let scrollSpeed = 0;
+    let lastScrollY = window.scrollY;
+
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      scrollSpeed = Math.abs(currentScrollY - lastScrollY) * 0.1;
+      lastScrollY = currentScrollY;
+      
+      setTimeout(() => {
+        scrollSpeed *= 0.95;
+      }, 100);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
 
     const animate = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -52,7 +66,7 @@ const Snowfall = () => {
         ctx.fillStyle = `rgba(255, 255, 255, ${flake.opacity})`;
         ctx.fill();
 
-        flake.y += flake.speed;
+        flake.y += flake.speed + scrollSpeed;
         flake.x += flake.drift;
 
         if (flake.y > canvas.height) {
@@ -74,6 +88,7 @@ const Snowfall = () => {
 
     return () => {
       window.removeEventListener('resize', updateCanvasSize);
+      window.removeEventListener('scroll', handleScroll);
       cancelAnimationFrame(animationFrameId);
     };
   }, []);
