@@ -191,41 +191,41 @@ const Auth = () => {
         </div>
 
         <div className="w-full max-w-md mx-auto lg:mx-0">
-          <div className="bg-card/80 backdrop-blur-xl rounded-3xl p-8 border border-border/50">
+          <div className="bg-card/40 backdrop-blur-sm rounded-2xl p-6 border border-border/30">
           <div className="auth-orbs-container">
             <div className="auth-orb auth-orb-1"></div>
             <div className="auth-orb auth-orb-2"></div>
             <div className="auth-orb auth-orb-3"></div>
           </div>
 
-          <div className="space-y-3 pb-6 relative z-10">
-            <div className="mx-auto w-20 h-20 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center auth-icon-pulse">
-              <Icon name="Rocket" size={40} className="text-primary auth-icon-float" />
+          <div className="space-y-2 pb-5 relative z-10">
+            <div className="mx-auto w-12 h-12 rounded-xl bg-gradient-to-br from-primary/30 to-primary/10 flex items-center justify-center">
+              <Icon name="Rocket" size={24} className="text-primary" />
             </div>
-            <h1 className="text-center text-3xl font-bold auth-title-shimmer">
+            <h1 className="text-center text-2xl font-bold auth-title-shimmer">
               {authMode === 'login' ? 'Добро пожаловать' : 'Регистрация'}
             </h1>
-            <p className="text-center text-sm text-muted-foreground auth-fade-in">
+            <p className="text-center text-sm text-muted-foreground">
               {authMode === 'login' ? 'Войдите, чтобы продолжить' : 'Создайте аккаунт за несколько секунд'}
             </p>
           </div>
 
           <div className="relative z-10">
             {showResetPassword ? (
-              <div className="space-y-5 auth-slide-in">
-                <div className="p-4 rounded-xl bg-primary/5 border border-primary/20 auth-glow">
+              <div className="space-y-4">
+                <div className="p-3 rounded-xl bg-primary/5 border border-primary/20">
                   <p className="text-sm text-foreground/80">
                     Введите email, указанный при регистрации. Мы отправим вам ссылку для сброса пароля.
                   </p>
                 </div>
-                <div className="space-y-2 auth-input-group">
+                <div className="space-y-2">
                   <label className="text-sm font-medium text-foreground/90">Email</label>
                   <Input 
                     type="email" 
                     value={resetEmail}
                     onChange={(e) => setResetEmail(e.target.value)}
                     placeholder="your@email.com"
-                    className="h-11 rounded-xl border-border/50 focus:border-primary transition-all auth-input-focus"
+                    className="h-10 rounded-xl border-border/50 focus:border-primary transition-all"
                     required 
                   />
                 </div>
@@ -242,37 +242,37 @@ const Auth = () => {
                       setShowResetPassword(false);
                       setResetEmail('');
                     }}
-                    className="h-11 rounded-xl border-border/50 hover:bg-accent"
+                    className="h-10 rounded-xl border-border/50 hover:bg-accent"
                   >
                     Отмена
                   </Button>
                 </div>
               </div>
             ) : (
-              <form onSubmit={handleAuthSubmit} className="space-y-5 auth-slide-in">
-                <div className="space-y-2 auth-input-group">
+              <form onSubmit={handleAuthSubmit} className="space-y-4">
+                <div className="space-y-2">
                   <label className="text-sm font-medium text-foreground/90">Имя пользователя</label>
                   <Input 
                     name="username" 
                     required 
-                    className="h-11 rounded-xl border-border/50 focus:border-primary transition-all auth-input-focus"
+                    className="h-10 rounded-xl border-border/50 focus:border-primary transition-all"
                     placeholder="Введите имя пользователя"
                   />
                 </div>
 
                 {authMode === 'register' && (
                   <>
-                    <div className="space-y-2 auth-input-group">
+                    <div className="space-y-2">
                       <label className="text-sm font-medium text-foreground/90">Email</label>
                       <Input 
                         name="email" 
                         type="email" 
                         required 
-                        className="h-11 rounded-xl border-border/50 focus:border-primary transition-all auth-input-focus"
+                        className="h-10 rounded-xl border-border/50 focus:border-primary transition-all"
                         placeholder="your@email.com"
                       />
                     </div>
-                    <div className="space-y-2 auth-input-group">
+                    <div className="space-y-2">
                       <label className="text-sm font-medium text-foreground/90">
                         Реферальный код <span className="text-muted-foreground font-normal">(необязательно)</span>
                       </label>
@@ -280,19 +280,19 @@ const Auth = () => {
                         name="referral_code" 
                         placeholder="Введите код, если есть"
                         defaultValue={savedRefCode}
-                        className="h-11 rounded-xl border-border/50 focus:border-primary transition-all auth-input-focus"
+                        className="h-10 rounded-xl border-border/50 focus:border-primary transition-all"
                       />
                     </div>
                   </>
                 )}
 
-                <div className="space-y-2 auth-input-group">
+                <div className="space-y-2">
                   <label className="text-sm font-medium text-foreground/90">Пароль</label>
                   <Input 
                     name="password" 
                     type="password" 
                     required 
-                    className="h-11 rounded-xl border-border/50 focus:border-primary transition-all auth-input-focus"
+                    className="h-10 rounded-xl border-border/50 focus:border-primary transition-all"
                     placeholder="Введите пароль"
                   />
                 </div>
@@ -304,11 +304,11 @@ const Auth = () => {
                   {authMode === 'login' ? 'Войти' : 'Создать аккаунт'}
                 </ShinyButton>
 
-                <div className="text-center space-y-3">
+                <div className="text-center space-y-2 pt-2">
                   <button
                     type="button"
                     onClick={() => setAuthMode(authMode === 'login' ? 'register' : 'login')}
-                    className="text-sm text-primary hover:underline transition-all auth-link-hover"
+                    className="text-sm text-primary hover:underline transition-all"
                   >
                     {authMode === 'login' ? 'Нет аккаунта? Зарегистрируйтесь' : 'Уже есть аккаунт? Войдите'}
                   </button>
@@ -317,7 +317,7 @@ const Auth = () => {
                     <button
                       type="button"
                       onClick={() => setShowResetPassword(true)}
-                      className="block w-full text-sm text-muted-foreground hover:text-primary transition-all auth-link-hover"
+                      className="block w-full text-sm text-muted-foreground hover:text-primary transition-all"
                     >
                       Забыли пароль?
                     </button>
