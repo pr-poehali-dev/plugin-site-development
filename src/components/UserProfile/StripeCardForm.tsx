@@ -1,12 +1,12 @@
 import { useState, FormEvent } from 'react';
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
-import { loadStripe, StripeCardElementOptions } from '@stripe/stripe-js';
+import { StripeCardElementOptions } from '@stripe/stripe-js';
 import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
 import { useToast } from '@/hooks/use-toast';
+import { getStripe } from '@/lib/stripe';
 
-const STRIPE_PUBLISHABLE_KEY = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_test_51xxxxxxxxxxxxxxxxxxxxx';
-const stripePromise = loadStripe(STRIPE_PUBLISHABLE_KEY);
+const stripePromise = getStripe();
 
 const CARD_ELEMENT_OPTIONS: StripeCardElementOptions = {
   style: {

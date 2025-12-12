@@ -97,6 +97,18 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         body_data = json.loads(event.get('body', '{}'))
         action = body_data.get('action')
         
+        if action == 'get_publishable_key':
+            publishable_key = os.environ.get('STRIPE_PUBLISHABLE_KEY', '')
+            return {
+                'statusCode': 200,
+                'headers': headers,
+                'body': json.dumps({
+                    'success': True,
+                    'publishable_key': publishable_key
+                }),
+                'isBase64Encoded': False
+            }
+        
         conn = psycopg2.connect(dsn)
         conn.autocommit = True
         cur = conn.cursor(cursor_factory=RealDictCursor)
