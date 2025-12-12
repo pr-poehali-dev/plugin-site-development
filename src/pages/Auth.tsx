@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import Icon from '@/components/ui/icon';
 import { useToast } from '@/hooks/use-toast';
 import { BeamsBackground } from '@/components/ui/beams-background';
+import { ShinyButton } from '@/components/ui/shiny-button';
 
 const AUTH_URL = 'https://functions.poehali.dev/2497448a-6aff-4df5-97ef-9181cf792f03';
 const PASSWORD_RESET_URL = 'https://functions.poehali.dev/d4973344-e5cd-411c-8957-4c1d4d0072ab';
@@ -229,13 +230,12 @@ const Auth = () => {
                   />
                 </div>
                 <div className="flex gap-3">
-                  <Button 
+                  <ShinyButton 
                     onClick={handleResetPassword}
-                    className="flex-1 h-11 rounded-xl auth-button-gradient text-white font-semibold shadow-lg shadow-primary/25"
+                    className="flex-1"
                   >
-                    <Icon name="Mail" size={18} className="mr-2" />
                     Отправить ссылку
-                  </Button>
+                  </ShinyButton>
                   <Button 
                     variant="outline"
                     onClick={() => {
@@ -297,13 +297,12 @@ const Auth = () => {
                   />
                 </div>
 
-                <Button 
+                <ShinyButton 
                   type="submit" 
-                  className="w-full h-11 rounded-xl auth-button-gradient text-white font-semibold shadow-lg shadow-primary/25"
+                  className="w-full"
                 >
-                  <Icon name="LogIn" size={18} className="mr-2" />
                   {authMode === 'login' ? 'Войти' : 'Создать аккаунт'}
-                </Button>
+                </ShinyButton>
 
                 <div className="text-center space-y-3">
                   <button
