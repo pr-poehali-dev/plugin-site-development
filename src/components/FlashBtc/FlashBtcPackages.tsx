@@ -36,17 +36,17 @@ export const FlashBtcPackages = ({ packages, onPurchase, selectedPackageId }: Fl
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {packages.map((pkg) => {
-          const getHoverShadow = (id: number) => {
-            if (id === 1) return 'hover:shadow-xl hover:shadow-orange-400/20';
-            if (id === 2) return 'hover:shadow-xl hover:shadow-purple-400/20';
-            if (id === 3) return 'hover:shadow-xl hover:shadow-pink-400/20';
-            return 'hover:shadow-xl hover:shadow-cyan-400/20';
+          const getBorderAndHover = (id: number) => {
+            if (id === 1) return 'border-2 border-orange-400/30 hover:border-orange-400/80 hover:shadow-2xl hover:shadow-orange-400/40';
+            if (id === 2) return 'border-2 border-purple-400/30 hover:border-purple-400/80 hover:shadow-2xl hover:shadow-purple-400/40';
+            if (id === 3) return 'border-2 border-pink-400/30 hover:border-pink-400/80 hover:shadow-2xl hover:shadow-pink-400/40';
+            return 'border-2 border-cyan-400/30 hover:border-cyan-400/80 hover:shadow-2xl hover:shadow-cyan-400/40';
           };
           
           return (
           <Card 
             key={pkg.id}
-            className={`relative overflow-hidden transition-all duration-300 sm:hover:scale-105 ${getHoverShadow(pkg.id)} ${
+            className={`relative overflow-hidden transition-all duration-300 sm:hover:scale-105 ${getBorderAndHover(pkg.id)} ${
               pkg.popular ? 'ring-2 ring-yellow-500/50' : ''
             } ${selectedPackageId === pkg.id ? 'ring-2 ring-green-500/50' : ''} group`}
           >
