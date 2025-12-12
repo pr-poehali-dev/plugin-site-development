@@ -46,7 +46,7 @@ export const FlashBtcPackages = ({ packages, onPurchase, selectedPackageId }: Fl
           return (
           <Card 
             key={pkg.id}
-            className={`relative overflow-hidden transition-all duration-300 sm:hover:scale-105 ${getBorderAndHover(pkg.id)} ${
+            className={`relative overflow-hidden transition-all duration-300 hover:scale-105 ${getBorderAndHover(pkg.id)} ${
               pkg.popular ? 'ring-2 ring-yellow-500/50' : ''
             } ${selectedPackageId === pkg.id ? 'ring-2 ring-green-500/50' : ''} group`}
           >
