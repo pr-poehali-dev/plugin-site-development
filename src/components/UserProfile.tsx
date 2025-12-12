@@ -7,14 +7,14 @@ import { UserProfileHeader } from '@/components/UserProfile/UserProfileHeader';
 import { UserProfileTabs } from '@/components/UserProfile/UserProfileTabs';
 import { TopUpDialog } from '@/components/UserProfile/TopUpDialog';
 import { CryptoPaymentDialog } from '@/components/UserProfile/CryptoPaymentDialog';
-import { StripeCardForm } from '@/components/UserProfile/StripeCardForm';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+
+
 import { useToast } from '@/hooks/use-toast';
 
 const AUTH_URL = 'https://functions.poehali.dev/2497448a-6aff-4df5-97ef-9181cf792f03';
 const CRYPTO_URL = 'https://functions.poehali.dev/8caa3b76-72e5-42b5-9415-91d1f9b05210';
 const ADMIN_URL = 'https://functions.poehali.dev/d4678b1c-2acd-40bb-b8c5-cefe8d14fad4';
-const CARD_PAYMENT_URL = 'https://functions.poehali.dev/c57ea81e-068c-45b2-95ef-97a0d61bcc9d';
+
 
 interface UserProfileProps {
   user: User;
@@ -47,9 +47,7 @@ const UserProfile = ({ user, isOwnProfile, onClose, onTopUpBalance, onUpdateProf
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [topicsCount, setTopicsCount] = useState(0);
   const [commentsCount, setCommentsCount] = useState(0);
-  const [showStripeDialog, setShowStripeDialog] = useState(false);
-  const [stripeClientSecret, setStripeClientSecret] = useState('');
-  const [stripeAmount, setStripeAmount] = useState(0);
+
 
   useEffect(() => {
     if (isOwnProfile && activeTab === 'transactions') {
@@ -174,98 +172,7 @@ const UserProfile = ({ user, isOwnProfile, onClose, onTopUpBalance, onUpdateProf
     }
   };
 
-  const handleCardPayment = async (amount: number) => {
-    if (isNaN(amount) || amount <= 0) {
-      toast({
-        title: 'Ошибка',
-        description: 'Введите корректную сумму',
-        variant: 'destructive'
-      });
-      return;
-    }
 
-    setIsLoading(true);
-    try {
-      const response = await fetch(CARD_PAYMENT_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-User-Id': user.id.toString()
-        },
-        body: JSON.stringify({
-          action: 'create_payment_intent',
-          user_id: user.id,
-          amount: amount
-        })
-      });
-      
-      const data = await response.json();
-      if (data.success && data.client_secret) {
-        setStripeClientSecret(data.client_secret);
-        setStripeAmount(amount);
-        setShowTopUpDialog(false);
-        setShowStripeDialog(true);
-        setTopUpAmount('');
-      } else {
-        toast({
-          title: 'Ошибка',
-          description: data.error || 'Не удалось создать платеж',
-          variant: 'destructive'
-        });
-      }
-    } catch (error) {
-      console.error('Ошибка создания платежа картой:', error);
-      toast({
-        title: 'Ошибка',
-        description: 'Ошибка создания платежа',
-        variant: 'destructive'
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleStripeSuccess = async (paymentIntentId: string) => {
-    setIsLoading(true);
-    try {
-      const response = await fetch(CARD_PAYMENT_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-User-Id': user.id.toString()
-        },
-        body: JSON.stringify({
-          action: 'confirm_payment',
-          payment_intent_id: paymentIntentId
-        })
-      });
-      
-      const data = await response.json();
-      if (data.success) {
-        setShowStripeDialog(false);
-        toast({
-          title: '✅ Платеж успешен',
-          description: `Баланс пополнен на ${stripeAmount} USDT`
-        });
-        await onRefreshBalance?.();
-      } else {
-        toast({
-          title: 'Ошибка',
-          description: data.error || 'Не удалось подтвердить платеж',
-          variant: 'destructive'
-        });
-      }
-    } catch (error) {
-      console.error('Ошибка подтверждения платежа:', error);
-      toast({
-        title: 'Ошибка',
-        description: 'Ошибка подтверждения платежа',
-        variant: 'destructive'
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const handleConfirmPayment = async () => {
     if (!cryptoPayment) return;
@@ -573,7 +480,7 @@ const UserProfile = ({ user, isOwnProfile, onClose, onTopUpBalance, onUpdateProf
         onOpenChange={setShowTopUpDialog}
         onAmountChange={setTopUpAmount}
         onTopUp={handleTopUp}
-        onCardPayment={handleCardPayment}
+
       />
 
       <CryptoPaymentDialog
@@ -587,21 +494,7 @@ const UserProfile = ({ user, isOwnProfile, onClose, onTopUpBalance, onUpdateProf
         onCopyToClipboard={copyToClipboard}
       />
 
-      <Dialog open={showStripeDialog} onOpenChange={setShowStripeDialog}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Оплата банковской картой</DialogTitle>
-          </DialogHeader>
-          {stripeClientSecret && (
-            <StripeCardForm
-              amount={stripeAmount}
-              clientSecret={stripeClientSecret}
-              onSuccess={handleStripeSuccess}
-              onCancel={() => setShowStripeDialog(false)}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
+
     </>
   );
 };
