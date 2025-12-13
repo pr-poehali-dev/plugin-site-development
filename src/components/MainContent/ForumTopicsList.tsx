@@ -7,9 +7,8 @@ import UserRankBadge from '@/components/UserRankBadge';
 import ForumRoleBadge from '@/components/ForumRoleBadge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ForumTopic, ForumCategory, User } from '@/types';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { getAvatarGradient } from '@/utils/avatarColors';
-import { FluidDropdown, type FluidDropdownCategory } from '@/components/ui/fluid-dropdown';
 
 interface ForumTopicsListProps {
   forumTopics: ForumTopic[];
@@ -200,62 +199,6 @@ export const ForumTopicsList = ({
 
   const filteredTopics = sortForumTopics(filterTopicsByCategory(filterTopicsBySearch(forumTopics)));
 
-  const fluidCategories: FluidDropdownCategory[] = useMemo(() => {
-    const result: FluidDropdownCategory[] = [
-      {
-        id: 'all',
-        label: 'Все категории',
-        icon: 'Layers',
-        color: '#A06CD5'
-      }
-    ];
-    
-    categories.forEach(parent => {
-      if (parent.subcategories && parent.subcategories.length > 0) {
-        result.push({
-          id: `parent-${parent.id}`,
-          label: parent.name,
-          icon: parent.icon || 'Folder',
-          color: parent.color || '#888',
-          parentId: null
-        });
-        
-        parent.subcategories.forEach(sub => {
-          result.push({
-            id: sub.slug,
-            label: sub.name,
-            icon: sub.icon || 'Folder',
-            color: sub.color || '#888',
-            parentId: parent.id
-          });
-        });
-      } else {
-        result.push({
-          id: parent.slug,
-          label: parent.name,
-          icon: parent.icon || 'Folder',
-          color: parent.color || '#888',
-          parentId: null
-        });
-      }
-    });
-    
-    return result;
-  }, [categories]);
-
-  const selectedFluidCategory = useMemo(() => {
-    if (selectedCategory) {
-      return fluidCategories.find(c => c.id === selectedCategory) || null;
-    }
-    if (selectedParentCategory !== null) {
-      const parent = categories.find(c => c.id === selectedParentCategory);
-      if (parent) {
-        return fluidCategories.find(c => c.id === parent.slug) || null;
-      }
-    }
-    return fluidCategories.find(c => c.id === 'all') || null;
-  }, [selectedCategory, selectedParentCategory, fluidCategories, categories]);
-
   return (
     <>
       <div className="mb-3 sm:mb-4 md:mb-6 animate-slide-up">
@@ -350,25 +293,100 @@ export const ForumTopicsList = ({
         )}
       </div>
 
-      {/* Категории - мобильная версия с Fluid Dropdown */}
+      {/* Категории - мобильная версия */}
       <div className="sm:hidden mb-4">
         {categories.length > 0 && (
-          <div className="space-y-2">
-            <div className="text-xs font-medium text-muted-foreground px-1">Категория</div>
-            <FluidDropdown
-              categories={fluidCategories}
-              selectedCategory={selectedFluidCategory}
-              onSelectCategory={(category) => {
-                if (category.id === 'all') {
-                  setSelectedCategory(null);
-                  setSelectedParentCategory(null);
-                } else {
-                  setSelectedCategory(category.id as string);
-                  setSelectedParentCategory(null);
-                }
-              }}
-              placeholder="Выберите категорию"
-            />
+          <div className="space-y-3">
+            {/* Выбранная категория или кнопка выбора */}
+            <div className="space-y-2">
+              <div className="text-xs font-medium text-muted-foreground px-1">Категория</div>
+              {selectedParentCategory === null ? (
+                <select
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (value === 'all') {
+                      setSelectedCategory(null);
+                      setSelectedParentCategory(null);
+                    } else {
+                      const parentId = parseInt(value.replace('parent-', ''));
+                      setSelectedParentCategory(parentId);
+                      setSelectedCategory(null);
+                    }
+                  }}
+                  className="w-full h-10 px-3 rounded-md border bg-background text-sm font-medium"
+                  style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}
+                >
+                  <option value="all">📂 Все категории</option>
+                  {categories.map((parentCategory) => {
+                    const iconMap: Record<string, string> = {
+                      'FileCode': '📜',
+                      'Coins': '🪙',
+                      'TrendingUp': '📈',
+                      'MessageSquare': '💬',
+                      'HelpCircle': '❓',
+                      'Code2': '💻',
+                      'MoreHorizontal': '➕',
+                      'Megaphone': '📢',
+                      'Settings': '⚙️',
+                      'ShoppingCart': '🛒',
+                      'Trophy': '🏆',
+                      'Lightbulb': '💡',
+                      'Users': '👥',
+                      'Code': '💻',
+                      'Briefcase': '💼',
+                      'Shield': '🛡️',
+                      'Wallet': '💳',
+                      'Gift': '🎁',
+                      'Bell': '🔔',
+                      'Star': '⭐'
+                    };
+                    const emoji = iconMap[parentCategory.icon || ''] || '📁';
+                    return (
+                      <option key={parentCategory.id} value={`parent-${parentCategory.id}`}>
+                        {emoji} {parentCategory.name}
+                      </option>
+                    );
+                  })}
+                </select>
+              ) : (
+                <button
+                  onClick={() => {
+                    setSelectedCategory(null);
+                    setSelectedParentCategory(null);
+                  }}
+                  className="w-full h-10 px-3 rounded-md border flex items-center justify-between text-sm font-medium"
+                  style={{
+                    backgroundColor: selectedParentCategory !== null
+                      ? `${categories.find(c => c.id === selectedParentCategory)?.color}25`
+                      : undefined,
+                    borderColor: selectedParentCategory !== null
+                      ? `${categories.find(c => c.id === selectedParentCategory)?.color}50`
+                      : undefined,
+                    color: selectedParentCategory !== null
+                      ? categories.find(c => c.id === selectedParentCategory)?.color
+                      : undefined
+                  }}
+                >
+                  <div className="flex items-center gap-2">
+                    <Icon 
+                      name={
+                        selectedParentCategory !== null
+                          ? (categories.find(c => c.id === selectedParentCategory)?.icon as any)
+                          : 'Folder'
+                      } 
+                      size={16} 
+                    />
+                    <span>
+                      {selectedParentCategory !== null
+                        ? categories.find(c => c.id === selectedParentCategory)?.name
+                        : 'Выбрать категорию'
+                      }
+                    </span>
+                  </div>
+                  <Icon name="X" size={16} />
+                </button>
+              )}
+            </div>
           </div>
         )}
       </div>
@@ -376,21 +394,39 @@ export const ForumTopicsList = ({
       {/* Категории - десктопная версия */}
       {categories.length > 0 && (
         <div className="hidden sm:block mb-4">
-          <div className="max-w-md">
-            <FluidDropdown
-              categories={fluidCategories}
-              selectedCategory={selectedFluidCategory}
-              onSelectCategory={(category) => {
-                if (category.id === 'all') {
-                  setSelectedCategory(null);
-                  setSelectedParentCategory(null);
-                } else {
-                  setSelectedCategory(category.id as string);
-                  setSelectedParentCategory(null);
-                }
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => {
+                setSelectedCategory(null);
+                setSelectedParentCategory(null);
               }}
-              placeholder="Выберите категорию"
-            />
+              className={`h-9 px-4 rounded-md text-sm font-medium transition-all border ${
+                selectedCategory === null && selectedParentCategory === null
+                  ? 'bg-zinc-700 text-zinc-100 border-zinc-600'
+                  : 'bg-zinc-900/40 text-zinc-400 border-zinc-800/60 hover:bg-zinc-900/60 hover:border-zinc-700'
+              }`}
+            >
+              Все категории
+            </button>
+            
+            {categories.map((parentCategory) => (
+              <button
+                key={parentCategory.id}
+                onClick={() => {
+                  setSelectedCategory(null);
+                  setSelectedParentCategory(parentCategory.id);
+                }}
+                className="h-9 px-4 rounded-md text-sm font-medium transition-all flex items-center gap-2 border hover:brightness-110"
+                style={{
+                  backgroundColor: selectedParentCategory === parentCategory.id ? `${parentCategory.color}25` : `${parentCategory.color}12`,
+                  borderColor: selectedParentCategory === parentCategory.id ? `${parentCategory.color}50` : `${parentCategory.color}30`,
+                  color: selectedParentCategory === parentCategory.id ? parentCategory.color : `${parentCategory.color}cc`
+                }}
+              >
+                <Icon name={parentCategory.icon as any} size={16} />
+                {parentCategory.name}
+              </button>
+            ))}
           </div>
         </div>
       )}
