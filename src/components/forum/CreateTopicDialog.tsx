@@ -1,12 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import Icon from '@/components/ui/icon';
 import { ForumCategory, User } from '@/types';
-import ForumCategorySelector from './ForumCategorySelector';
 import { useToast } from '@/hooks/use-toast';
+import { FluidDropdown, type FluidDropdownCategory } from '@/components/ui/fluid-dropdown';
 
 interface CreateTopicDialogProps {
   open: boolean;
@@ -30,6 +30,41 @@ const CreateTopicDialog = ({
   const [categories, setCategories] = useState<ForumCategory[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoadingCategories, setIsLoadingCategories] = useState(false);
+
+  const fluidCategories: FluidDropdownCategory[] = useMemo(() => {
+    const result: FluidDropdownCategory[] = [];
+    
+    categories.forEach(parent => {
+      if (parent.subcategories && parent.subcategories.length > 0) {
+        parent.subcategories.forEach(sub => {
+          result.push({
+            id: sub.id,
+            label: sub.name,
+            icon: sub.icon || 'Folder',
+            color: sub.color || '#888',
+            parentId: parent.id
+          });
+        });
+      } else {
+        result.push({
+          id: parent.id,
+          label: parent.name,
+          icon: parent.icon || 'Folder',
+          color: parent.color || '#888',
+          parentId: null
+        });
+      }
+    });
+    
+    return result;
+  }, [categories]);
+
+  const selectedFluidCategory = useMemo(() => {
+    if (selectedCategory) {
+      return fluidCategories.find(c => c.id === selectedCategory) || null;
+    }
+    return null;
+  }, [selectedCategory, fluidCategories]);
 
   useEffect(() => {
     if (open) {
@@ -151,11 +186,15 @@ const CreateTopicDialog = ({
             </div>
           ) : (
             <>
-              <ForumCategorySelector
-                categories={categories}
-                selectedCategory={selectedCategory}
-                onSelectCategory={setSelectedCategory}
-              />
+              <div>
+                <label className="block text-sm font-medium mb-2">Категория *</label>
+                <FluidDropdown
+                  categories={fluidCategories}
+                  selectedCategory={selectedFluidCategory}
+                  onSelectCategory={(category) => setSelectedCategory(category.id as number)}
+                  placeholder="Выберите категорию"
+                />
+              </div>
 
               <div>
                 <label className="block text-sm font-medium mb-2">Заголовок темы *</label>
