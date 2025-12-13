@@ -302,24 +302,16 @@ export const ReferralTab = ({ user }: ReferralTabProps) => {
                 readOnly 
                 className="font-mono text-lg font-bold"
               />
-              <Button variant="outline" size="icon" asChild>
-                <div>
-                  <CopyButtonIcon onCopy={copyReferralCode} size={18} />
-                </div>
-              </Button>
+              <div className="h-10 w-10 flex items-center justify-center rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground cursor-pointer transition-colors">
+                <CopyButtonIcon onCopy={copyReferralCode} size={18} />
+              </div>
             </div>
           </div>
 
-          <Button 
-            variant="outline" 
-            className="w-full"
-            asChild
-          >
-            <div className="flex items-center justify-center cursor-pointer">
-              <CopyButtonIcon onCopy={copyReferralLink} size={16} />
-              <span className="ml-2">Скопировать реферальную ссылку</span>
-            </div>
-          </Button>
+          <div className="w-full h-10 flex items-center justify-center gap-2 rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground cursor-pointer transition-colors">
+            <CopyButtonIcon onCopy={copyReferralLink} size={16} />
+            <span>Скопировать реферальную ссылку</span>
+          </div>
         </div>
       </Card>
 

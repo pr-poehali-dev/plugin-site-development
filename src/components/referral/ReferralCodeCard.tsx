@@ -33,11 +33,9 @@ export const ReferralCodeCard = ({ referralCode, onCopyCode, onCopyLink }: Refer
               placeholder={referralCode ? '' : 'Загрузка...'}
               className="font-mono text-lg"
             />
-            <Button variant="outline" size="icon" className="shrink-0" disabled={!referralCode} asChild>
-              <div>
-                <CopyButtonIcon onCopy={onCopyCode} size={18} />
-              </div>
-            </Button>
+            <div className="h-10 w-10 flex items-center justify-center rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground cursor-pointer transition-colors shrink-0">
+              <CopyButtonIcon onCopy={onCopyCode} size={18} />
+            </div>
           </div>
         </div>
 
@@ -50,11 +48,9 @@ export const ReferralCodeCard = ({ referralCode, onCopyCode, onCopyLink }: Refer
               placeholder={referralCode ? '' : 'Загрузка...'}
               className="font-mono text-sm"
             />
-            <Button variant="outline" size="icon" className="shrink-0" disabled={!referralCode} asChild>
-              <div>
-                <CopyButtonIcon onCopy={onCopyLink} size={18} />
-              </div>
-            </Button>
+            <div className="h-10 w-10 flex items-center justify-center rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground cursor-pointer transition-colors shrink-0">
+              <CopyButtonIcon onCopy={onCopyLink} size={18} />
+            </div>
           </div>
         </div>
 

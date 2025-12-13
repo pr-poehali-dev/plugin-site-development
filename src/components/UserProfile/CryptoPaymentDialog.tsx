@@ -135,25 +135,18 @@ export const CryptoPaymentDialog = ({
                   >
                     {cryptoPayment.wallet_address}
                   </code>
-                  <Button
-                    size="lg"
-                    variant="outline"
-                    className="w-full h-9 md:h-12 text-xs md:text-base"
-                    asChild
-                  >
-                    <div className="flex items-center justify-center cursor-pointer">
-                      <CopyButtonIcon 
-                        onCopy={async () => {
-                          const success = await copyToClipboard(cryptoPayment.wallet_address);
-                          if (success) {
-                            onCopyToClipboard(cryptoPayment.wallet_address);
-                          }
-                        }}
-                        size={14}
-                      />
-                      <span className="ml-2">Скопировать адрес</span>
-                    </div>
-                  </Button>
+                  <div className="w-full h-9 md:h-12 text-xs md:text-base flex items-center justify-center gap-2 rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground cursor-pointer transition-colors">
+                    <CopyButtonIcon 
+                      onCopy={async () => {
+                        const success = await copyToClipboard(cryptoPayment.wallet_address);
+                        if (success) {
+                          onCopyToClipboard(cryptoPayment.wallet_address);
+                        }
+                      }}
+                      size={14}
+                    />
+                    <span>Скопировать адрес</span>
+                  </div>
                 </div>
               </div>
 
