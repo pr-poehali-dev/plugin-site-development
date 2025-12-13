@@ -5,6 +5,7 @@ import Icon from '@/components/ui/icon';
 import { QRCodeSVG } from 'qrcode.react';
 import { cn } from '@/lib/utils';
 import { copyToClipboard } from '@/utils/clipboard';
+import { CopyButtonIcon } from '@/components/ui/copy-button-icon';
 
 interface CryptoPaymentDialogProps {
   open: boolean;
@@ -138,15 +139,20 @@ export const CryptoPaymentDialog = ({
                     size="lg"
                     variant="outline"
                     className="w-full h-9 md:h-12 text-xs md:text-base"
-                    onClick={async () => {
-                      const success = await copyToClipboard(cryptoPayment.wallet_address);
-                      if (success) {
-                        onCopyToClipboard(cryptoPayment.wallet_address);
-                      }
-                    }}
+                    asChild
                   >
-                    <Icon name="Copy" size={14} className="mr-2 md:w-[18px] md:h-[18px]" />
-                    Скопировать адрес
+                    <div className="flex items-center justify-center cursor-pointer">
+                      <CopyButtonIcon 
+                        onCopy={async () => {
+                          const success = await copyToClipboard(cryptoPayment.wallet_address);
+                          if (success) {
+                            onCopyToClipboard(cryptoPayment.wallet_address);
+                          }
+                        }}
+                        size={14}
+                      />
+                      <span className="ml-2">Скопировать адрес</span>
+                    </div>
                   </Button>
                 </div>
               </div>

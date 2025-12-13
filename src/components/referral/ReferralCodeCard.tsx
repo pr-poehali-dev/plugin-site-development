@@ -2,6 +2,7 @@ import { Card } from '@/components/ui/card';
 import Icon from '@/components/ui/icon';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { CopyButtonIcon } from '@/components/ui/copy-button-icon';
 
 interface ReferralCodeCardProps {
   referralCode: string;
@@ -32,8 +33,10 @@ export const ReferralCodeCard = ({ referralCode, onCopyCode, onCopyLink }: Refer
               placeholder={referralCode ? '' : 'Загрузка...'}
               className="font-mono text-lg"
             />
-            <Button onClick={onCopyCode} variant="outline" size="icon" className="shrink-0" disabled={!referralCode}>
-              <Icon name="Copy" size={18} />
+            <Button variant="outline" size="icon" className="shrink-0" disabled={!referralCode} asChild>
+              <div>
+                <CopyButtonIcon onCopy={onCopyCode} size={18} />
+              </div>
             </Button>
           </div>
         </div>
@@ -47,8 +50,10 @@ export const ReferralCodeCard = ({ referralCode, onCopyCode, onCopyLink }: Refer
               placeholder={referralCode ? '' : 'Загрузка...'}
               className="font-mono text-sm"
             />
-            <Button onClick={onCopyLink} variant="outline" size="icon" className="shrink-0" disabled={!referralCode}>
-              <Icon name="Copy" size={18} />
+            <Button variant="outline" size="icon" className="shrink-0" disabled={!referralCode} asChild>
+              <div>
+                <CopyButtonIcon onCopy={onCopyLink} size={18} />
+              </div>
             </Button>
           </div>
         </div>

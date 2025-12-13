@@ -6,6 +6,7 @@ import Icon from '@/components/ui/icon';
 import { useToast } from '@/hooks/use-toast';
 import { User } from '@/types';
 import { copyToClipboard } from '@/utils/clipboard';
+import { CopyButtonIcon } from '@/components/ui/copy-button-icon';
 
 const AUTH_URL = 'https://functions.poehali.dev/2497448a-6aff-4df5-97ef-9181cf792f03';
 
@@ -301,19 +302,23 @@ export const ReferralTab = ({ user }: ReferralTabProps) => {
                 readOnly 
                 className="font-mono text-lg font-bold"
               />
-              <Button onClick={copyReferralCode} variant="outline" size="icon">
-                <Icon name="Copy" size={18} />
+              <Button variant="outline" size="icon" asChild>
+                <div>
+                  <CopyButtonIcon onCopy={copyReferralCode} size={18} />
+                </div>
               </Button>
             </div>
           </div>
 
           <Button 
-            onClick={copyReferralLink} 
             variant="outline" 
             className="w-full"
+            asChild
           >
-            <Icon name="Link" size={16} className="mr-2" />
-            Скопировать реферальную ссылку
+            <div className="flex items-center justify-center cursor-pointer">
+              <CopyButtonIcon onCopy={copyReferralLink} size={16} />
+              <span className="ml-2">Скопировать реферальную ссылку</span>
+            </div>
           </Button>
         </div>
       </Card>
