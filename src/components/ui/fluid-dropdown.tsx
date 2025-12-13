@@ -130,7 +130,12 @@ export function FluidDropdown({
     const parentCategories = categories.filter(cat => !cat.parentId)
     
     parentCategories.forEach(parent => {
-      const children = categories.filter(cat => cat.parentId === parent.id)
+      const parentIdToCheck = typeof parent.id === 'string' && parent.id.startsWith('parent-') 
+        ? parseInt(parent.id.replace('parent-', ''))
+        : parent.id
+      
+      const children = categories.filter(cat => cat.parentId === parentIdToCheck)
+      
       if (children.length > 0) {
         groups.push({ parent, items: children })
       } else {

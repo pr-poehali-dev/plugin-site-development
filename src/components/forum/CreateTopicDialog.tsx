@@ -36,6 +36,14 @@ const CreateTopicDialog = ({
     
     categories.forEach(parent => {
       if (parent.subcategories && parent.subcategories.length > 0) {
+        result.push({
+          id: `parent-${parent.id}`,
+          label: parent.name,
+          icon: parent.icon || 'Folder',
+          color: parent.color || '#888',
+          parentId: null
+        });
+        
         parent.subcategories.forEach(sub => {
           result.push({
             id: sub.id,
