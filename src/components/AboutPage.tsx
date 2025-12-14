@@ -150,15 +150,7 @@ const AboutPage = () => {
                   </p>
                 </div>
               </div>
-              <div className="flex items-start gap-3">
-                <Icon name="CheckCircle2" size={18} className="text-primary mt-0.5 shrink-0" />
-                <div>
-                  <p className="font-medium">Криптовалютные игры</p>
-                  <p className="text-sm text-muted-foreground">
-                    Честные игры на блокчейне с прозрачными алгоритмами и мгновенными выплатами. Доступны с ролью "Участник" (выдается автоматически через 24 часа после регистрации)
-                  </p>
-                </div>
-              </div>
+
               <div className="flex items-start gap-3">
                 <Icon name="CheckCircle2" size={18} className="text-primary mt-0.5 shrink-0" />
                 <div>

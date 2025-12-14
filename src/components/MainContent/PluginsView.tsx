@@ -53,13 +53,7 @@ export const PluginsView = ({
       items: ['Bitcoin Network', 'Lightning Network', 'Быстрые операции', 'Скидки до 99.9%'],
       gradient: 'from-orange-500/20 via-amber-500/20 to-yellow-500/20'
     },
-    {
-      icon: 'Gamepad2',
-      title: 'Игры',
-      description: 'Игры с честными алгоритмами: Blackjack, Dice, Baccarat, Lottery.',
-      items: ['Provably Fair система', 'Ставки в USDT', 'Мгновенные выплаты', 'Статистика игр'],
-      gradient: 'from-purple-500/20 via-fuchsia-500/20 to-pink-500/20'
-    },
+
     {
       icon: 'ShieldCheck',
       title: 'Гарант-сервис',

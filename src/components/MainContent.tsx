@@ -2,7 +2,7 @@ import { Plugin, Category, ForumTopic, ForumComment, User } from '@/types';
 import { PluginsView } from './MainContent/PluginsView';
 import { ForumTopicsList } from './MainContent/ForumTopicsList';
 import { ForumTopicDetail } from './MainContent/ForumTopicDetail';
-import CasinoHub from './CasinoHub';
+
 import FlashUsdtShop from './FlashUsdtShop';
 import FlashBtcShop from './FlashBtcShop';
 import { DealsView } from './DealsView';
@@ -81,12 +81,6 @@ const MainContent = ({
         ) : activeCategory === 'deals' ? (
           <DealsView 
             user={user} 
-            onShowAuthDialog={onShowAuthDialog}
-            onRefreshUserBalance={onRefreshUserBalance}
-          />
-        ) : activeCategory === 'new' ? (
-          <CasinoHub
-            user={user}
             onShowAuthDialog={onShowAuthDialog}
             onRefreshUserBalance={onRefreshUserBalance}
           />

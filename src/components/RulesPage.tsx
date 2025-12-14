@@ -69,63 +69,7 @@ const RulesPage = () => {
           </div>
         </section>
 
-        <div className="border-t border-border pt-6">
-          <section>
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-cyan-800/20 rounded-lg flex items-center justify-center">
-                <Icon name="Gamepad2" className="text-cyan-400" size={20} />
-              </div>
-              <h2 className="text-xl sm:text-2xl font-bold text-cyan-400">Правила игр</h2>
-            </div>
-            
-            <div className="space-y-3 text-sm sm:text-base">
-              <div className="flex items-start gap-3">
-                <div className="w-6 h-6 rounded-full bg-cyan-800/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <span className="text-xs text-cyan-400 font-bold">1</span>
-                </div>
-                <p className="text-foreground/90">
-                  <span className="font-semibold text-foreground">Честная игра:</span> Использование ботов, скриптов или эксплойтов для манипуляции игрой строго запрещено
-                </p>
-              </div>
 
-              <div className="flex items-start gap-3">
-                <div className="w-6 h-6 rounded-full bg-cyan-800/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <span className="text-xs text-cyan-400 font-bold">2</span>
-                </div>
-                <p className="text-foreground/90">
-                  <span className="font-semibold text-foreground">Один аккаунт:</span> Каждому пользователю разрешён только один игровой аккаунт. Мультиаккаунтинг запрещён
-                </p>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <div className="w-6 h-6 rounded-full bg-cyan-800/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <span className="text-xs text-cyan-400 font-bold">3</span>
-                </div>
-                <p className="text-foreground/90">
-                  <span className="font-semibold text-foreground">Ответственная игра:</span> Играйте только на средства, которые готовы потерять. Администрация не несёт ответственность за ваши потери
-                </p>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <div className="w-6 h-6 rounded-full bg-cyan-800/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <span className="text-xs text-cyan-400 font-bold">4</span>
-                </div>
-                <p className="text-foreground/90">
-                  <span className="font-semibold text-foreground">Возрастные ограничения:</span> Участие в играх доступно только пользователям старше 18 лет
-                </p>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <div className="w-6 h-6 rounded-full bg-cyan-800/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <span className="text-xs text-cyan-400 font-bold">5</span>
-                </div>
-                <p className="text-foreground/90">
-                  <span className="font-semibold text-foreground">Споры:</span> В случае технических проблем или споров окончательное решение принимает администрация
-                </p>
-              </div>
-            </div>
-          </section>
-        </div>
 
         <div className="border-t border-border pt-6">
           <section>
