@@ -225,23 +225,6 @@ export function CryptoDropdown({
                   initial="hidden" 
                   animate="visible"
                 >
-                  {hoveredOption && (
-                    <motion.div
-                      layoutId="hover-highlight"
-                      className="absolute inset-x-1 bg-accent rounded-md pointer-events-none"
-                      initial={{ opacity: 0 }}
-                      animate={{
-                        opacity: 1,
-                        y: options.findIndex((opt) => opt.id === hoveredOption) * 52 + 8,
-                        height: 44,
-                      }}
-                      transition={{
-                        type: "spring",
-                        bounce: 0.2,
-                        duration: 0.4,
-                      }}
-                    />
-                  )}
                   {options.map((option, index) => (
                     <motion.button
                       key={option.id}
@@ -253,12 +236,12 @@ export function CryptoDropdown({
                       onMouseEnter={() => setHoveredOption(option.id)}
                       onMouseLeave={() => setHoveredOption(null)}
                       className={cn(
-                        "relative flex w-full items-center justify-between px-4 py-3 text-sm rounded-md",
-                        "transition-colors duration-150",
+                        "relative flex w-full items-center justify-between px-4 py-3 text-sm rounded-md mx-1",
+                        "transition-all duration-200",
                         "focus:outline-none",
                         hoveredOption === option.id
-                          ? "text-accent-foreground"
-                          : "text-muted-foreground",
+                          ? "bg-accent text-accent-foreground"
+                          : "text-muted-foreground hover:bg-accent/50",
                       )}
                       whileTap={{ scale: 0.98 }}
                       variants={itemVariants}
