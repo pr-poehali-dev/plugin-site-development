@@ -50,7 +50,6 @@ const UserTicketsPage = ({ user }: UserTicketsPageProps) => {
     exchange: 'Обменник',
     smart_contracts: 'Смарт-контракты',
     flash_btc: 'Flash BTC',
-    games: 'Игры',
     garant: 'Гарант сделка',
     flash: 'Flash USDT',
     complaint: 'Жалобы, обман',
