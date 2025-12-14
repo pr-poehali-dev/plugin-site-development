@@ -181,6 +181,25 @@ const MessagesPanel = ({ open, onOpenChange, userId, userRole, initialRecipientI
     }
   }, [open, initialRecipientId, fetchMessages]);
 
+  const markMessageRead = useCallback(async (messageId: number) => {
+    try {
+      // Используем keepalive для неблокирующего запроса
+      await fetch(NOTIFICATIONS_URL, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-User-Id': userId.toString()
+        },
+        body: JSON.stringify({ action: 'mark_message_read', message_id: messageId }),
+        keepalive: true
+      });
+      // Инвалидируем кэш сообщений
+      requestCache.invalidate(`messages:${userId}`);
+    } catch (error) {
+      console.error('Failed to mark message as read:', error);
+    }
+  }, [userId]);
+
   useEffect(() => {
     if (selectedChat && messages.length > 0) {
       const chatMessages = messages.filter(
@@ -210,27 +229,6 @@ const MessagesPanel = ({ open, onOpenChange, userId, userRole, initialRecipientI
       });
     }
   }, [selectedChat, messages, userId, markMessageRead]);
-
-
-
-  const markMessageRead = useCallback(async (messageId: number) => {
-    try {
-      // Используем keepalive для неблокирующего запроса
-      await fetch(NOTIFICATIONS_URL, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-User-Id': userId.toString()
-        },
-        body: JSON.stringify({ action: 'mark_message_read', message_id: messageId }),
-        keepalive: true
-      });
-      // Инвалидируем кэш сообщений
-      requestCache.invalidate(`messages:${userId}`);
-    } catch (error) {
-      console.error('Failed to mark message as read:', error);
-    }
-  }, [userId]);
 
   const handleInputFocus = () => {
     setTimeout(() => {
