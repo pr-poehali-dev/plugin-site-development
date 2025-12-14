@@ -42,9 +42,10 @@ const UserProfileDialog = ({ open, onOpenChange, userId, currentUserId, onSendMe
   useEffect(() => {
     if (open && userId) {
       fetchProfile();
+      // Обновляем статус "онлайн/оффлайн" каждые 5 минут (вместо 1 минуты)
       const interval = setInterval(() => {
         setCurrentTime(new Date());
-      }, 60 * 1000);
+      }, 300000);
       
       return () => clearInterval(interval);
     }
