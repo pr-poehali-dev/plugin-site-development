@@ -231,8 +231,13 @@ export const DealsView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Deal
           description: 'Средства заблокированы. Ожидайте передачи товара от продавца',
           duration: 5000
         });
-        triggerUserSync();
-        onRefreshUserBalance?.();
+        
+        // Обновляем баланс через 5 секунд после успешной блокировки средств
+        setTimeout(() => {
+          triggerUserSync();
+          onRefreshUserBalance?.();
+        }, 5000);
+        
         await fetchDealDetails(selectedDeal.id);
         setStatusFilter('my_deals');
         fetchDeals();
@@ -320,8 +325,12 @@ export const DealsView = ({ user, onShowAuthDialog, onRefreshUserBalance }: Deal
           duration: 5000
         });
         
-        triggerUserSync();
-        onRefreshUserBalance?.();
+        // Обновляем баланс через 5 секунд после завершения сделки
+        setTimeout(() => {
+          triggerUserSync();
+          onRefreshUserBalance?.();
+        }, 5000);
+        
         await fetchDealDetails(selectedDeal.id);
         setStatusFilter('completed');
         fetchDeals();

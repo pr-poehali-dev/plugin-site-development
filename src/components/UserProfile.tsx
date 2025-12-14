@@ -217,9 +217,12 @@ const UserProfile = ({ user, isOwnProfile, onClose, onTopUpBalance, onUpdateProf
             localStorage.setItem('user', JSON.stringify(parsedUser));
           }
           
-          if (onRefreshBalance) {
-            await onRefreshBalance();
-          }
+          // Обновляем баланс через 5 секунд после успешного пополнения
+          setTimeout(() => {
+            if (onRefreshBalance) {
+              onRefreshBalance();
+            }
+          }, 5000);
           
           toast({
             title: '💰 Баланс пополнен!',

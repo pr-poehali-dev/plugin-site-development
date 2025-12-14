@@ -453,6 +453,10 @@ const ExchangePage = ({ user, onRefreshUserBalance }: ExchangePageProps) => {
         
         // Обновляем баланс через 5 секунд после успешного вывода
         setTimeout(() => {
+          triggerUserSync();
+          if (onRefreshUserBalance) {
+            onRefreshUserBalance();
+          }
           loadBalances();
         }, 5000);
         

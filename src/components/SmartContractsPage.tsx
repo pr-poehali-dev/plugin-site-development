@@ -111,9 +111,10 @@ const SmartContractsPage = ({ user }: SmartContractsPageProps) => {
 
         setShowVipDialog(false);
         
+        // Обновляем баланс через 5 секунд перед перезагрузкой
         setTimeout(() => {
           window.location.reload();
-        }, 1500);
+        }, 5000);
       } else {
         toast({
           title: 'Ошибка',

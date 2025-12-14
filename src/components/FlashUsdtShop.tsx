@@ -159,10 +159,13 @@ const FlashUsdtShop = ({ user, onShowAuthDialog, onRefreshUserBalance }: FlashUs
         description: `Вы приобрели ${selectedPackage.amount.toLocaleString('ru-RU')} Flash USDT. Токены придут в течение 1-3 минут.`
       });
 
-      triggerUserSync();
-      if (onRefreshUserBalance) {
-        onRefreshUserBalance();
-      }
+      // Обновляем баланс через 5 секунд после успешной покупки
+      setTimeout(() => {
+        triggerUserSync();
+        if (onRefreshUserBalance) {
+          onRefreshUserBalance();
+        }
+      }, 5000);
 
       setShowPurchaseDialog(false);
       setWalletAddress('');
