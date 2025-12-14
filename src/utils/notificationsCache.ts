@@ -1,8 +1,8 @@
 import { requestCache } from './requestCache';
 
 const NOTIFICATIONS_URL = 'https://functions.poehali.dev/6c968792-7d48-41a9-af0a-c92adb047acb';
-const CACHE_DURATION = 30000;
-const MIN_UPDATE_INTERVAL = 30000;
+const CACHE_DURATION = 60000; // 1 минута (было 30 секунд)
+const MIN_UPDATE_INTERVAL = 60000; // 1 минута (было 30 секунд)
 
 interface NotificationCounts {
   notifications: number;

@@ -8,13 +8,13 @@ const VERIFICATION_URL = 'https://functions.poehali.dev/e0d94580-497a-452f-9044-
 
 // Регистрируем конфигурации для запросов
 requestCache.registerConfig('user_balance', {
-  ttl: 60000, // 1 минута
-  minInterval: 30000 // Не чаще 30 секунд
+  ttl: 120000, // 2 минуты (было 1 минута)
+  minInterval: 60000 // Не чаще 1 минуты (было 30 секунд)
 });
 
 requestCache.registerConfig('user_verification', {
-  ttl: 300000, // 5 минут
-  minInterval: 300000 // Не чаще 5 минут
+  ttl: 600000, // 10 минут (было 5 минут)
+  minInterval: 600000 // Не чаще 10 минут (было 5 минут)
 });
 
 interface UseUserActivityProps {
@@ -39,13 +39,13 @@ export const useUserActivity = ({
   onUserBlocked
 }: UseUserActivityProps) => {
   
-  // Обновление активности пользователя (дебаунс 2 минуты, без блокировки UI)
+  // Обновление активности пользователя (дебаунс 5 минут, без блокировки UI)
   const updateActivity = useCallback(() => {
     if (!user) return;
     
     const lastActivity = sessionStorage.getItem('lastActivityUpdate');
     const now = Date.now();
-    if (lastActivity && now - parseInt(lastActivity) < 120000) return;
+    if (lastActivity && now - parseInt(lastActivity) < 300000) return; // 5 минут (было 2 минуты)
     
     // Используем navigator.sendBeacon для отправки без блокировки
     const blob = new Blob(

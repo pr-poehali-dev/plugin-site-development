@@ -86,8 +86,22 @@ const ExchangePage = ({ user, onRefreshUserBalance }: ExchangePageProps) => {
   useEffect(() => {
     loadPrices();
     loadBalances();
-    const interval = setInterval(loadPrices, 60000);
-    return () => clearInterval(interval);
+    
+    // Обновляем цены каждые 3 минуты (вместо 1 минуты)
+    const interval = setInterval(loadPrices, 180000);
+    
+    // Обновляем при возвращении на вкладку
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        loadPrices();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, [user.id]);
 
   useEffect(() => {

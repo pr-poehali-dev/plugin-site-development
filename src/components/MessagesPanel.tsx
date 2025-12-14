@@ -59,8 +59,8 @@ const MessagesPanel = ({ open, onOpenChange, userId, userRole, initialRecipientI
   // Регистрируем конфигурацию кэша для сообщений
   useEffect(() => {
     requestCache.registerConfig(`messages:${userId}`, {
-      ttl: 15000, // 15 секунд
-      minInterval: 10000 // Не чаще 10 секунд
+      ttl: 30000, // 30 секунд (было 15 секунд)
+      minInterval: 20000 // Не чаще 20 секунд (было 10 секунд)
     });
   }, [userId]);
 

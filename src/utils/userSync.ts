@@ -3,7 +3,7 @@ type UserSyncListener = (user: any) => void;
 class UserSyncManager {
   private listeners: Set<UserSyncListener> = new Set();
   private lastSync: number = 0;
-  private minInterval: number = 60000; // 60 секунд минимум между синхронизациями
+  private minInterval: number = 120000; // 2 минуты минимум между синхронизациями (было 60 секунд)
   private syncInProgress: boolean = false;
   private cachedUser: any = null;
   private AUTH_URL = 'https://functions.poehali.dev/2497448a-6aff-4df5-97ef-9181cf792f03';

@@ -43,6 +43,7 @@ export const CookieProvider = ({ children }: CookieProviderProps) => {
       }
     });
 
+    // Синхронизация каждые 5 минут (вместо 1 минуты) + при изменении видимости
     const syncInterval = setInterval(() => {
       SessionManager.updateActivity();
       
@@ -52,9 +53,20 @@ export const CookieProvider = ({ children }: CookieProviderProps) => {
           PreferencesManager.setPreference(key, localValue);
         }
       });
-    }, 60000);
+    }, 300000);
 
-    return () => clearInterval(syncInterval);
+    // Синхронизация при возвращении на вкладку
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        SessionManager.updateActivity();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      clearInterval(syncInterval);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, []);
 
   const syncPreferences = () => {
