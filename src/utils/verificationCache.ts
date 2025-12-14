@@ -1,3 +1,5 @@
+import { requestCache } from './requestCache';
+
 interface VerificationStatus {
   is_verified: boolean;
   request: {
@@ -12,76 +14,70 @@ interface VerificationStatus {
 type VerificationListener = (status: VerificationStatus | null) => void;
 
 class VerificationCacheManager {
-  private cache: Map<number, VerificationStatus> = new Map();
-  private listeners: Map<number, Set<VerificationListener>> = new Map();
-  private lastFetch: Map<number, number> = new Map();
-  private minInterval: number = 30000; // 30 секунд
   private VERIFICATION_URL = 'https://functions.poehali.dev/e0d94580-497a-452f-9044-0ef1b2ff42c8';
-
-  subscribe(userId: number, listener: VerificationListener) {
-    if (!this.listeners.has(userId)) {
-      this.listeners.set(userId, new Set());
-    }
-    this.listeners.get(userId)!.add(listener);
-    
-    return () => {
-      const userListeners = this.listeners.get(userId);
-      if (userListeners) {
-        userListeners.delete(listener);
-        if (userListeners.size === 0) {
-          this.listeners.delete(userId);
-        }
-      }
-    };
+  
+  constructor() {
+    requestCache.registerConfig('verification', {
+      ttl: 30000,
+      minInterval: 30000
+    });
   }
 
-  private notifyListeners(userId: number, status: VerificationStatus) {
-    const userListeners = this.listeners.get(userId);
-    if (userListeners) {
-      userListeners.forEach(listener => listener(status));
-    }
+  subscribe(userId: number, listener: VerificationListener) {
+    return requestCache.subscribe(`verification:${userId}`, listener);
   }
 
   getCached(userId: number): VerificationStatus | null {
-    return this.cache.get(userId) || null;
+    return requestCache.getCached(`verification:${userId}`);
   }
 
   async fetchStatus(userId: number, forceRefresh: boolean = false): Promise<VerificationStatus | null> {
-    const now = Date.now();
-    const lastFetch = this.lastFetch.get(userId) || 0;
-
-    if (!forceRefresh && this.cache.has(userId) && now - lastFetch < this.minInterval) {
-      return this.cache.get(userId)!;
-    }
-
-    try {
-      this.lastFetch.set(userId, now);
-      
-      const response = await fetch(`${this.VERIFICATION_URL}?action=status`, {
-        headers: {
-          'X-User-Id': userId.toString()
-        }
+    const cacheKey = `verification:${userId}`;
+    
+    if (!requestCache.getCached(cacheKey)) {
+      requestCache.registerConfig(cacheKey, {
+        ttl: 30000,
+        minInterval: 30000
       });
-      
-      const data = await response.json();
-      this.cache.set(userId, data);
-      this.notifyListeners(userId, data);
-      
-      return data;
-    } catch (error) {
-      console.error('Ошибка загрузки статуса верификации:', error);
-      return this.cache.get(userId) || null;
     }
+
+    return requestCache.get(
+      cacheKey,
+      async () => {
+        try {
+          const response = await fetch(`${this.VERIFICATION_URL}?action=status`, {
+            headers: {
+              'X-User-Id': userId.toString()
+            }
+          });
+          return await response.json();
+        } catch (error) {
+          console.error('Ошибка загрузки статуса верификации:', error);
+          return null;
+        }
+      },
+      forceRefresh
+    );
   }
 
   invalidate(userId: number) {
-    this.lastFetch.delete(userId);
-    return this.fetchStatus(userId, true);
+    return requestCache.refresh(`verification:${userId}`, async () => {
+      try {
+        const response = await fetch(`${this.VERIFICATION_URL}?action=status`, {
+          headers: {
+            'X-User-Id': userId.toString()
+          }
+        });
+        return await response.json();
+      } catch (error) {
+        console.error('Ошибка загрузки статуса верификации:', error);
+        return null;
+      }
+    });
   }
 
   clear(userId: number) {
-    this.cache.delete(userId);
-    this.lastFetch.delete(userId);
+    requestCache.invalidate(`verification:${userId}`);
   }
 }
 

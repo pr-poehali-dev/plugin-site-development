@@ -1,10 +1,21 @@
 import { useEffect, useCallback } from 'react';
 import { User } from '@/types';
 import { notificationsCache } from '@/utils/notificationsCache';
+import { requestCache } from '@/utils/requestCache';
 
 const AUTH_URL = 'https://functions.poehali.dev/2497448a-6aff-4df5-97ef-9181cf792f03';
-const CRYPTO_URL = 'https://functions.poehali.dev/8caa3b76-72e5-42b5-9415-91d1f9b05210';
 const VERIFICATION_URL = 'https://functions.poehali.dev/e0d94580-497a-452f-9044-0ef1b2ff42c8';
+
+// Регистрируем конфигурации для запросов
+requestCache.registerConfig('user_balance', {
+  ttl: 60000, // 1 минута
+  minInterval: 30000 // Не чаще 30 секунд
+});
+
+requestCache.registerConfig('user_verification', {
+  ttl: 300000, // 5 минут
+  minInterval: 300000 // Не чаще 5 минут
+});
 
 interface UseUserActivityProps {
   user: User | null;
@@ -28,7 +39,7 @@ export const useUserActivity = ({
   onUserBlocked
 }: UseUserActivityProps) => {
   
-  // Обновление активности пользователя (дебаунс 2 минуты)
+  // Обновление активности пользователя (дебаунс 2 минуты, без блокировки UI)
   const updateActivity = useCallback(() => {
     if (!user) return;
     
@@ -36,14 +47,26 @@ export const useUserActivity = ({
     const now = Date.now();
     if (lastActivity && now - parseInt(lastActivity) < 120000) return;
     
-    fetch(AUTH_URL, {
-      method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json',
-        'X-User-Id': user.id.toString()
-      },
-      body: JSON.stringify({ action: 'update_activity' })
-    }).catch(() => {});
+    // Используем navigator.sendBeacon для отправки без блокировки
+    const blob = new Blob(
+      [JSON.stringify({ action: 'update_activity' })],
+      { type: 'application/json' }
+    );
+    
+    if (navigator.sendBeacon) {
+      navigator.sendBeacon(AUTH_URL, blob);
+    } else {
+      // Fallback для старых браузеров
+      fetch(AUTH_URL, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'X-User-Id': user.id.toString()
+        },
+        body: JSON.stringify({ action: 'update_activity' }),
+        keepalive: true
+      }).catch(() => {});
+    }
     
     sessionStorage.setItem('lastActivityUpdate', now.toString());
   }, [user]);
@@ -83,110 +106,113 @@ export const useUserActivity = ({
     }
   }, [user, setNotificationsUnread, setMessagesUnread, setAdminNotificationsUnread, showAdminToast]);
 
-  // Проверка баланса и статуса блокировки
+  // Проверка баланса и статуса блокировки с кэшированием
   const checkBalanceUpdates = useCallback(async () => {
     if (!user) return;
     
-    try {
-      const response = await fetch(AUTH_URL, {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'X-User-Id': user.id.toString()
-        },
-        body: JSON.stringify({ action: 'get_user' })
-      });
-      if (!response.ok) return;
-      const data = await response.json();
-      
-      if (data.success && data.user) {
-        // Проверка блокировки
-        if (data.user.is_blocked) {
-          localStorage.removeItem('user');
-          setUser(null);
-          if (showToast) {
-            showToast(
-              '🚫 Аккаунт заблокирован',
-              'Ваш аккаунт был заблокирован администратором',
-              'bg-red-500/10 border-red-500/30 text-foreground',
-              10000
-            );
-          }
-          if (onUserBlocked) {
-            onUserBlocked();
-          }
-          return;
-        }
-        
-        const currentBalance = user.balance || 0;
-        if (data.user.balance !== currentBalance) {
-          const updatedUser = { ...user, balance: data.user.balance };
-          setUser(updatedUser);
-          localStorage.setItem('user', JSON.stringify(updatedUser));
-          
-          const difference = data.user.balance - currentBalance;
-          if (showToast && Math.abs(difference) >= 0.01) {
-            const isIncrease = difference > 0;
-            showToast(
-              isIncrease ? '💰 Баланс пополнен' : '💸 Баланс изменён',
-              `${isIncrease ? '+' : ''}${difference.toFixed(2)} USDT. Новый баланс: ${data.user.balance.toFixed(2)} USDT`,
-              isIncrease ? 'bg-green-500/10 border-green-500/30 text-foreground' : 'bg-orange-500/10 border-orange-500/30 text-foreground',
-              5000
-            );
-          }
+    const data = await requestCache.get(
+      'user_balance',
+      async () => {
+        try {
+          const response = await fetch(AUTH_URL, {
+            method: 'POST',
+            headers: { 
+              'Content-Type': 'application/json',
+              'X-User-Id': user.id.toString()
+            },
+            body: JSON.stringify({ action: 'get_user' })
+          });
+          if (!response.ok) return null;
+          return await response.json();
+        } catch (error) {
+          return null;
         }
       }
-    } catch (error) {
-      // Silently handle connection errors
-    }
-  }, [user, setUser, showToast, onUserBlocked]);
-
-  // Проверка статуса верификации
-  const checkVerificationStatus = useCallback(async () => {
-    if (!user) return;
+    );
     
-    const lastCheck = sessionStorage.getItem(`verification_check_${user.id}`);
-    const now = Date.now();
-    if (lastCheck && now - parseInt(lastCheck) < 300000) return; // Не чаще раза в 5 минут
-    
-    try {
-      const response = await fetch(VERIFICATION_URL, {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'X-User-Id': user.id.toString()
-        },
-        body: JSON.stringify({ 
-          action: 'check_verification_status',
-          user_id: user.id 
-        })
-      });
-
-      if (!response.ok) return;
-      const data = await response.json();
+    if (data?.success && data.user) {
+      // Проверка блокировки
+      if (data.user.is_blocked) {
+        localStorage.removeItem('user');
+        setUser(null);
+        if (showToast) {
+          showToast(
+            '🚫 Аккаунт заблокирован',
+            'Ваш аккаунт был заблокирован администратором',
+            'bg-red-500/10 border-red-500/30 text-foreground',
+            10000
+          );
+        }
+        if (onUserBlocked) {
+          onUserBlocked();
+        }
+        return;
+      }
       
-      if (data.verification_status === 'approved' && !user.is_verified) {
-        const updatedUser = { ...user, is_verified: true };
+      const currentBalance = user.balance || 0;
+      if (data.user.balance !== currentBalance) {
+        const updatedUser = { ...user, balance: data.user.balance };
         setUser(updatedUser);
         localStorage.setItem('user', JSON.stringify(updatedUser));
         
-        if (showToast) {
+        const difference = data.user.balance - currentBalance;
+        if (showToast && Math.abs(difference) >= 0.01) {
+          const isIncrease = difference > 0;
           showToast(
-            '✅ Верификация одобрена!',
-            'Ваша заявка на верификацию одобрена. Теперь рядом с вашим ником отображается значок верификации.',
-            'bg-green-500/10 border-green-500/30 text-foreground',
-            8000
+            isIncrease ? '💰 Баланс пополнен' : '💸 Баланс изменён',
+            `${isIncrease ? '+' : ''}${difference.toFixed(2)} USDT. Новый баланс: ${data.user.balance.toFixed(2)} USDT`,
+            isIncrease ? 'bg-green-500/10 border-green-500/30 text-foreground' : 'bg-orange-500/10 border-orange-500/30 text-foreground',
+            5000
           );
-          
-          const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBTGH0fPTgjMGHm7A7+OZSA0PVajk7q5aFApBmeHyvWwhBTGG0fPTgjMGHW7A7+OZSA0OVajk7q5aFApBmeHyvWwhBTGG0fPTgjMGHW7A7+OZSA0OVajk7q5aFApBmeHyvWwhBTGG0fPTgjMGHW7A7+OZSA0OVajk7q5aFApBmeHyvWwhBTGG0fPTgjMGHW7A7+OZSA0OVajk7q5aFApBmeHyvWwhBTGG0fPTgjMGHW7A7+OZSA0OVajk7q5a');
-          audio.volume = 0.5;
-          audio.play().catch(() => {});
         }
       }
+    }
+  }, [user, setUser, showToast, onUserBlocked]);
+
+  // Проверка статуса верификации с кэшированием
+  const checkVerificationStatus = useCallback(async () => {
+    if (!user) return;
+    
+    const data = await requestCache.get(
+      'user_verification',
+      async () => {
+        try {
+          const response = await fetch(VERIFICATION_URL, {
+            method: 'POST',
+            headers: { 
+              'Content-Type': 'application/json',
+              'X-User-Id': user.id.toString()
+            },
+            body: JSON.stringify({ 
+              action: 'check_verification_status',
+              user_id: user.id 
+            })
+          });
+          if (!response.ok) return null;
+          return await response.json();
+        } catch (error) {
+          return null;
+        }
+      }
+    );
+    
+    if (data?.verification_status === 'approved' && !user.is_verified) {
+      const updatedUser = { ...user, is_verified: true };
+      setUser(updatedUser);
+      localStorage.setItem('user', JSON.stringify(updatedUser));
       
-      sessionStorage.setItem(`verification_check_${user.id}`, now.toString());
-    } catch (error) {
-      // Silently handle connection errors
+      if (showToast) {
+        showToast(
+          '✅ Верификация одобрена!',
+          'Ваша заявка на верификацию одобрена. Теперь рядом с вашим ником отображается значок верификации.',
+          'bg-green-500/10 border-green-500/30 text-foreground',
+          8000
+        );
+        
+        const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBTGH0fPTgjMGHm7A7+OZSA0PVajk7q5aFApBmeHyvWwhBTGG0fPTgjMGHW7A7+OZSA0OVajk7q5aFApBmeHyvWwhBTGG0fPTgjMGHW7A7+OZSA0OVajk7q5aFApBmeHyvWwhBTGG0fPTgjMGHW7A7+OZSA0OVajk7q5aFApBmeHyvWwhBTGG0fPTgjMGHW7A7+OZSA0OVajk7q5aFApBmeHyvWwhBTGG0fPTgjMGHW7A7+OZSA0OVajk7q5a');
+        audio.volume = 0.5;
+        audio.play().catch(() => {});
+      }
     }
   }, [user, setUser, showToast]);
 
@@ -199,11 +225,19 @@ export const useUserActivity = ({
     checkBalanceUpdates();
     checkVerificationStatus();
 
-    // Слушаем события пользователя для обновления активности (с дебаунсом)
+    // Слушаем события пользователя для обновления активности (с дебаунсом и throttle)
     let activityTimeout: NodeJS.Timeout;
+    let lastActivityTrigger = 0;
     const handleUserActivity = () => {
+      const now = Date.now();
+      // Throttle: не чаще раза в 10 секунд
+      if (now - lastActivityTrigger < 10000) return;
+      
       clearTimeout(activityTimeout);
-      activityTimeout = setTimeout(() => updateActivity(), 5000);
+      activityTimeout = setTimeout(() => {
+        updateActivity();
+        lastActivityTrigger = now;
+      }, 5000);
     };
 
     // Проверяем данные при возвращении на вкладку
@@ -215,10 +249,16 @@ export const useUserActivity = ({
       }
     };
 
-    // Проверяем при фокусе окна
+    // Проверяем при фокусе окна (объединяем с visibilitychange)
+    let focusTimeout: NodeJS.Timeout;
     const handleFocus = () => {
-      fetchUnreadCount();
-      checkBalanceUpdates();
+      clearTimeout(focusTimeout);
+      focusTimeout = setTimeout(() => {
+        if (!document.hidden) {
+          fetchUnreadCount();
+          checkBalanceUpdates();
+        }
+      }, 500);
     };
 
     // События пользователя
@@ -230,6 +270,7 @@ export const useUserActivity = ({
 
     return () => {
       clearTimeout(activityTimeout);
+      clearTimeout(focusTimeout);
       window.removeEventListener('click', handleUserActivity);
       window.removeEventListener('keydown', handleUserActivity);
       window.removeEventListener('scroll', handleUserActivity);

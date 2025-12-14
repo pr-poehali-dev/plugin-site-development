@@ -1,3 +1,5 @@
+import { requestCache } from './requestCache';
+
 const NOTIFICATIONS_URL = 'https://functions.poehali.dev/6c968792-7d48-41a9-af0a-c92adb047acb';
 const CACHE_DURATION = 30000;
 const MIN_UPDATE_INTERVAL = 30000;
@@ -8,67 +10,24 @@ interface NotificationCounts {
   adminNotifications?: number;
 }
 
-interface NotificationSubscriber {
-  id: string;
-  callback: (counts: NotificationCounts) => void;
-}
-
 class NotificationsCache {
-  private cache: NotificationCounts | null = null;
-  private cacheTimestamp: number = 0;
-  private lastUpdateTimestamp: number = 0;
-  private subscribers: NotificationSubscriber[] = [];
-  private isUpdating: boolean = false;
-  private updatePromise: Promise<NotificationCounts | null> | null = null;
-
-  subscribe(callback: (counts: NotificationCounts) => void): () => void {
-    const id = Math.random().toString(36).substr(2, 9);
-    this.subscribers.push({ id, callback });
-    
-    if (this.cache) {
-      callback(this.cache);
-    }
-    
-    return () => {
-      this.subscribers = this.subscribers.filter(sub => sub.id !== id);
-    };
+  constructor() {
+    requestCache.registerConfig('notifications', {
+      ttl: CACHE_DURATION,
+      minInterval: MIN_UPDATE_INTERVAL
+    });
   }
 
-  private notifySubscribers(counts: NotificationCounts) {
-    this.subscribers.forEach(sub => sub.callback(counts));
+  subscribe(callback: (counts: NotificationCounts) => void): () => void {
+    return requestCache.subscribe('notifications', callback);
   }
 
   async getCounts(userId: number, userRole: string, force: boolean = false): Promise<NotificationCounts | null> {
-    const now = Date.now();
-    
-    if (!force && this.cache && (now - this.cacheTimestamp) < CACHE_DURATION) {
-      return this.cache;
-    }
-    
-    if (!force && (now - this.lastUpdateTimestamp) < MIN_UPDATE_INTERVAL) {
-      return this.cache;
-    }
-    
-    if (this.isUpdating && this.updatePromise) {
-      return this.updatePromise;
-    }
-    
-    this.isUpdating = true;
-    this.updatePromise = this.fetchCounts(userId, userRole);
-    
-    try {
-      const counts = await this.updatePromise;
-      if (counts) {
-        this.cache = counts;
-        this.cacheTimestamp = now;
-        this.lastUpdateTimestamp = now;
-        this.notifySubscribers(counts);
-      }
-      return counts;
-    } finally {
-      this.isUpdating = false;
-      this.updatePromise = null;
-    }
+    return requestCache.get(
+      'notifications',
+      () => this.fetchCounts(userId, userRole),
+      force
+    );
   }
 
   private async fetchCounts(userId: number, userRole: string): Promise<NotificationCounts | null> {
@@ -118,13 +77,11 @@ class NotificationsCache {
   }
 
   triggerUpdate(userId: number, userRole: string) {
-    this.getCounts(userId, userRole, true);
+    requestCache.refresh('notifications', () => this.fetchCounts(userId, userRole));
   }
 
   clearCache() {
-    this.cache = null;
-    this.cacheTimestamp = 0;
-    this.lastUpdateTimestamp = 0;
+    requestCache.invalidate('notifications');
   }
 }
 

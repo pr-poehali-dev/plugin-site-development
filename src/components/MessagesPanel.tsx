@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,6 +10,7 @@ import { Message } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { getAvatarGradient } from '@/utils/avatarColors';
 import { triggerNotificationUpdate } from '@/utils/notificationEvents';
+import { requestCache } from '@/utils/requestCache';
 
 const NOTIFICATIONS_URL = 'https://functions.poehali.dev/6c968792-7d48-41a9-af0a-c92adb047acb';
 const AUTH_URL = 'https://functions.poehali.dev/2497448a-6aff-4df5-97ef-9181cf792f03';
@@ -54,6 +55,14 @@ const MessagesPanel = ({ open, onOpenChange, userId, userRole, initialRecipientI
   const [isDesktop, setIsDesktop] = useState(() => typeof window !== 'undefined' && window.innerWidth >= 1024);
   const [selectedChatUserRole, setSelectedChatUserRole] = useState<string>('');
   const [selectedChatUserLastSeen, setSelectedChatUserLastSeen] = useState<string>('');
+  
+  // Регистрируем конфигурацию кэша для сообщений
+  useEffect(() => {
+    requestCache.registerConfig(`messages:${userId}`, {
+      ttl: 15000, // 15 секунд
+      minInterval: 10000 // Не чаще 10 секунд
+    });
+  }, [userId]);
 
   useEffect(() => {
     const checkDesktop = () => setIsDesktop(window.innerWidth >= 1024);
@@ -92,7 +101,7 @@ const MessagesPanel = ({ open, onOpenChange, userId, userRole, initialRecipientI
         setShowChatList(false);
       }
     }
-  }, [open, initialRecipientId]);
+  }, [open, initialRecipientId, fetchMessages]);
 
   useEffect(() => {
     if (selectedChat && messages.length > 0) {
@@ -130,14 +139,23 @@ const MessagesPanel = ({ open, onOpenChange, userId, userRole, initialRecipientI
     }, 100);
   };
 
-  const fetchMessages = async () => {
+  const fetchMessages = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${NOTIFICATIONS_URL}?action=messages`, {
-        headers: { 'X-User-Id': userId.toString() }
-      });
-      if (response.ok) {
-        const data = await response.json();
+      const data = await requestCache.get(
+        `messages:${userId}`,
+        async () => {
+          const response = await fetch(`${NOTIFICATIONS_URL}?action=messages`, {
+            headers: { 'X-User-Id': userId.toString() }
+          });
+          if (response.ok) {
+            return await response.json();
+          }
+          return null;
+        }
+      );
+      
+      if (data) {
         setMessages(data.messages || []);
         buildChats(data.messages || []);
       }
@@ -146,7 +164,7 @@ const MessagesPanel = ({ open, onOpenChange, userId, userRole, initialRecipientI
     } finally {
       setLoading(false);
     }
-  };
+  }, [userId]);
 
   const buildChats = (allMessages: Message[]) => {
     const chatsMap = new Map<number, Chat>();
@@ -193,20 +211,24 @@ const MessagesPanel = ({ open, onOpenChange, userId, userRole, initialRecipientI
     setChats(chatsList);
   };
 
-  const markMessageRead = async (messageId: number) => {
+  const markMessageRead = useCallback(async (messageId: number) => {
     try {
+      // Используем keepalive для неблокирующего запроса
       await fetch(NOTIFICATIONS_URL, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           'X-User-Id': userId.toString()
         },
-        body: JSON.stringify({ action: 'mark_message_read', message_id: messageId })
+        body: JSON.stringify({ action: 'mark_message_read', message_id: messageId }),
+        keepalive: true
       });
+      // Инвалидируем кэш сообщений
+      requestCache.invalidate(`messages:${userId}`);
     } catch (error) {
       console.error('Failed to mark message as read:', error);
     }
-  };
+  }, [userId]);
 
   const handleInputFocus = () => {
     setTimeout(() => {
@@ -222,7 +244,7 @@ const MessagesPanel = ({ open, onOpenChange, userId, userRole, initialRecipientI
     }
   };
 
-  const sendMessage = async () => {
+  const sendMessage = useCallback(async () => {
     if (!selectedChat || !newMessageText.trim() || isSending) return;
 
     setIsSending(true);
@@ -245,6 +267,8 @@ const MessagesPanel = ({ open, onOpenChange, userId, userRole, initialRecipientI
       });
 
       if (response.ok) {
+        // Инвалидируем кэш и принудительно обновляем
+        requestCache.invalidate(`messages:${userId}`);
         await fetchMessages();
         triggerNotificationUpdate(userId, userRole);
         scrollToBottom();
@@ -257,7 +281,7 @@ const MessagesPanel = ({ open, onOpenChange, userId, userRole, initialRecipientI
     } finally {
       setIsSending(false);
     }
-  };
+  }, [selectedChat, newMessageText, isSending, userId, userRole, fetchMessages]);
 
   const startNewChat = async () => {
     if (!newChatUsername.trim()) {
