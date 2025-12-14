@@ -1,5 +1,5 @@
 '''
-Business: Получение актуальных курсов криптовалют (BTC, ETH, BNB, SOL, XRP, TRX) с разными ценами для покупки (+2%) и продажи (-2%)
+Business: Получение актуальных курсов криптовалют (BTC, ETH, BNB, SOL, XRP, TRX) с разными ценами для покупки (+0.5%) и продажи (-0.5%)
 Args: event - dict с httpMethod
       context - объект с атрибутами: request_id, function_name
 Returns: HTTP response с курсами криптовалют (buy_prices и sell_prices)
@@ -9,8 +9,8 @@ import json
 import urllib.request
 from typing import Dict, Any, Tuple
 
-BUY_MARKUP = 2.0   # +2% для покупки криптовалюты (пользователь платит дороже)
-SELL_DISCOUNT = 2.0  # -2% для продажи криптовалюты (пользователь получает меньше)
+BUY_MARKUP = 0.5   # +0.5% для покупки криптовалюты (пользователь платит дороже)
+SELL_DISCOUNT = 0.5  # -0.5% для продажи криптовалюты (пользователь получает меньше)
 
 def get_crypto_prices() -> Tuple[Dict[str, float], Dict[str, float]]:
     """Получить реальные цены криптовалют с Binance API
@@ -42,9 +42,9 @@ def get_crypto_prices() -> Tuple[Dict[str, float], Dict[str, float]]:
             for crypto, symbol in symbols.items():
                 if symbol in price_dict:
                     real_price = price_dict[symbol]
-                    # Для покупки +2% (пользователь платит дороже)
+                    # Для покупки +0.5% (пользователь платит дороже)
                     buy_prices[crypto] = round(real_price * (1 + BUY_MARKUP / 100), 8)
-                    # Для продажи -2% (пользователь получает меньше)
+                    # Для продажи -0.5% (пользователь получает меньше)
                     sell_prices[crypto] = round(real_price * (1 - SELL_DISCOUNT / 100), 8)
             
             return buy_prices, sell_prices

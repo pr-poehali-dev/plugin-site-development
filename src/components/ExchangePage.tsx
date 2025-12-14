@@ -81,6 +81,7 @@ const ExchangePage = ({ user, onRefreshUserBalance }: ExchangePageProps) => {
   const [confirmAction, setConfirmAction] = useState<'buy' | 'sell' | null>(null);
   const [priceUpdateTimer, setPriceUpdateTimer] = useState(60);
   const [priceLoadTime, setPriceLoadTime] = useState<Date | null>(null);
+  const [activeTab, setActiveTab] = useState<'buy' | 'sell' | 'withdraw'>('buy');
 
   useEffect(() => {
     loadPrices();
@@ -563,7 +564,7 @@ const ExchangePage = ({ user, onRefreshUserBalance }: ExchangePageProps) => {
       <div className="grid lg:grid-cols-3 gap-6">
         {/* Main Exchange Card */}
         <div className="lg:col-span-2">
-          <Tabs defaultValue="buy" className="w-full">
+          <Tabs defaultValue="buy" className="w-full" onValueChange={(v) => setActiveTab(v as 'buy' | 'sell' | 'withdraw')}>
             <TabsList className="grid w-full grid-cols-3 h-12">
               <TabsTrigger value="buy" className="text-base">
                 <Icon name="TrendingUp" size={18} className="mr-2" />
@@ -669,12 +670,8 @@ const ExchangePage = ({ user, onRefreshUserBalance }: ExchangePageProps) => {
 
                   <div className="bg-muted/50 rounded-xl p-4 space-y-2">
                     <div className="flex items-center justify-between text-sm">
-                      <span className="text-muted-foreground">Курс покупки:</span>
+                      <span className="text-muted-foreground">Курс:</span>
                       <span className="font-semibold">1 {selectedCrypto} = ${currentBuyPrice.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
-                    </div>
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-muted-foreground">Комиссия сервиса:</span>
-                      <span className="font-semibold text-orange-400">+2%</span>
                     </div>
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-muted-foreground">Минимум:</span>
@@ -793,12 +790,8 @@ const ExchangePage = ({ user, onRefreshUserBalance }: ExchangePageProps) => {
 
                   <div className="bg-muted/50 rounded-xl p-4 space-y-2">
                     <div className="flex items-center justify-between text-sm">
-                      <span className="text-muted-foreground">Курс продажи:</span>
+                      <span className="text-muted-foreground">Курс:</span>
                       <span className="font-semibold">1 {selectedCrypto} = ${currentSellPrice.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
-                    </div>
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-muted-foreground">Комиссия сервиса:</span>
-                      <span className="font-semibold text-orange-400">-2%</span>
                     </div>
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-muted-foreground">Минимум:</span>
@@ -942,6 +935,7 @@ const ExchangePage = ({ user, onRefreshUserBalance }: ExchangePageProps) => {
                 const info = CRYPTO_INFO[symbol];
                 const buyPrice = buyPrices[symbol];
                 const sellPrice = sellPrices[symbol];
+                const displayPrice = activeTab === 'sell' ? sellPrice : buyPrice;
                 return (
                   <div key={symbol} className="flex items-center justify-between py-2 border-b border-border/50 last:border-0">
                     <div className="flex items-center gap-2">
@@ -949,11 +943,8 @@ const ExchangePage = ({ user, onRefreshUserBalance }: ExchangePageProps) => {
                       <span className="font-medium text-sm">{symbol}</span>
                     </div>
                     <div className="text-right">
-                      <div className="font-semibold text-xs text-green-400">
-                        {priceLoading ? '...' : `↑ $${buyPrice.toLocaleString('en-US', { minimumFractionDigits: 2 })}`}
-                      </div>
-                      <div className="font-semibold text-xs text-orange-400">
-                        {priceLoading ? '...' : `↓ $${sellPrice.toLocaleString('en-US', { minimumFractionDigits: 2 })}`}
+                      <div className="font-semibold text-sm">
+                        {priceLoading ? '...' : `$${displayPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                       </div>
                     </div>
                   </div>
@@ -975,10 +966,6 @@ const ExchangePage = ({ user, onRefreshUserBalance }: ExchangePageProps) => {
               <li className="flex items-start gap-2">
                 <Icon name="Check" size={16} className="text-green-400 mt-0.5" />
                 <span>Мгновенный обмен по рыночному курсу</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <Icon name="Check" size={16} className="text-green-400 mt-0.5" />
-                <span>Спред покупки/продажи 2%</span>
               </li>
               <li className="flex items-start gap-2">
                 <Icon name="Check" size={16} className="text-green-400 mt-0.5" />
