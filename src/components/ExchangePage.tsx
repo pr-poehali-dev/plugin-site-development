@@ -37,6 +37,7 @@ type CryptoSymbol = 'BTC' | 'ETH' | 'BNB' | 'SOL' | 'XRP' | 'TRX';
 interface CryptoInfo {
   name: string;
   icon: string;
+  emoji: string;
   color: string;
   bgColor: string;
   decimals: number;
@@ -44,12 +45,12 @@ interface CryptoInfo {
 }
 
 const CRYPTO_INFO: Record<CryptoSymbol, CryptoInfo> = {
-  BTC: { name: 'Bitcoin', icon: 'Bitcoin', color: 'text-orange-400', bgColor: 'bg-orange-500/10', decimals: 8, minAmount: 0.0001 },
-  ETH: { name: 'Ethereum', icon: 'Gem', color: 'text-purple-400', bgColor: 'bg-purple-500/10', decimals: 6, minAmount: 0.001 },
-  BNB: { name: 'BNB', icon: 'Coins', color: 'text-yellow-400', bgColor: 'bg-yellow-500/10', decimals: 5, minAmount: 0.01 },
-  SOL: { name: 'Solana', icon: 'Zap', color: 'text-blue-400', bgColor: 'bg-blue-500/10', decimals: 5, minAmount: 0.01 },
-  XRP: { name: 'Ripple', icon: 'Waves', color: 'text-cyan-400', bgColor: 'bg-cyan-500/10', decimals: 4, minAmount: 1 },
-  TRX: { name: 'Tron', icon: 'Triangle', color: 'text-red-400', bgColor: 'bg-red-500/10', decimals: 2, minAmount: 10 }
+  BTC: { name: 'Bitcoin', icon: 'Bitcoin', emoji: '₿', color: 'text-orange-400', bgColor: 'bg-orange-500/10', decimals: 8, minAmount: 0.0001 },
+  ETH: { name: 'Ethereum', icon: 'Gem', emoji: 'Ξ', color: 'text-purple-400', bgColor: 'bg-purple-500/10', decimals: 6, minAmount: 0.001 },
+  BNB: { name: 'BNB', icon: 'Coins', emoji: '◆', color: 'text-yellow-400', bgColor: 'bg-yellow-500/10', decimals: 5, minAmount: 0.01 },
+  SOL: { name: 'Solana', icon: 'Zap', emoji: '◎', color: 'text-blue-400', bgColor: 'bg-blue-500/10', decimals: 5, minAmount: 0.01 },
+  XRP: { name: 'Ripple', icon: 'Waves', emoji: '✕', color: 'text-cyan-400', bgColor: 'bg-cyan-500/10', decimals: 4, minAmount: 1 },
+  TRX: { name: 'Tron', icon: 'Triangle', emoji: '▲', color: 'text-red-400', bgColor: 'bg-red-500/10', decimals: 2, minAmount: 10 }
 };
 
 const ExchangePage = ({ user, onRefreshUserBalance }: ExchangePageProps) => {
@@ -532,7 +533,7 @@ const ExchangePage = ({ user, onRefreshUserBalance }: ExchangePageProps) => {
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
                     <div className={`w-10 h-10 rounded-xl ${info.bgColor} flex items-center justify-center`}>
-                      <Icon name={info.icon as any} size={20} className={info.color} />
+                      <span className={`text-2xl font-bold ${info.color}`}>{info.emoji}</span>
                     </div>
                     <div>
                       <p className="font-semibold">{symbol}</p>
@@ -588,7 +589,7 @@ const ExchangePage = ({ user, onRefreshUserBalance }: ExchangePageProps) => {
                           return (
                             <SelectItem key={symbol} value={symbol}>
                               <div className="flex items-center gap-3">
-                                <Icon name={info.icon as any} size={18} className={info.color} />
+                                <span className={`text-xl font-bold ${info.color}`}>{info.emoji}</span>
                                 <span className="font-medium">{symbol}</span>
                                 <span className="text-muted-foreground">- {info.name}</span>
                                 {!priceLoading && (
@@ -712,7 +713,7 @@ const ExchangePage = ({ user, onRefreshUserBalance }: ExchangePageProps) => {
                           return (
                             <SelectItem key={symbol} value={symbol}>
                               <div className="flex items-center gap-3">
-                                <Icon name={info.icon as any} size={18} className={info.color} />
+                                <span className={`text-xl font-bold ${info.color}`}>{info.emoji}</span>
                                 <span className="font-medium">{symbol}</span>
                                 <span className="text-muted-foreground">- {info.name}</span>
                                 {!priceLoading && (
@@ -750,7 +751,7 @@ const ExchangePage = ({ user, onRefreshUserBalance }: ExchangePageProps) => {
                           className="h-14 text-xl pl-12"
                         />
                         <div className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
-                          <Icon name={cryptoInfo.icon as any} size={20} className={cryptoInfo.color} />
+                          <span className={`text-xl font-bold ${cryptoInfo.color}`}>{cryptoInfo.emoji}</span>
                         </div>
                         <div className="absolute right-4 top-1/2 -translate-y-1/2">
                           <span className="text-lg font-semibold text-muted-foreground">{selectedCrypto}</span>
@@ -836,7 +837,7 @@ const ExchangePage = ({ user, onRefreshUserBalance }: ExchangePageProps) => {
                           return (
                             <SelectItem key={symbol} value={symbol}>
                               <div className="flex items-center gap-3">
-                                <Icon name={info.icon as any} size={18} className={info.color} />
+                                <span className={`text-xl font-bold ${info.color}`}>{info.emoji}</span>
                                 <span className="font-medium">{symbol}</span>
                                 <span className="text-muted-foreground">- Баланс: {balance.toFixed(info.decimals)}</span>
                               </div>
@@ -876,7 +877,7 @@ const ExchangePage = ({ user, onRefreshUserBalance }: ExchangePageProps) => {
                         className="h-12 text-lg pl-12"
                       />
                       <div className="absolute left-4 top-1/2 -translate-y-1/2">
-                        <Icon name={CRYPTO_INFO[withdrawCrypto].icon as any} size={20} className={CRYPTO_INFO[withdrawCrypto].color} />
+                        <span className={`text-xl font-bold ${CRYPTO_INFO[withdrawCrypto].color}`}>{CRYPTO_INFO[withdrawCrypto].emoji}</span>
                       </div>
                       <div className="absolute right-4 top-1/2 -translate-y-1/2">
                         <span className="font-semibold text-muted-foreground">{withdrawCrypto}</span>
@@ -937,7 +938,7 @@ const ExchangePage = ({ user, onRefreshUserBalance }: ExchangePageProps) => {
                 return (
                   <div key={symbol} className="flex items-center justify-between py-2 border-b border-border/50 last:border-0">
                     <div className="flex items-center gap-2">
-                      <Icon name={info.icon as any} size={16} className={info.color} />
+                      <span className={`text-lg font-bold ${info.color}`}>{info.emoji}</span>
                       <span className="font-medium text-sm">{symbol}</span>
                     </div>
                     <span className="font-semibold text-sm">
