@@ -242,14 +242,6 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     WHERE id = %s
                 """, (admin_comment, datetime.utcnow(), datetime.utcnow(), order_id))
                 
-                cur.execute(f"""
-                    INSERT INTO {SCHEMA}.admin_actions
-                    (admin_id, action_type, target_user_id, details, created_at)
-                    VALUES (%s, %s, %s, %s, %s)
-                """, (user_id, 'vip_ton_approved', order['user_id'], 
-                      json.dumps({'order_id': order_id, 'days': order['vip_duration_days']}), 
-                      datetime.utcnow()))
-                
                 conn.commit()
                 
                 return {
