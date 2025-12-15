@@ -1,5 +1,5 @@
 """
-Business: Система вывода USDT для пользователей
+Business: Система вывода USDT для пользователей с системными уведомлениями
 Args: event с httpMethod, body, queryStringParameters; context с request_id
 Returns: HTTP response с информацией о заявках на вывод
 """
