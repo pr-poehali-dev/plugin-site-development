@@ -14,9 +14,10 @@ import AdminFlashBtcTab from '@/components/admin/AdminFlashBtcTab';
 import AdminDealsSection from '@/components/admin/AdminDealsSection';
 import AdminWithdrawalControl from '@/components/AdminWithdrawalControl';
 import AdminVipTonTab from '@/components/admin/AdminVipTonTab';
+import AdminExchangeTab from '@/components/admin/AdminExchangeTab';
 
 interface AdminPanelContentProps {
-  activeTab: 'users' | 'topics' | 'disputes' | 'deposits' | 'withdrawals' | 'btc-withdrawals' | 'flash-usdt' | 'flash-btc' | 'tickets' | 'verification' | 'forum-categories' | 'deals' | 'withdrawal-control' | 'vip-ton';
+  activeTab: 'users' | 'topics' | 'disputes' | 'deposits' | 'withdrawals' | 'btc-withdrawals' | 'flash-usdt' | 'flash-btc' | 'tickets' | 'verification' | 'forum-categories' | 'deals' | 'withdrawal-control' | 'vip-ton' | 'exchange';
   deals: any[];
   users: User[];
   topics: ForumTopic[];
@@ -184,6 +185,13 @@ const AdminPanelContent = ({
         <AdminVipTonTab 
           currentUser={currentUser}
           onRefresh={() => {}}
+        />
+      )}
+
+      {activeTab === 'exchange' && (
+        <AdminExchangeTab 
+          users={users}
+          onManageToken={onManageToken}
         />
       )}
     </div>

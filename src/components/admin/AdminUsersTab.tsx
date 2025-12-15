@@ -80,56 +80,21 @@ const AdminUsersTab = ({
                     {user.last_ip}
                   </p>
                 )}
-                <div className="flex flex-col gap-1 mt-1">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-medium text-green-500">
-                      💵 {Number(user.balance || 0).toFixed(2)} USDT
+                <div className="flex items-center gap-2 mt-1">
+                  <span className="text-xs font-medium text-green-500">
+                    💵 {Number(user.balance || 0).toFixed(2)} USDT
+                  </span>
+                  {user.btc_balance && Number(user.btc_balance) > 0 && (
+                    <span className="text-xs font-medium text-orange-500">
+                      ₿ {Number(user.btc_balance || 0).toFixed(8)} BTC
                     </span>
-                    {user.btc_balance && Number(user.btc_balance) > 0 && (
-                      <span className="text-xs font-medium text-orange-500">
-                        ₿ {Number(user.btc_balance || 0).toFixed(8)} BTC
-                      </span>
-                    )}
-                    {user.is_verified && (
-                      <span className="text-xs font-medium text-blue-500 flex items-center gap-1">
-                        <Icon name="CheckCircle" size={12} />
-                        Верифицирован
-                      </span>
-                    )}
-                  </div>
-                  {/* Токены обменника */}
-                  <div className="flex flex-wrap items-center gap-2 text-xs">
-                    {user.token_usdt !== undefined && Number(user.token_usdt) > 0 && (
-                      <span className="text-emerald-500 font-mono">
-                        USDT: {Number(user.token_usdt).toFixed(2)}
-                      </span>
-                    )}
-                    {user.token_btc !== undefined && Number(user.token_btc) > 0 && (
-                      <span className="text-orange-500 font-mono">
-                        BTC: {Number(user.token_btc).toFixed(8)}
-                      </span>
-                    )}
-                    {user.token_eth !== undefined && Number(user.token_eth) > 0 && (
-                      <span className="text-blue-500 font-mono">
-                        ETH: {Number(user.token_eth).toFixed(6)}
-                      </span>
-                    )}
-                    {user.token_trx !== undefined && Number(user.token_trx) > 0 && (
-                      <span className="text-red-500 font-mono">
-                        TRX: {Number(user.token_trx).toFixed(2)}
-                      </span>
-                    )}
-                    {user.token_ton !== undefined && Number(user.token_ton) > 0 && (
-                      <span className="text-cyan-500 font-mono">
-                        TON: {Number(user.token_ton).toFixed(2)}
-                      </span>
-                    )}
-                    {user.token_sol !== undefined && Number(user.token_sol) > 0 && (
-                      <span className="text-purple-500 font-mono">
-                        SOL: {Number(user.token_sol).toFixed(4)}
-                      </span>
-                    )}
-                  </div>
+                  )}
+                  {user.is_verified && (
+                    <span className="text-xs font-medium text-blue-500 flex items-center gap-1">
+                      <Icon name="CheckCircle" size={12} />
+                      Верифицирован
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
@@ -175,44 +140,16 @@ const AdminUsersTab = ({
                       <span className="hidden sm:inline">Верифицировать</span>
                     </Button>
                   )}
-                  <div className="flex gap-1">
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => onManageBtc(user.id, user.username, Number(user.btc_balance || 0))}
-                      className="text-xs text-orange-500 hover:text-orange-600 px-2"
-                      title="Управление BTC балансом"
-                    >
-                      <Icon name="Bitcoin" size={14} />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => onManageToken(user.id, user.username, 'USDT', Number(user.token_usdt || 0))}
-                      className="text-xs text-emerald-500 hover:text-emerald-600 px-2"
-                      title="Управление USDT токенами"
-                    >
-                      USDT
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => onManageToken(user.id, user.username, 'ETH', Number(user.token_eth || 0))}
-                      className="text-xs text-blue-500 hover:text-blue-600 px-2"
-                      title="Управление ETH токенами"
-                    >
-                      ETH
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => onManageToken(user.id, user.username, 'TON', Number(user.token_ton || 0))}
-                      className="text-xs text-cyan-500 hover:text-cyan-600 px-2"
-                      title="Управление TON токенами"
-                    >
-                      TON
-                    </Button>
-                  </div>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => onManageBtc(user.id, user.username, Number(user.btc_balance || 0))}
+                    className="text-xs flex-1 sm:flex-none text-orange-500 hover:text-orange-600"
+                    title="Управление BTC"
+                  >
+                    <Icon name="Bitcoin" size={14} className="sm:mr-1" />
+                    <span className="hidden sm:inline">BTC</span>
+                  </Button>
                   <Button
                     size="sm"
                     variant="ghost"
