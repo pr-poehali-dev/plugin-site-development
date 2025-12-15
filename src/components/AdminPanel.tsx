@@ -5,6 +5,7 @@ import AdminPanelTabs from '@/components/admin/AdminPanelTabs';
 import AdminPanelContent from '@/components/admin/AdminPanelContent';
 import AdminBalanceDialog from '@/components/admin/AdminBalanceDialog';
 import AdminBtcBalanceDialog from '@/components/admin/AdminBtcBalanceDialog';
+import AdminTokenBalanceDialog from '@/components/admin/AdminTokenBalanceDialog';
 import AdminTopicEditDialog from '@/components/admin/AdminTopicEditDialog';
 import { useToast } from '@/hooks/use-toast';
 
@@ -47,6 +48,11 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
   const [btcBalanceUsername, setBtcBalanceUsername] = useState('');
   const [btcBalanceAmount, setBtcBalanceAmount] = useState(0);
   const [btcBalanceLoading, setBtcBalanceLoading] = useState(false);
+  const [showTokenBalanceDialog, setShowTokenBalanceDialog] = useState(false);
+  const [tokenBalanceUserId, setTokenBalanceUserId] = useState<number>(0);
+  const [tokenBalanceUsername, setTokenBalanceUsername] = useState('');
+  const [tokenSymbol, setTokenSymbol] = useState('');
+  const [tokenCurrentBalance, setTokenCurrentBalance] = useState(0);
   const [adminNotifications, setAdminNotifications] = useState<any[]>([]);
   const [showNotifications, setShowNotifications] = useState(false);
   const [notificationCounts, setNotificationCounts] = useState<Record<string, number>>({
@@ -763,6 +769,59 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
     }
   };
 
+  const handleManageToken = (userId: number, username: string, symbol: string, currentBalance: number) => {
+    setTokenBalanceUserId(userId);
+    setTokenBalanceUsername(username);
+    setTokenSymbol(symbol);
+    setTokenCurrentBalance(currentBalance);
+    setShowTokenBalanceDialog(true);
+  };
+
+  const handleTokenBalanceSubmit = async (action: 'add' | 'subtract', amount: number) => {
+    try {
+      const finalAmount = action === 'subtract' ? -amount : amount;
+      
+      const response = await fetch(ADMIN_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-User-Id': currentUser.id.toString()
+        },
+        body: JSON.stringify({
+          action: 'update_token_balance',
+          user_id: tokenBalanceUserId,
+          token_symbol: tokenSymbol,
+          amount: finalAmount
+        })
+      });
+      
+      const data = await response.json();
+      if (data.success) {
+        toast({
+          title: 'Успешно',
+          description: action === 'add' 
+            ? `Начислено ${amount} ${tokenSymbol} пользователю ${tokenBalanceUsername}`
+            : `Списано ${amount} ${tokenSymbol} у пользователя ${tokenBalanceUsername}`
+        });
+        setShowTokenBalanceDialog(false);
+        fetchUsers();
+      } else {
+        toast({
+          title: 'Ошибка',
+          description: data.error || 'Ошибка выполнения операции',
+          variant: 'destructive'
+        });
+      }
+    } catch (error) {
+      console.error('Ошибка управления токенами:', error);
+      toast({
+        title: 'Ошибка',
+        description: 'Ошибка выполнения операции',
+        variant: 'destructive'
+      });
+    }
+  };
+
   const handleAddBalance = async () => {
     const amount = parseFloat(balanceAmount);
     if (!balanceUsername.trim()) {
@@ -886,6 +945,7 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
           onChangeForumRole={handleChangeForumRole}
           onManageBtc={handleManageBtc}
           onVerifyUser={handleVerifyUser}
+          onManageToken={handleManageToken}
           onEditTopic={handleEditTopic}
           onDeleteTopic={handleDeleteTopic}
           onUpdateViews={handleUpdateViews}
@@ -918,6 +978,16 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
           currentBalance={btcBalanceAmount}
           onSubmit={handleBtcBalanceSubmit}
           loading={btcBalanceLoading}
+        />
+
+        <AdminTokenBalanceDialog
+          open={showTokenBalanceDialog}
+          onOpenChange={setShowTokenBalanceDialog}
+          userId={tokenBalanceUserId}
+          username={tokenBalanceUsername}
+          tokenSymbol={tokenSymbol}
+          currentBalance={tokenCurrentBalance}
+          onSubmit={handleTokenBalanceSubmit}
         />
 
         <AdminTopicEditDialog 

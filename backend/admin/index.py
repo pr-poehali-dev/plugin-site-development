@@ -702,6 +702,101 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'isBase64Encoded': False
                 }
             
+            elif action == 'update_token_balance':
+                target_user_id = body_data.get('user_id')
+                token_symbol = body_data.get('token_symbol', '').upper()
+                amount = body_data.get('amount')
+                
+                if not target_user_id:
+                    return {
+                        'statusCode': 400,
+                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({'error': 'user_id обязателен'}),
+                        'isBase64Encoded': False
+                    }
+                
+                if not token_symbol:
+                    return {
+                        'statusCode': 400,
+                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({'error': 'token_symbol обязателен'}),
+                        'isBase64Encoded': False
+                    }
+                
+                try:
+                    amount = float(amount)
+                except (ValueError, TypeError):
+                    return {
+                        'statusCode': 400,
+                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({'error': 'Некорректная сумма'}),
+                        'isBase64Encoded': False
+                    }
+                
+                # Маппинг символов токенов к полям БД
+                token_fields = {
+                    'USDT': 'token_usdt',
+                    'BTC': 'token_btc',
+                    'ETH': 'token_eth',
+                    'TRX': 'token_trx',
+                    'TON': 'token_ton',
+                    'SOL': 'token_sol'
+                }
+                
+                if token_symbol not in token_fields:
+                    return {
+                        'statusCode': 400,
+                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({'error': f'Неподдерживаемый токен: {token_symbol}'}),
+                        'isBase64Encoded': False
+                    }
+                
+                token_field = token_fields[token_symbol]
+                
+                cur.execute(f"SELECT id, username, {token_field} FROM {SCHEMA}.users WHERE id = %s", (target_user_id,))
+                target_user = cur.fetchone()
+                
+                if not target_user:
+                    return {
+                        'statusCode': 404,
+                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({'error': 'Пользователь не найден'}),
+                        'isBase64Encoded': False
+                    }
+                
+                current_balance = float(target_user[token_field] or 0)
+                new_balance = max(0, current_balance + amount)
+                
+                cur.execute(
+                    f"UPDATE {SCHEMA}.users SET {token_field} = %s WHERE id = %s",
+                    (new_balance, target_user_id)
+                )
+                
+                action_type = f'add_{token_symbol.lower()}' if amount > 0 else f'subtract_{token_symbol.lower()}'
+                description = f"{'Пополнение' if amount > 0 else 'Списание'} {token_symbol} администратором (ID: {user_id})"
+                
+                cur.execute(
+                    f"""INSERT INTO {SCHEMA}.transactions 
+                       (user_id, amount, description, type) 
+                       VALUES (%s, %s, %s, %s)""",
+                    (target_user_id, amount, description, action_type)
+                )
+                
+                log_admin_action(user_id, action_type, 'user', target_user_id, f'{"Added" if amount > 0 else "Subtracted"} {abs(amount)} {token_symbol}', cur)
+                conn.commit()
+                
+                return {
+                    'statusCode': 200,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({
+                        'success': True,
+                        'new_balance': new_balance,
+                        'username': target_user['username'],
+                        'token_symbol': token_symbol
+                    }),
+                    'isBase64Encoded': False
+                }
+            
             elif action == 'verify_user':
                 target_user_id = body_data.get('user_id')
                 

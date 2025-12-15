@@ -33,6 +33,12 @@ export interface User {
   is_blocked?: boolean;
   balance?: number;
   btc_balance?: number;
+  token_usdt?: number;
+  token_btc?: number;
+  token_eth?: number;
+  token_trx?: number;
+  token_ton?: number;
+  token_sol?: number;
   referred_by_code?: string;
   referral_bonus_claimed?: boolean;
   vip_until?: string;

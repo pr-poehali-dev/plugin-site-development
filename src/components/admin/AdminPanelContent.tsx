@@ -33,6 +33,7 @@ interface AdminPanelContentProps {
   onChangeForumRole: (userId: number, forumRole: string) => void;
   onManageBtc: (userId: number, username: string, currentBalance: number) => void;
   onVerifyUser: (userId: number, username: string) => void;
+  onManageToken: (userId: number, username: string, tokenSymbol: string, currentBalance: number) => void;
   onEditTopic: (topic: ForumTopic) => void;
   onDeleteTopic: (topicId: number) => void;
   onUpdateViews: (topicId: number, views: number) => void;
@@ -64,6 +65,7 @@ const AdminPanelContent = ({
   onChangeForumRole,
   onManageBtc,
   onVerifyUser,
+  onManageToken,
   onEditTopic,
   onDeleteTopic,
   onUpdateViews,
@@ -88,6 +90,7 @@ const AdminPanelContent = ({
           onChangeForumRole={onChangeForumRole}
           onManageBtc={onManageBtc}
           onVerifyUser={onVerifyUser}
+          onManageToken={onManageToken}
         />
       )}
 
