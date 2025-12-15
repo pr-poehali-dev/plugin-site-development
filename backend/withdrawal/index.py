@@ -346,16 +346,17 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 """, (withdrawal['user_id'], notification_type, 'Заявка на вывод обработана', notif_msg))
                 
                 # Отправляем личное сообщение от системы (from_user_id = 1 - система)
-                system_message = notif_msg
+                system_subject = 'Заявка на вывод обработана'
+                system_content = notif_msg
                 if admin_comment and new_status == 'rejected':
-                    system_message = f"🔔 Заявка на вывод #{withdrawal_id} отклонена\n\n💰 Сумма: {withdrawal['amount']} USDT\n📍 Адрес: {withdrawal['usdt_wallet']}\n❌ Причина: {admin_comment}\n\nСредства возвращены на ваш баланс."
+                    system_content = f"🔔 Заявка на вывод #{withdrawal_id} отклонена\n\n💰 Сумма: {withdrawal['amount']} USDT\n📍 Адрес: {withdrawal['usdt_wallet']}\n❌ Причина: {admin_comment}\n\nСредства возвращены на ваш баланс."
                 elif new_status == 'completed':
-                    system_message = f"✅ Заявка на вывод #{withdrawal_id} успешно обработана!\n\n💰 Сумма: {withdrawal['amount']} USDT\n📍 Адрес: {withdrawal['usdt_wallet']}\n📤 Средства отправлены на ваш кошелек."
+                    system_content = f"✅ Заявка на вывод #{withdrawal_id} успешно обработана!\n\n💰 Сумма: {withdrawal['amount']} USDT\n📍 Адрес: {withdrawal['usdt_wallet']}\n📤 Средства отправлены на ваш кошелек."
                 
                 cursor.execute(f"""
-                    INSERT INTO {SCHEMA}.messages (from_user_id, to_user_id, message, is_read)
-                    VALUES (1, %s, %s, FALSE)
-                """, (withdrawal['user_id'], system_message))
+                    INSERT INTO {SCHEMA}.messages (from_user_id, to_user_id, subject, content, is_read)
+                    VALUES (1, %s, %s, %s, FALSE)
+                """, (withdrawal['user_id'], system_subject, system_content))
                 
                 conn.commit()
                 cursor.close()
@@ -411,7 +412,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     cursor.execute(f"""
                         SELECT COUNT(*) as count FROM {SCHEMA}.messages 
                         WHERE from_user_id = 1 AND to_user_id = %s 
-                        AND message LIKE %s
+                        AND content LIKE %s
                     """, (wr_user_id, f'%заявка на вывод #{withdrawal_id}%'))
                     
                     already_sent = cursor.fetchone()['count']
@@ -423,9 +424,9 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                         """, (wr_user_id, notification_type, 'Заявка на вывод обработана', notif_msg))
                         
                         cursor.execute(f"""
-                            INSERT INTO {SCHEMA}.messages (from_user_id, to_user_id, message, is_read)
-                            VALUES (1, %s, %s, FALSE)
-                        """, (wr_user_id, system_message))
+                            INSERT INTO {SCHEMA}.messages (from_user_id, to_user_id, subject, content, is_read)
+                            VALUES (1, %s, %s, %s, FALSE)
+                        """, (wr_user_id, 'Заявка на вывод обработана', system_message))
                         
                         notifications_sent += 1
                 
