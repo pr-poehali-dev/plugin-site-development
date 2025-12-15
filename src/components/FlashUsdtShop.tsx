@@ -30,7 +30,9 @@ const FlashUsdtShop = ({ user, onShowAuthDialog, onRefreshUserBalance }: FlashUs
       color: 'from-blue-600 to-blue-800',
       borderColor: 'border-blue-500/30',
       icon: 'Package',
-      popular: false
+      popular: false,
+      soldOut: true,
+      soldOutDate: '15.12.2025, 18:33:33'
     },
     {
       id: 2,

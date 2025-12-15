@@ -13,6 +13,8 @@ export interface Package {
   borderColor: string;
   icon: string;
   popular: boolean;
+  soldOut?: boolean;
+  soldOutDate?: string;
 }
 
 interface FlashUsdtPackagesProps {
@@ -44,6 +46,7 @@ export const FlashUsdtPackages = ({ packages, onPurchase, selectedPackageId }: F
           };
 
           const getBorderAndHover = (id: number) => {
+            if (pkg.soldOut) return 'border-2 border-gray-600/30 opacity-70';
             if (id === 1) return 'border-2 border-cyan-400/30 hover:border-cyan-400/80 hover:shadow-2xl hover:shadow-cyan-400/40';
             if (id === 2) return 'border-2 border-purple-400/30 hover:border-purple-400/80 hover:shadow-2xl hover:shadow-purple-400/40';
             if (id === 3) return 'border-2 border-green-400/30 hover:border-green-400/80 hover:shadow-2xl hover:shadow-green-400/40';
@@ -53,11 +56,19 @@ export const FlashUsdtPackages = ({ packages, onPurchase, selectedPackageId }: F
           return (
           <Card 
             key={pkg.id}
-            className={`relative overflow-hidden transition-all duration-300 hover:scale-105 ${getBorderAndHover(pkg.id)} ${
+            className={`relative overflow-hidden transition-all duration-300 ${pkg.soldOut ? '' : 'hover:scale-105'} ${getBorderAndHover(pkg.id)} ${
               pkg.popular ? 'ring-2 ring-yellow-500/50' : ''
             } ${selectedPackageId === pkg.id ? 'ring-2 ring-green-500/50' : ''} group`}
           >
-            {pkg.popular && (
+            {pkg.soldOut && (
+              <div className="absolute top-0 right-0 z-10">
+                <Badge className="bg-red-500 text-white rounded-tl-none rounded-br-none text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1">
+                  <Icon name="X" size={12} className="mr-0.5 sm:mr-1 sm:w-[14px] sm:h-[14px]" />
+                  Распродано
+                </Badge>
+              </div>
+            )}
+            {pkg.popular && !pkg.soldOut && (
               <div className="absolute top-0 right-0 z-10">
                 <Badge className="bg-yellow-500 text-black rounded-tl-none rounded-br-none text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1">
                   <Icon name="Star" size={12} className="mr-0.5 sm:mr-1 sm:w-[14px] sm:h-[14px]" />
@@ -98,12 +109,21 @@ export const FlashUsdtPackages = ({ packages, onPurchase, selectedPackageId }: F
             </div>
 
             <div className="p-3 sm:p-4 md:p-5 lg:p-6 space-y-2 sm:space-y-3">
-              <div className="mb-2 sm:mb-3">
-                <Badge className="bg-orange-500/20 text-orange-400 border-orange-500/40 text-[9px] sm:text-[10px] px-1.5 sm:px-2 py-0.5 w-full justify-center">
-                  <Icon name="TrendingUp" size={10} className="mr-1 sm:w-3 sm:h-3" />
-                  Подорожание из-за новогодних праздников
-                </Badge>
-              </div>
+              {pkg.soldOut ? (
+                <div className="mb-2 sm:mb-3">
+                  <Badge className="bg-red-500/20 text-red-400 border-red-500/40 text-[9px] sm:text-[10px] px-1.5 sm:px-2 py-0.5 w-full justify-center">
+                    <Icon name="ShoppingBag" size={10} className="mr-1 sm:w-3 sm:h-3" />
+                    Все пакеты выкуплены
+                  </Badge>
+                </div>
+              ) : (
+                <div className="mb-2 sm:mb-3">
+                  <Badge className="bg-orange-500/20 text-orange-400 border-orange-500/40 text-[9px] sm:text-[10px] px-1.5 sm:px-2 py-0.5 w-full justify-center">
+                    <Icon name="TrendingUp" size={10} className="mr-1 sm:w-3 sm:h-3" />
+                    Подорожание из-за новогодних праздников
+                  </Badge>
+                </div>
+              )}
               
               <div className="space-y-1 sm:space-y-1.5">
                 <div className="flex items-center justify-between">
@@ -139,13 +159,30 @@ export const FlashUsdtPackages = ({ packages, onPurchase, selectedPackageId }: F
                 </div>
               </div>
 
-              <Button
-                onClick={() => onPurchase(pkg)}
-                className={`w-full bg-gradient-to-r ${pkg.color} hover:opacity-90 text-xs sm:text-sm md:text-base py-2 sm:py-2.5`}
-              >
-                <Icon name="ShoppingCart" size={14} className="mr-1.5 sm:mr-2 sm:w-4 sm:h-4" />
-                Купить
-              </Button>
+              {pkg.soldOut ? (
+                <div className="space-y-2">
+                  <Button
+                    disabled
+                    className="w-full bg-gray-600 text-gray-300 cursor-not-allowed text-xs sm:text-sm md:text-base py-2 sm:py-2.5"
+                  >
+                    <Icon name="X" size={14} className="mr-1.5 sm:mr-2 sm:w-4 sm:h-4" />
+                    Распродано
+                  </Button>
+                  {pkg.soldOutDate && (
+                    <p className="text-[9px] sm:text-[10px] text-muted-foreground text-center">
+                      Последний пакет выкуплен: {pkg.soldOutDate}
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <Button
+                  onClick={() => onPurchase(pkg)}
+                  className={`w-full bg-gradient-to-r ${pkg.color} hover:opacity-90 text-xs sm:text-sm md:text-base py-2 sm:py-2.5`}
+                >
+                  <Icon name="ShoppingCart" size={14} className="mr-1.5 sm:mr-2 sm:w-4 sm:h-4" />
+                  Купить
+                </Button>
+              )}
             </div>
           </Card>
           );
