@@ -54,6 +54,17 @@ export const useIndexHandlers = ({
       const data = await response.json();
       
       if (data.success) {
+        const oldUserId = user?.id;
+        const newUserId = data.user.id;
+        
+        if (oldUserId && oldUserId !== newUserId) {
+          userSyncManager.clearAllUserData();
+          localStorage.setItem('user', JSON.stringify(data.user));
+          localStorage.setItem('token', data.token);
+          window.location.reload();
+          return;
+        }
+        
         userSyncManager.clearCache();
         
         localStorage.setItem('user', JSON.stringify(data.user));
@@ -89,7 +100,7 @@ export const useIndexHandlers = ({
   const handleLogout = () => {
     const confirmed = window.confirm('Вы точно хотите выйти из аккаунта?');
     if (confirmed) {
-      userSyncManager.clearCache();
+      userSyncManager.clearAllUserData();
       
       setUser(null);
       localStorage.removeItem('user');

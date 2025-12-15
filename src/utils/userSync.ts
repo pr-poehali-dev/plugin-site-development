@@ -1,3 +1,6 @@
+import { notificationsCache } from './notificationsCache';
+import { requestCache } from './requestCache';
+
 type UserSyncListener = (user: any) => void;
 
 class UserSyncManager {
@@ -84,6 +87,31 @@ class UserSyncManager {
     this.cachedUser = null;
     this.lastSync = 0;
     this.syncInProgress = false;
+  }
+
+  clearAllUserData() {
+    this.cachedUser = null;
+    this.lastSync = 0;
+    this.syncInProgress = false;
+    
+    notificationsCache.clearCache();
+    requestCache.clear();
+    
+    sessionStorage.clear();
+    
+    const keysToKeep = ['sidebarOpen', 'activeView', 'activeCategory', 'cookieConsent'];
+    const storage: { [key: string]: string | null } = {};
+    keysToKeep.forEach(key => {
+      storage[key] = localStorage.getItem(key);
+    });
+    
+    localStorage.clear();
+    
+    keysToKeep.forEach(key => {
+      if (storage[key]) {
+        localStorage.setItem(key, storage[key]!);
+      }
+    });
   }
 }
 
