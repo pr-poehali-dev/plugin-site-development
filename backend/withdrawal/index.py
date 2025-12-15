@@ -272,7 +272,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     }
                 
                 cursor.execute("""
-                    SELECT user_id, amount, status FROM withdrawal_requests
+                    SELECT user_id, amount, status, usdt_wallet FROM withdrawal_requests
                     WHERE id = %s
                 """, (withdrawal_id,))
                 
@@ -307,7 +307,13 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     cursor.execute("""
                         INSERT INTO transactions (user_id, amount, type, description)
                         VALUES (%s, %s, 'withdrawal_rejected', %s)
-                    """, (withdrawal['user_id'], refund_amount, f'Возврат средств (заявка #{withdrawal_id} отклонена, вкл. комиссию {usdt_commission} USDT)'))
+                    """, (withdrawal['user_id'], refund_amount, f'Возврат средств (заявка #{withdrawal_id} отклонена, адрес: {withdrawal["usdt_wallet"]}, вкл. комиссию {usdt_commission} USDT)'))
+                elif new_status == 'completed':
+                    # При успешном выводе добавляем запись в историю транзакций
+                    cursor.execute("""
+                        INSERT INTO transactions (user_id, amount, type, description)
+                        VALUES (%s, %s, 'withdrawal_completed', %s)
+                    """, (withdrawal['user_id'], -float(withdrawal['amount']), f'Вывод {withdrawal["amount"]} USDT на адрес {withdrawal["usdt_wallet"]} (заявка #{withdrawal_id})'))
                 
                 cursor.execute("""
                     UPDATE withdrawal_requests
@@ -340,9 +346,9 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 # Отправляем личное сообщение от системы (from_user_id = 1 - система)
                 system_message = notif_msg
                 if admin_comment and new_status == 'rejected':
-                    system_message = f"🔔 Заявка на вывод #{withdrawal_id} отклонена\n\n💰 Сумма: {withdrawal['amount']} USDT\n❌ Причина: {admin_comment}\n\nСредства возвращены на ваш баланс."
+                    system_message = f"🔔 Заявка на вывод #{withdrawal_id} отклонена\n\n💰 Сумма: {withdrawal['amount']} USDT\n📍 Адрес: {withdrawal['usdt_wallet']}\n❌ Причина: {admin_comment}\n\nСредства возвращены на ваш баланс."
                 elif new_status == 'completed':
-                    system_message = f"✅ Заявка на вывод #{withdrawal_id} успешно обработана!\n\n💰 Сумма: {withdrawal['amount']} USDT\n📤 Средства отправлены на ваш кошелек."
+                    system_message = f"✅ Заявка на вывод #{withdrawal_id} успешно обработана!\n\n💰 Сумма: {withdrawal['amount']} USDT\n📍 Адрес: {withdrawal['usdt_wallet']}\n📤 Средства отправлены на ваш кошелек."
                 
                 cursor.execute("""
                     INSERT INTO messages (from_user_id, to_user_id, message, is_read)
