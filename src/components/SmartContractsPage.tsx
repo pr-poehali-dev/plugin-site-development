@@ -5,19 +5,23 @@ import { useToast } from '@/hooks/use-toast';
 import { contracts } from './SmartContracts/contractsData';
 import GuideSection from './SmartContracts/GuideSection';
 import ContractCard from './SmartContracts/ContractCard';
-import VipDialog from './SmartContracts/VipDialog';
-
-const VIP_PURCHASE_URL = 'https://functions.poehali.dev/d28b5823-1cfa-4ef4-9dd8-ac4a3c2ab44c';
+import VipTonPurchase from '@/components/VipTonPurchase';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
 interface SmartContractsPageProps {
   user?: User | null;
+  onShowAuthDialog?: () => void;
 }
 
-const SmartContractsPage = ({ user }: SmartContractsPageProps) => {
+const SmartContractsPage = ({ user, onShowAuthDialog }: SmartContractsPageProps) => {
   const { toast } = useToast();
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const [showVipDialog, setShowVipDialog] = useState(false);
-  const [isPurchasing, setIsPurchasing] = useState(false);
   
   const isAdmin = user?.role === 'admin';
   const hasActiveVip = user?.vip_until && new Date(user.vip_until) > new Date();
@@ -59,79 +63,12 @@ const SmartContractsPage = ({ user }: SmartContractsPageProps) => {
     return lines.map(obfuscateLine).join('\n');
   };
 
-  const handlePurchaseVip = async () => {
-    if (!user) {
-      toast({
-        title: 'Ошибка',
-        description: 'Необходимо войти в систему',
-        variant: 'destructive'
-      });
+  const handleBuyVip = () => {
+    if (!user && onShowAuthDialog) {
+      onShowAuthDialog();
       return;
     }
-
-    const userBalance = Number(user.balance) || 0;
-    if (userBalance < 1250) {
-      toast({
-        title: 'Недостаточно средств',
-        description: `На балансе ${userBalance.toFixed(2)} USDT. Необходимо 1250 USDT`,
-        variant: 'destructive'
-      });
-      return;
-    }
-
-    setIsPurchasing(true);
-    
-    try {
-      const response = await fetch(VIP_PURCHASE_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-User-Id': user.id.toString()
-        },
-        body: JSON.stringify({
-          action: 'purchase_vip'
-        })
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        const updatedUser = {
-          ...user,
-          balance: data.new_balance,
-          vip_until: data.vip_until
-        };
-        localStorage.setItem('user', JSON.stringify(updatedUser));
-        
-        toast({
-          title: '🎉 VIP статус активирован!',
-          description: data.message,
-          duration: 5000
-        });
-
-        setShowVipDialog(false);
-        
-        // Обновляем баланс через 5 секунд перед перезагрузкой
-        setTimeout(() => {
-          window.location.reload();
-        }, 5000);
-      } else {
-        toast({
-          title: 'Ошибка',
-          description: data.error || 'Не удалось приобрести VIP-статус',
-          variant: 'destructive'
-        });
-      }
-    } catch (error) {
-      console.error('Purchase VIP error:', error);
-      toast({
-        title: 'Ошибка',
-        description: 'Не удалось приобрести VIP-статус',
-        variant: 'destructive'
-      });
-    } finally {
-      setIsPurchasing(false);
-    }
+    setShowVipDialog(true);
   };
 
   const copyCode = async (code: string, id: string) => {
@@ -187,20 +124,21 @@ const SmartContractsPage = ({ user }: SmartContractsPageProps) => {
               canViewFullCode={canViewFullCode}
               copiedCode={copiedCode}
               onCopy={copyCode}
-              onShowVipDialog={() => setShowVipDialog(true)}
+              onShowVipDialog={handleBuyVip}
               processCode={processCode}
             />
           ))}
         </div>
       </div>
 
-      <VipDialog
-        open={showVipDialog}
-        onOpenChange={setShowVipDialog}
-        user={user || null}
-        isPurchasing={isPurchasing}
-        onPurchase={handlePurchaseVip}
-      />
+      <Dialog open={showVipDialog} onOpenChange={setShowVipDialog}>
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Покупка VIP статуса</DialogTitle>
+          </DialogHeader>
+          <VipTonPurchase user={user || null} onShowAuthDialog={onShowAuthDialog || (() => {})} />
+        </DialogContent>
+      </Dialog>
 
       <div className="mt-6 sm:mt-8 p-4 sm:p-5 md:p-6 bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/30 rounded-xl sm:rounded-2xl">
         <h3 className="text-base sm:text-lg md:text-xl font-bold mb-2 sm:mb-3 flex items-center gap-2">

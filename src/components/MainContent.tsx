@@ -77,7 +77,7 @@ const MainContent = ({
         ) : activeCategory === 'referral-program' ? (
           user ? <ReferralProgramPage user={user} /> : <div className="text-center py-12"><p className="text-muted-foreground">Требуется авторизация</p></div>
         ) : activeCategory === 'smart-contracts' ? (
-          <SmartContractsPage user={user} />
+          <SmartContractsPage user={user} onShowAuthDialog={onShowAuthDialog} />
         ) : activeCategory === 'deals' ? (
           <DealsView 
             user={user} 
