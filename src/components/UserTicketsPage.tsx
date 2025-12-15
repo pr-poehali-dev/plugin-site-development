@@ -276,52 +276,6 @@ const UserTicketsPage = ({ user }: UserTicketsPageProps) => {
                 {selectedTicket?.id === ticket.id && (
                   <div className="pt-3 border-t space-y-4">
                     <div className="bg-muted/20 rounded-lg p-3 max-h-[400px] overflow-y-auto space-y-3">
-                      <div className="flex items-start gap-2">
-                        <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
-                          <Icon name="User" size={16} className="text-primary" />
-                        </div>
-                        <div className="flex-1">
-                          <div className="bg-primary/10 rounded-lg p-3 border border-primary/20">
-                            <div className="flex items-center gap-2 mb-1">
-                              <span className="text-xs font-semibold">{ticket.username}</span>
-                              <span className="text-xs text-muted-foreground">
-                                {new Date(ticket.created_at).toLocaleString('ru-RU')}
-                              </span>
-                            </div>
-                            <p className="text-sm whitespace-pre-wrap">{ticket.message}</p>
-                          </div>
-                        </div>
-                      </div>
-
-                      {ticket.admin_response && messages.length === 0 && (
-                        <div className="flex items-start gap-2">
-                          <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 bg-gradient-to-br from-green-500 to-emerald-600 ring-2 ring-green-500/30">
-                            <Icon name="UserCheck" size={16} className="text-white" />
-                          </div>
-                          <div className="flex-1">
-                            <div className="rounded-lg p-3 bg-gradient-to-br from-green-500/10 to-emerald-500/10 border-l-4 border-green-500/50 shadow-sm">
-                              <div className="flex items-center gap-2 mb-1 flex-wrap">
-                                <span className="text-xs font-semibold">{ticket.answered_by || 'Администратор'}</span>
-                                <span className="px-2 py-0.5 bg-gradient-to-r from-green-500/20 to-emerald-500/20 text-green-400 text-[10px] rounded-full font-bold border border-green-500/30 uppercase">
-                                  ★ Администратор
-                                </span>
-                                {ticket.answered_at && (
-                                  <span className="text-xs text-muted-foreground">
-                                    {new Date(ticket.answered_at).toLocaleString('ru-RU', {
-                                      day: 'numeric',
-                                      month: 'short',
-                                      hour: '2-digit',
-                                      minute: '2-digit'
-                                    })}
-                                  </span>
-                                )}
-                              </div>
-                              <p className="text-sm whitespace-pre-wrap text-foreground font-medium">{ticket.admin_response}</p>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-
                       {messages.map((msg) => (
                         <div key={msg.id} className={`flex items-start gap-2 ${msg.is_admin ? '' : 'flex-row-reverse'}`}>
                           <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${

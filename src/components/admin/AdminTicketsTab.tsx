@@ -29,9 +29,20 @@ interface AdminTicketsTabProps {
   onUpdateTicketStatus: (ticketId: number, status: 'open' | 'answered' | 'closed') => void;
 }
 
+interface TicketMessage {
+  id: number;
+  ticket_id: number;
+  user_id: number | null;
+  author_username: string;
+  message: string;
+  is_admin: boolean;
+  created_at: string;
+}
+
 const AdminTicketsTab = ({ tickets, currentUser, onRefresh, onUpdateTicketStatus }: AdminTicketsTabProps) => {
   const { toast } = useToast();
   const [selectedTicket, setSelectedTicket] = useState<SupportTicket | null>(null);
+  const [messages, setMessages] = useState<TicketMessage[]>([]);
   const [response, setResponse] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [filter, setFilter] = useState<'all' | 'open' | 'answered' | 'closed'>('all');
@@ -51,6 +62,28 @@ const AdminTicketsTab = ({ tickets, currentUser, onRefresh, onUpdateTicketStatus
     open: { label: 'Открыт', color: 'text-yellow-500' },
     answered: { label: 'Отвечен', color: 'text-blue-500' },
     closed: { label: 'Закрыт', color: 'text-green-500' }
+  };
+
+  const loadMessages = async (ticketId: number) => {
+    try {
+      const response = await fetch(TICKETS_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-User-Id': currentUser.id.toString()
+        },
+        body: JSON.stringify({
+          action: 'get_messages',
+          ticket_id: ticketId
+        })
+      });
+      const data = await response.json();
+      if (data.success) {
+        setMessages(data.messages || []);
+      }
+    } catch (error) {
+      console.error('Ошибка загрузки сообщений:', error);
+    }
   };
 
   const filteredTickets = tickets.filter(ticket => {
@@ -94,7 +127,9 @@ const AdminTicketsTab = ({ tickets, currentUser, onRefresh, onUpdateTicketStatus
         });
         triggerNotificationUpdateImmediate(currentUser.id, currentUser.role);
         setResponse('');
-        setSelectedTicket(null);
+        if (selectedTicket) {
+          loadMessages(selectedTicket.id);
+        }
         onRefresh();
       } else {
         toast({
@@ -193,7 +228,13 @@ const AdminTicketsTab = ({ tickets, currentUser, onRefresh, onUpdateTicketStatus
                       variant="outline"
                       size="sm"
                       onClick={() => {
-                        setSelectedTicket(selectedTicket?.id === ticket.id ? null : ticket);
+                        if (selectedTicket?.id === ticket.id) {
+                          setSelectedTicket(null);
+                          setMessages([]);
+                        } else {
+                          setSelectedTicket(ticket);
+                          loadMessages(ticket.id);
+                        }
                         setResponse('');
                       }}
                     >
@@ -206,26 +247,35 @@ const AdminTicketsTab = ({ tickets, currentUser, onRefresh, onUpdateTicketStatus
                 {selectedTicket?.id === ticket.id && (
                   <div className="pt-3 border-t space-y-4">
                     <div>
-                      <p className="text-sm font-medium mb-2">Сообщение пользователя:</p>
-                      <div className="bg-muted/50 p-3 rounded-lg">
-                        <p className="text-sm whitespace-pre-wrap">{ticket.message}</p>
+                      <p className="text-sm font-medium mb-2">История переписки:</p>
+                      <div className="space-y-2 max-h-96 overflow-y-auto">
+                        {messages.map((msg) => (
+                          <div
+                            key={msg.id}
+                            className={`p-3 rounded-lg ${
+                              msg.is_admin
+                                ? 'bg-primary/10 ml-8'
+                                : 'bg-muted/50 mr-8'
+                            }`}
+                          >
+                            <div className="flex items-center gap-2 mb-1">
+                              <Icon name="User" size={12} />
+                              <span className="text-xs font-medium">{msg.author_username}</span>
+                              <span className="text-xs text-muted-foreground">•</span>
+                              <span className="text-xs text-muted-foreground">
+                                {new Date(msg.created_at).toLocaleString('ru-RU')}
+                              </span>
+                              {msg.is_admin && (
+                                <span className="text-xs px-1.5 py-0.5 bg-primary/20 text-primary rounded">
+                                  Администратор
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-sm whitespace-pre-wrap">{msg.message}</p>
+                          </div>
+                        ))}
                       </div>
                     </div>
-
-                    {ticket.admin_response && (
-                      <div>
-                        <p className="text-sm font-medium mb-2">Ваш ответ:</p>
-                        <div className="bg-primary/10 p-3 rounded-lg">
-                          <p className="text-sm whitespace-pre-wrap">{ticket.admin_response}</p>
-                          <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
-                            <Icon name="User" size={12} />
-                            <span>{ticket.answered_by}</span>
-                            <span>•</span>
-                            <span>{ticket.answered_at && new Date(ticket.answered_at).toLocaleString('ru-RU')}</span>
-                          </div>
-                        </div>
-                      </div>
-                    )}
 
                     {ticket.status !== 'closed' && (
                       <div>

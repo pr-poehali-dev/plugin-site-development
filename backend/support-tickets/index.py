@@ -155,6 +155,12 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     """, (user_id, username, category, subject, message))
                     ticket = cur.fetchone()
                     
+                    # Добавляем первое сообщение пользователя в историю
+                    cur.execute("""
+                        INSERT INTO ticket_messages (ticket_id, user_id, author_username, message, is_admin, created_at)
+                        VALUES (%s, %s, %s, %s, false, NOW())
+                    """, (ticket['id'], user_id, username, message))
+                    
                     if ticket.get('created_at'):
                         ticket['created_at'] = ticket['created_at'].isoformat()
                     
@@ -192,6 +198,21 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     }
                 
                 with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                    # Получаем информацию о тикете
+                    cur.execute("""
+                        SELECT user_id FROM support_tickets WHERE id = %s
+                    """, (ticket_id,))
+                    ticket = cur.fetchone()
+                    
+                    if not ticket:
+                        return {
+                            'statusCode': 404,
+                            'headers': headers,
+                            'body': json.dumps({'success': False, 'error': 'Ticket not found'}),
+                            'isBase64Encoded': False
+                        }
+                    
+                    # Обновляем статус тикета
                     cur.execute("""
                         UPDATE support_tickets
                         SET admin_response = %s,
@@ -200,24 +221,20 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                             status = 'answered',
                             updated_at = NOW()
                         WHERE id = %s
-                        RETURNING id
                     """, (admin_response, answered_by, ticket_id))
-                    result = cur.fetchone()
                     
-                    if result:
-                        return {
-                            'statusCode': 200,
-                            'headers': headers,
-                            'body': json.dumps({'success': True}),
-                            'isBase64Encoded': False
-                        }
-                    else:
-                        return {
-                            'statusCode': 404,
-                            'headers': headers,
-                            'body': json.dumps({'success': False, 'error': 'Ticket not found'}),
-                            'isBase64Encoded': False
-                        }
+                    # Добавляем сообщение администратора в историю
+                    cur.execute("""
+                        INSERT INTO ticket_messages (ticket_id, user_id, author_username, message, is_admin, created_at)
+                        VALUES (%s, NULL, %s, %s, true, NOW())
+                    """, (ticket_id, answered_by, admin_response))
+                    
+                    return {
+                        'statusCode': 200,
+                        'headers': headers,
+                        'body': json.dumps({'success': True}),
+                        'isBase64Encoded': False
+                    }
             
             elif action == 'update_status':
                 # Изменить статус тикета
