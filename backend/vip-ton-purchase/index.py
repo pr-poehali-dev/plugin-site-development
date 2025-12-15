@@ -290,6 +290,46 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'body': json.dumps({'success': True, 'message': 'Заявка отклонена'}),
                     'isBase64Encoded': False
                 }
+            
+            elif action == 'admin_grant_vip':
+                cur.execute(f"SELECT role FROM {SCHEMA}.users WHERE id = %s", (user_id,))
+                admin_row = cur.fetchone()
+                
+                if not admin_row or admin_row['role'] != 'admin':
+                    return {
+                        'statusCode': 403,
+                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({'error': 'Доступ запрещен'}),
+                        'isBase64Encoded': False
+                    }
+                
+                target_user_id = body_data.get('target_user_id')
+                vip_days = body_data.get('vip_days', 30)
+                
+                if not target_user_id:
+                    return {
+                        'statusCode': 400,
+                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({'error': 'Укажите target_user_id'}),
+                        'isBase64Encoded': False
+                    }
+                
+                vip_until = datetime.utcnow() + timedelta(days=vip_days)
+                
+                cur.execute(f"""
+                    UPDATE {SCHEMA}.users
+                    SET vip_until = %s
+                    WHERE id = %s
+                """, (vip_until, target_user_id))
+                
+                conn.commit()
+                
+                return {
+                    'statusCode': 200,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'success': True, 'message': f'VIP статус выдан на {vip_days} дней'}),
+                    'isBase64Encoded': False
+                }
         
         return {
             'statusCode': 405,
