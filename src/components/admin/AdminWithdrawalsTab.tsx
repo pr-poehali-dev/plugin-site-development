@@ -38,6 +38,49 @@ const AdminWithdrawalsTab = ({ withdrawals, currentUser, onRefresh }: AdminWithd
   const [loading, setLoading] = useState(false);
   const [filterStatus, setFilterStatus] = useState<'all' | 'pending' | 'processing' | 'completed' | 'rejected' | 'cancelled'>('processing');
 
+  const sendHistoricalNotifications = async () => {
+    if (!confirm('Отправить уведомления всем пользователям с обработанными заявками? Уведомления получат только те, кто ещё не получал их ранее.')) {
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await fetch(WITHDRAWAL_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-User-Id': currentUser.id.toString()
+        },
+        body: JSON.stringify({
+          action: 'send_historical_notifications'
+        })
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        toast({
+          title: 'Успешно',
+          description: `Отправлено уведомлений: ${data.notifications_sent} из ${data.total_withdrawals} заявок`,
+          duration: 5000
+        });
+      } else {
+        toast({
+          title: 'Ошибка',
+          description: data.error || 'Ошибка отправки уведомлений',
+          variant: 'destructive'
+        });
+      }
+    } catch (error) {
+      toast({
+        title: 'Ошибка',
+        description: 'Ошибка подключения к серверу',
+        variant: 'destructive'
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const processWithdrawal = async (withdrawalId: number, status: 'completed' | 'rejected') => {
     const confirmMsg = status === 'completed' 
       ? 'Подтвердить вывод средств? Средства будут отправлены на кошелек пользователя.'
@@ -168,34 +211,47 @@ const AdminWithdrawalsTab = ({ withdrawals, currentUser, onRefresh }: AdminWithd
       </div>
 
       <Card className="p-3 sm:p-4">
-        <div className="flex flex-wrap gap-2 mb-4">
+        <div className="flex flex-wrap gap-2 mb-4 items-center justify-between">
+          <div className="flex flex-wrap gap-2">
+            <Button
+              variant={filterStatus === 'all' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setFilterStatus('all')}
+            >
+              Все
+            </Button>
+            <Button
+              variant={filterStatus === 'processing' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setFilterStatus('processing')}
+            >
+              В обработке
+            </Button>
+            <Button
+              variant={filterStatus === 'completed' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setFilterStatus('completed')}
+            >
+              Завершено
+            </Button>
+            <Button
+              variant={filterStatus === 'rejected' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setFilterStatus('rejected')}
+            >
+              Отклонено
+            </Button>
+          </div>
+          
           <Button
-            variant={filterStatus === 'all' ? 'default' : 'outline'}
+            variant="outline"
             size="sm"
-            onClick={() => setFilterStatus('all')}
+            onClick={sendHistoricalNotifications}
+            disabled={loading}
+            className="gap-2"
           >
-            Все
-          </Button>
-          <Button
-            variant={filterStatus === 'processing' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setFilterStatus('processing')}
-          >
-            В обработке
-          </Button>
-          <Button
-            variant={filterStatus === 'completed' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setFilterStatus('completed')}
-          >
-            Завершено
-          </Button>
-          <Button
-            variant={filterStatus === 'rejected' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setFilterStatus('rejected')}
-          >
-            Отклонено
+            <Icon name="Bell" size={16} />
+            Отправить уведомления старым заявкам
           </Button>
         </div>
 

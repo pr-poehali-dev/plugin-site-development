@@ -367,6 +367,78 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'isBase64Encoded': False
                 }
             
+            elif action == 'send_historical_notifications':
+                cursor.execute('SELECT role FROM users WHERE id = %s', (user_id,))
+                user_role = cursor.fetchone()
+                
+                if not user_role or user_role['role'] != 'admin':
+                    cursor.close()
+                    return {
+                        'statusCode': 403,
+                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({'error': 'Access denied'}),
+                        'isBase64Encoded': False
+                    }
+                
+                cursor.execute(f"""
+                    SELECT id, user_id, amount, status, usdt_wallet, admin_comment, completed_at
+                    FROM {SCHEMA}.withdrawal_requests
+                    WHERE status IN ('completed', 'rejected') 
+                    AND completed_at IS NOT NULL
+                    ORDER BY completed_at DESC
+                """)
+                
+                processed_withdrawals = cursor.fetchall()
+                notifications_sent = 0
+                
+                for withdrawal in processed_withdrawals:
+                    withdrawal_id = withdrawal['id']
+                    wr_user_id = withdrawal['user_id']
+                    status = withdrawal['status']
+                    admin_comment = withdrawal['admin_comment'] or ''
+                    
+                    if status == 'completed':
+                        notification_type = 'withdrawal_completed'
+                        notif_msg = f'Ваша заявка на вывод {withdrawal["amount"]} USDT успешно обработана! Средства отправлены на ваш кошелек.'
+                        system_message = f"✅ Заявка на вывод #{withdrawal_id} успешно обработана!\n\n💰 Сумма: {withdrawal['amount']} USDT\n📍 Адрес: {withdrawal['usdt_wallet']}\n📤 Средства отправлены на ваш кошелек."
+                    else:
+                        notification_type = 'withdrawal_rejected'
+                        notif_msg = f'Ваша заявка на вывод {withdrawal["amount"]} USDT отклонена.'
+                        if admin_comment:
+                            notif_msg += f' Причина: {admin_comment}'
+                        system_message = f"🔔 Заявка на вывод #{withdrawal_id} отклонена\n\n💰 Сумма: {withdrawal['amount']} USDT\n📍 Адрес: {withdrawal['usdt_wallet']}\n❌ Причина: {admin_comment}\n\nСредства возвращены на ваш баланс."
+                    
+                    cursor.execute(f"""
+                        SELECT COUNT(*) as count FROM {SCHEMA}.messages 
+                        WHERE from_user_id = 1 AND to_user_id = %s 
+                        AND message LIKE %s
+                    """, (wr_user_id, f'%заявка на вывод #{withdrawal_id}%'))
+                    
+                    already_sent = cursor.fetchone()['count']
+                    
+                    if already_sent == 0:
+                        cursor.execute(f"""
+                            INSERT INTO {SCHEMA}.notifications (user_id, type, title, message, is_read)
+                            VALUES (%s, %s, %s, %s, FALSE)
+                        """, (wr_user_id, notification_type, 'Заявка на вывод обработана', notif_msg))
+                        
+                        cursor.execute(f"""
+                            INSERT INTO {SCHEMA}.messages (from_user_id, to_user_id, message, is_read)
+                            VALUES (1, %s, %s, FALSE)
+                        """, (wr_user_id, system_message))
+                        
+                        notifications_sent += 1
+                
+                conn.commit()
+                cursor.close()
+                
+                return {
+                    'statusCode': 200,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'success': True, 'notifications_sent': notifications_sent, 'total_withdrawals': len(processed_withdrawals)}),
+                    'isBase64Encoded': False
+                }
+            
             elif action == 'mark_notifications_read':
                 cursor.execute("""
                     UPDATE withdrawal_notifications
