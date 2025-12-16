@@ -391,6 +391,193 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'isBase64Encoded': False
                 }
             
+            elif action == 'buyer_pay':
+                deal_id = body.get('deal_id')
+                
+                if not deal_id:
+                    cursor.close()
+                    return {
+                        'statusCode': 400,
+                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({'error': 'Deal ID required'}),
+                        'isBase64Encoded': False
+                    }
+                
+                # Проверяем баланс и блокируем средства
+                cursor.execute("""
+                    SELECT d.id, d.price, d.seller_id, u.balance
+                    FROM deals d
+                    INNER JOIN users u ON u.id = %s
+                    WHERE d.id = %s AND d.buyer_id = %s AND d.step = 'buyer_payment'
+                """, (user_id, deal_id, user_id))
+                
+                deal_data = cursor.fetchone()
+                
+                if not deal_data:
+                    cursor.close()
+                    return {
+                        'statusCode': 400,
+                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({'error': 'Deal not available'}),
+                        'isBase64Encoded': False
+                    }
+                
+                if deal_data['balance'] < deal_data['price']:
+                    cursor.close()
+                    return {
+                        'statusCode': 400,
+                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({'error': 'Insufficient balance'}),
+                        'isBase64Encoded': False
+                    }
+                
+                # Блокируем средства и обновляем шаг
+                cursor.execute("""
+                    UPDATE users SET balance = balance - %s WHERE id = %s
+                """, (deal_data['price'], user_id))
+                
+                cursor.execute("""
+                    UPDATE deals SET step = 'seller_sending', updated_at = CURRENT_TIMESTAMP
+                    WHERE id = %s
+                """, (deal_id,))
+                
+                cursor.execute("""
+                    INSERT INTO deal_messages (deal_id, user_id, message, is_system)
+                    VALUES (%s, %s, 'Средства заблокированы. Ожидаем передачи товара', true)
+                """, (deal_id, user_id))
+                
+                conn.commit()
+                cursor.close()
+                
+                return {
+                    'statusCode': 200,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'success': True}),
+                    'isBase64Encoded': False
+                }
+            
+            elif action == 'seller_sent':
+                deal_id = body.get('deal_id')
+                
+                cursor.execute("""
+                    UPDATE deals 
+                    SET step = 'buyer_confirming', updated_at = CURRENT_TIMESTAMP
+                    WHERE id = %s AND seller_id = %s AND step = 'seller_sending'
+                    RETURNING id
+                """, (deal_id, user_id))
+                
+                result = cursor.fetchone()
+                
+                if not result:
+                    cursor.close()
+                    return {
+                        'statusCode': 400,
+                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({'error': 'Invalid operation'}),
+                        'isBase64Encoded': False
+                    }
+                
+                cursor.execute("""
+                    INSERT INTO deal_messages (deal_id, user_id, message, is_system)
+                    VALUES (%s, %s, 'Товар передан. Ожидаем подтверждения покупателя', true)
+                """, (deal_id, user_id))
+                
+                conn.commit()
+                cursor.close()
+                
+                return {
+                    'statusCode': 200,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'success': True}),
+                    'isBase64Encoded': False
+                }
+            
+            elif action == 'buyer_confirm':
+                deal_id = body.get('deal_id')
+                
+                # Получаем данные сделки
+                cursor.execute("""
+                    SELECT price, seller_id FROM deals 
+                    WHERE id = %s AND buyer_id = %s AND step = 'buyer_confirming'
+                """, (deal_id, user_id))
+                
+                deal_data = cursor.fetchone()
+                
+                if not deal_data:
+                    cursor.close()
+                    return {
+                        'statusCode': 400,
+                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({'error': 'Invalid operation'}),
+                        'isBase64Encoded': False
+                    }
+                
+                # Переводим средства продавцу с вычетом комиссии 3%
+                commission = deal_data['price'] * 0.03
+                seller_amount = deal_data['price'] - commission
+                
+                cursor.execute("""
+                    UPDATE users SET balance = balance + %s WHERE id = %s
+                """, (seller_amount, deal_data['seller_id']))
+                
+                cursor.execute("""
+                    UPDATE deals 
+                    SET status = 'completed', step = 'completed', updated_at = CURRENT_TIMESTAMP
+                    WHERE id = %s
+                """, (deal_id,))
+                
+                cursor.execute("""
+                    INSERT INTO deal_messages (deal_id, user_id, message, is_system)
+                    VALUES (%s, %s, 'Сделка завершена. Средства переведены продавцу', true)
+                """, (deal_id, user_id))
+                
+                conn.commit()
+                cursor.close()
+                
+                return {
+                    'statusCode': 200,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'success': True}),
+                    'isBase64Encoded': False
+                }
+            
+            elif action == 'seller_dispute' or action == 'buyer_dispute':
+                deal_id = body.get('deal_id')
+                reason = body.get('reason', 'Открыт спор')
+                
+                cursor.execute("""
+                    UPDATE deals 
+                    SET step = 'dispute', updated_at = CURRENT_TIMESTAMP
+                    WHERE id = %s AND (seller_id = %s OR buyer_id = %s) AND status = 'in_progress'
+                    RETURNING id
+                """, (deal_id, user_id, user_id))
+                
+                result = cursor.fetchone()
+                
+                if not result:
+                    cursor.close()
+                    return {
+                        'statusCode': 400,
+                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({'error': 'Invalid operation'}),
+                        'isBase64Encoded': False
+                    }
+                
+                cursor.execute("""
+                    INSERT INTO deal_messages (deal_id, user_id, message, is_system)
+                    VALUES (%s, %s, %s, true)
+                """, (deal_id, user_id, f'Открыт спор: {reason}'))
+                
+                conn.commit()
+                cursor.close()
+                
+                return {
+                    'statusCode': 200,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'success': True}),
+                    'isBase64Encoded': False
+                }
+            
             elif action == 'confirm_payment':
                 deal_id = body.get('deal_id')
                 
