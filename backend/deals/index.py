@@ -38,6 +38,8 @@ def serialize_datetime(obj):
 
 def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     method: str = event.get('httpMethod', 'GET')
+    print(f"DEBUG: method={method}, event keys={list(event.keys())}")
+    print(f"DEBUG: queryStringParameters={event.get('queryStringParameters')}")
     
     # CORS
     if method == 'OPTIONS':
@@ -66,6 +68,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         if method == 'GET':
             params = event.get('queryStringParameters', {}) or {}
             action = params.get('action', 'list')
+            print(f"GET request - action: {action}, params: {params}")
             
             if action == 'list':
                 status_filter = params.get('status', 'active')
