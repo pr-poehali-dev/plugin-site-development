@@ -525,7 +525,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     }
                 
                 # Переводим средства продавцу с вычетом комиссии 3%
-                commission = deal_data['price'] * 0.03
+                commission = deal_data['price'] * Decimal('0.03')
                 seller_amount = deal_data['price'] - commission
                 
                 cursor.execute("""
@@ -534,9 +534,9 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 
                 cursor.execute("""
                     UPDATE deals 
-                    SET status = 'completed', step = 'completed', updated_at = CURRENT_TIMESTAMP
+                    SET status = 'completed', step = 'completed', commission = %s, updated_at = CURRENT_TIMESTAMP
                     WHERE id = %s
-                """, (deal_id,))
+                """, (commission, deal_id))
                 
                 cursor.execute("""
                     INSERT INTO deal_messages (deal_id, user_id, message, is_system)
