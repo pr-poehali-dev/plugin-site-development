@@ -81,7 +81,9 @@ const FlashUsdtShop = ({ user, onShowAuthDialog, onRefreshUserBalance }: FlashUs
       color: 'from-red-600 to-red-800',
       borderColor: 'border-red-500/30',
       icon: 'Building',
-      popular: false
+      popular: false,
+      soldOut: true,
+      soldOutDate: '17.12.2025, 16:56:51'
     }
   ];
 
