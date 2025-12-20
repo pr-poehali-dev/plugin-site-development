@@ -18,10 +18,11 @@ interface Package {
   popular?: boolean;
   badge?: string;
   color?: string;
+  isTest?: boolean;
 }
 
 const packages: Package[] = [
-  { id: 0, name: 'Тестовый', price: 1, amount: 100, badge: 'TEST', color: 'cyan' },
+  { id: 0, name: 'Тестовый', price: 100, amount: 10, badge: '🧪 ТЕСТ', color: 'cyan', isTest: true },
   { id: 1, name: 'Стартовый', price: 2470, amount: 10000, color: 'blue' },
   { id: 2, name: 'Базовый', price: 4850, amount: 25000, color: 'blue' },
   { id: 3, name: 'Стандарт', price: 9500, amount: 50000, popular: true, color: 'purple' },
@@ -37,7 +38,20 @@ const packages: Package[] = [
   { id: 13, name: 'Легендарный', price: 6500000, amount: 50000000, color: 'yellow' }
 ];
 
-const getColorClasses = (color?: string, popular?: boolean) => {
+const getColorClasses = (color?: string, popular?: boolean, isTest?: boolean) => {
+  if (isTest) {
+    return {
+      border: 'border-cyan-500/70 ring-4 ring-cyan-500/20',
+      bg: 'bg-gradient-to-br from-cyan-500/30 via-cyan-400/20 to-cyan-500/10',
+      icon: 'bg-gradient-to-br from-cyan-400/40 to-cyan-500/40',
+      iconText: 'text-cyan-300',
+      title: 'text-cyan-300',
+      glow: 'shadow-2xl shadow-cyan-500/50',
+      button: 'bg-gradient-to-r from-cyan-500 to-cyan-400 hover:from-cyan-600 hover:to-cyan-500',
+      badge: 'bg-gradient-to-r from-cyan-500 to-cyan-400 animate-pulse'
+    };
+  }
+  
   if (popular) {
     return {
       border: 'border-purple-500/50',
@@ -238,7 +252,7 @@ export const TonFlashPackages = ({ user, onShowAuthDialog, onRefreshUserBalance 
         {/* Сетка пакетов */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-5 mb-10">
           {packages.map((pkg) => {
-            const colors = getColorClasses(pkg.color, pkg.popular);
+            const colors = getColorClasses(pkg.color, pkg.popular, pkg.isTest);
             return (
               <div
                 key={pkg.id}
@@ -246,7 +260,7 @@ export const TonFlashPackages = ({ user, onShowAuthDialog, onRefreshUserBalance 
               >
                 {/* Бейдж */}
                 {(pkg.popular || pkg.badge) && (
-                  <div className={`absolute top-0 right-0 ${colors.badge} text-white text-xs font-bold px-4 py-1.5 rounded-bl-xl shadow-lg z-10`}>
+                  <div className={`absolute top-0 right-0 ${colors.badge} text-white text-xs font-bold px-4 py-1.5 rounded-bl-xl shadow-lg z-10 ${pkg.isTest ? 'animate-pulse' : ''}`}>
                     {pkg.popular ? '🔥 ХИТ' : pkg.badge}
                   </div>
                 )}
