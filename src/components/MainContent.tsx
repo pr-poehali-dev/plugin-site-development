@@ -101,6 +101,7 @@ const MainContent = ({
           <TonFlashPackages 
             user={user} 
             onShowAuthDialog={onShowAuthDialog}
+            onRefreshUserBalance={onRefreshUserBalance}
           />
         ) : activeCategory === 'flash-btc' ? (
           <FlashBtcShop 

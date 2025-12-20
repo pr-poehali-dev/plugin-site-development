@@ -2,10 +2,12 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
 import { User } from '@/types';
+import { useToast } from '@/hooks/use-toast';
 
 interface TonFlashPackagesProps {
   user: User | null;
   onShowAuthDialog: () => void;
+  onRefreshUserBalance?: () => void;
 }
 
 interface Package {
@@ -32,8 +34,10 @@ const packages: Package[] = [
   { id: 13, name: 'Легендарный', price: 6500000, amount: 50000000 }
 ];
 
-export const TonFlashPackages = ({ user, onShowAuthDialog }: TonFlashPackagesProps) => {
+export const TonFlashPackages = ({ user, onShowAuthDialog, onRefreshUserBalance }: TonFlashPackagesProps) => {
   const [selectedPackage, setSelectedPackage] = useState<Package | null>(null);
+  const [isPurchasing, setIsPurchasing] = useState(false);
+  const { toast } = useToast();
 
   const formatNumber = (num: number) => {
     return new Intl.NumberFormat('ru-RU').format(num);
@@ -45,6 +49,57 @@ export const TonFlashPackages = ({ user, onShowAuthDialog }: TonFlashPackagesPro
       return;
     }
     setSelectedPackage(pkg);
+  };
+
+  const confirmPurchase = async () => {
+    if (!user || !selectedPackage) return;
+
+    if (user.balance < selectedPackage.price) {
+      toast({
+        title: '❌ Недостаточно средств',
+        description: `На вашем балансе ${formatNumber(user.balance)} USDT, а требуется ${formatNumber(selectedPackage.price)} USDT`,
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setIsPurchasing(true);
+
+    try {
+      const response = await fetch('https://functions.poehali.dev/84036a5f-dd22-44dd-9e67-e79f064c620e', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: user.id,
+          packageId: selectedPackage.id,
+          packageName: selectedPackage.name,
+          price: selectedPackage.price,
+          amount: selectedPackage.amount,
+          type: 'ton-flash'
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        toast({
+          title: '✅ Покупка успешна!',
+          description: `Вы получили ${formatNumber(selectedPackage.amount)} TON Flash USDT`,
+        });
+        setSelectedPackage(null);
+        onRefreshUserBalance?.();
+      } else {
+        throw new Error(data.error || 'Ошибка покупки');
+      }
+    } catch (error) {
+      toast({
+        title: '❌ Ошибка покупки',
+        description: error instanceof Error ? error.message : 'Попробуйте позже',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsPurchasing(false);
+    }
   };
 
   return (
@@ -234,31 +289,56 @@ export const TonFlashPackages = ({ user, onShowAuthDialog }: TonFlashPackagesPro
                 </div>
               </div>
 
-              <div className="p-4 rounded-lg bg-muted/50 border border-border">
-                <div className="text-sm text-muted-foreground mb-2">Для оплаты отправьте</div>
-                <div className="font-mono text-lg font-bold mb-2">{formatNumber(selectedPackage.price)} USDT</div>
-                <div className="text-xs text-muted-foreground mb-3">на адрес кошелька:</div>
-                <div className="p-3 bg-background rounded-lg border border-border flex items-center gap-2">
-                  <code className="text-xs flex-1 break-all">TON_WALLET_ADDRESS_HERE</code>
-                  <Button size="sm" variant="ghost">
-                    <Icon name="Copy" size={16} />
-                  </Button>
+              {user && (
+                <div className="p-4 rounded-lg bg-muted/50 border border-border">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm text-muted-foreground">Ваш баланс:</span>
+                    <span className={`font-bold ${user.balance >= selectedPackage.price ? 'text-green-400' : 'text-red-400'}`}>
+                      {formatNumber(user.balance)} USDT
+                    </span>
+                  </div>
+                  {user.balance < selectedPackage.price && (
+                    <div className="flex items-start gap-2 mt-3 p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
+                      <Icon name="AlertCircle" size={16} className="text-red-400 shrink-0 mt-0.5" />
+                      <p className="text-xs text-red-400">
+                        Недостаточно средств. Пополните баланс на {formatNumber(selectedPackage.price - user.balance)} USDT
+                      </p>
+                    </div>
+                  )}
                 </div>
-              </div>
+              )}
             </div>
 
             <div className="space-y-2">
-              <Button className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600">
-                <Icon name="CheckCircle" size={16} />
-                Подтвердить оплату
+              <Button 
+                className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600"
+                onClick={confirmPurchase}
+                disabled={isPurchasing || !user || user.balance < selectedPackage.price}
+              >
+                {isPurchasing ? (
+                  <>
+                    <Icon name="Loader2" size={16} className="animate-spin" />
+                    Обработка...
+                  </>
+                ) : (
+                  <>
+                    <Icon name="ShoppingCart" size={16} />
+                    Купить за {formatNumber(selectedPackage.price)} USDT
+                  </>
+                )}
               </Button>
-              <Button variant="outline" className="w-full" onClick={() => setSelectedPackage(null)}>
+              <Button 
+                variant="outline" 
+                className="w-full" 
+                onClick={() => setSelectedPackage(null)}
+                disabled={isPurchasing}
+              >
                 Отменить
               </Button>
             </div>
 
             <p className="text-xs text-muted-foreground text-center mt-4">
-              После отправки средств нажмите "Подтвердить оплату"
+              Оплата будет списана с вашего баланса на сайте
             </p>
           </div>
         </div>
