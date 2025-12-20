@@ -213,8 +213,6 @@ export const TonFlashPackages = ({ user, onShowAuthDialog, onRefreshUserBalance 
         tonAddress: tonAddress.trim()
       };
       
-      console.log('Sending purchase request:', requestBody);
-      
       const response = await fetch('https://functions.poehali.dev/84036a5f-dd22-44dd-9e67-e79f064c620e', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -222,9 +220,6 @@ export const TonFlashPackages = ({ user, onShowAuthDialog, onRefreshUserBalance 
       });
 
       const data = await response.json();
-      
-      console.log('Response status:', response.status);
-      console.log('Response data:', data);
 
       if (response.ok && data.success) {
         toast({
@@ -236,11 +231,9 @@ export const TonFlashPackages = ({ user, onShowAuthDialog, onRefreshUserBalance 
         onRefreshUserBalance?.();
       } else {
         const errorMsg = data.error || data.details || 'Ошибка покупки';
-        console.error('Purchase error:', errorMsg, data);
         throw new Error(errorMsg);
       }
     } catch (error) {
-      console.error('Purchase exception:', error);
       toast({
         title: '❌ Ошибка покупки',
         description: error instanceof Error ? error.message : 'Попробуйте позже',

@@ -44,7 +44,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         package_type = body.get('type', 'ton-flash')
         ton_address = body.get('tonAddress', '')
         
-        if not all([user_id, package_id, price, amount, ton_address]):
+        if user_id is None or package_id is None or not price or not amount or not ton_address:
             return {
                 'statusCode': 400,
                 'headers': {
