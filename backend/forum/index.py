@@ -204,8 +204,14 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 }
         
         elif method == 'POST':
-            headers = event.get('headers', {})
-            user_id = headers.get('X-User-Id') or headers.get('x-user-id')
+            body_data = json.loads(event.get('body', '{}'))
+            action = body_data.get('action')
+            
+            # Get user_id from body or headers
+            user_id = body_data.get('user_id')
+            if not user_id:
+                headers = event.get('headers', {})
+                user_id = headers.get('X-User-Id') or headers.get('x-user-id')
             
             if not user_id:
                 return {
@@ -214,9 +220,6 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'body': json.dumps({'error': 'Требуется авторизация'}),
                     'isBase64Encoded': False
                 }
-            
-            body_data = json.loads(event.get('body', '{}'))
-            action = body_data.get('action')
             
             if action == 'create_topic':
                 title = body_data.get('title', '').strip()
