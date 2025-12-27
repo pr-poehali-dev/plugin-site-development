@@ -162,14 +162,23 @@ const Header = ({
           {user ? (
             <>
               <div className="flex items-center gap-1.5 sm:gap-3">
-                <Button
+                <button
                   onClick={() => navigate('/christmas-tree')}
-                  className="relative bg-gradient-to-r from-red-600 to-green-600 hover:from-red-700 hover:to-green-700 text-white px-3 sm:px-4 py-2 rounded-lg shadow-lg animate-pulse"
+                  className="relative group overflow-hidden"
                   title="Новогодняя акция! Получите бонус до 100%"
                 >
-                  <span className="text-xl sm:text-2xl">🎄</span>
-                  <span className="hidden sm:inline ml-2 text-xs font-bold">АКЦИЯ</span>
-                </Button>
+                  <div className="absolute -inset-1 bg-gradient-to-r from-red-500 via-yellow-500 to-green-500 rounded-lg blur opacity-75 group-hover:opacity-100 transition duration-300 animate-pulse"></div>
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                  <div className="relative flex items-center gap-1.5 sm:gap-2 bg-gradient-to-r from-red-600 via-red-500 to-green-600 px-3 sm:px-4 py-2.5 rounded-lg shadow-lg hover:shadow-2xl transition-all duration-300 group-hover:scale-110">
+                    <span className="text-xl sm:text-2xl" style={{ animation: 'bounce 1s ease-in-out infinite' }}>🎄</span>
+                    <div className="flex flex-col items-start">
+                      <span className="text-[10px] sm:text-xs font-black text-yellow-300 leading-none tracking-wider">АКЦИЯ</span>
+                      <span className="text-[8px] sm:text-[10px] text-yellow-100 leading-none hidden sm:block font-bold">до 100%</span>
+                    </div>
+                    <div className="absolute -top-1 -right-1 w-3 h-3 sm:w-4 sm:h-4 bg-yellow-400 rounded-full animate-ping"></div>
+                    <div className="absolute -top-1 -right-1 w-3 h-3 sm:w-4 sm:h-4 bg-yellow-300 rounded-full"></div>
+                  </div>
+                </button>
                 
                 <button 
                   onClick={onShowProfile}

@@ -195,26 +195,80 @@ const ChristmasTree = () => {
                   ))}
                 </div>
 
-                <div className="space-y-3">
-                  <div className="flex items-start gap-3 p-3 bg-blue-500/10 rounded-lg border border-blue-500/20">
-                    <Icon name="Info" size={18} className="text-blue-400 mt-0.5 shrink-0" />
-                    <p className="text-sm text-gray-300">
-                      <span className="font-semibold text-white">Как участвовать:</span> Нажмите кнопку один раз и получите случайную скидку
-                    </p>
+                <div className="space-y-4">
+                  <div className="p-4 bg-gradient-to-br from-purple-500/10 to-pink-500/10 border border-purple-400/30 rounded-xl">
+                    <h4 className="font-bold text-base mb-3 flex items-center gap-2 text-purple-300">
+                      <Icon name="HelpCircle" size={20} />
+                      Как работает акция?
+                    </h4>
+                    <ol className="space-y-2 text-sm text-gray-300">
+                      <li className="flex items-start gap-2">
+                        <span className="text-yellow-400 font-bold shrink-0">1.</span>
+                        <span>Нажмите кнопку <strong className="text-white">"Получить скидку"</strong> — рандомайзер определит ваш бонус от 10% до 100%</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-yellow-400 font-bold shrink-0">2.</span>
+                        <span>Скидка сохраняется в вашем аккаунте автоматически</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-yellow-400 font-bold shrink-0">3.</span>
+                        <span>Нажмите <strong className="text-white">"Использовать скидку"</strong> для перехода к пополнению баланса</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-yellow-400 font-bold shrink-0">4.</span>
+                        <span>Пополните баланс USDT TRC20 на любую сумму от 30 USDT</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-yellow-400 font-bold shrink-0">5.</span>
+                        <span>Бонус автоматически добавится к сумме пополнения! 🎉</span>
+                      </li>
+                    </ol>
                   </div>
-                  
-                  <div className="flex items-start gap-3 p-3 bg-green-500/10 rounded-lg border border-green-500/20">
-                    <Icon name="Zap" size={18} className="text-green-400 mt-0.5 shrink-0" />
-                    <p className="text-sm text-gray-300">
-                      <span className="font-semibold text-white">Применение:</span> Скидка активируется при первом пополнении USDT
-                    </p>
+
+                  <div className="p-4 bg-gradient-to-br from-green-500/10 to-emerald-500/10 border border-green-400/30 rounded-xl">
+                    <h4 className="font-bold text-base mb-3 flex items-center gap-2 text-green-300">
+                      <Icon name="Gift" size={20} />
+                      Пример расчёта бонуса
+                    </h4>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex items-center justify-between p-2 bg-black/20 rounded">
+                        <span className="text-gray-300">Вы пополняете:</span>
+                        <span className="text-white font-bold">100 USDT</span>
+                      </div>
+                      <div className="flex items-center justify-between p-2 bg-black/20 rounded">
+                        <span className="text-gray-300">Ваша скидка:</span>
+                        <span className="text-yellow-300 font-bold">+ 30%</span>
+                      </div>
+                      <div className="flex items-center justify-between p-3 bg-gradient-to-r from-green-500/20 to-emerald-500/20 rounded-lg border border-green-400">
+                        <span className="text-white font-semibold">На баланс зачислится:</span>
+                        <span className="text-2xl text-green-300 font-black">130 USDT</span>
+                      </div>
+                    </div>
                   </div>
-                  
-                  <div className="flex items-start gap-3 p-3 bg-red-500/10 rounded-lg border border-red-500/20">
-                    <Icon name="AlertCircle" size={18} className="text-red-400 mt-0.5 shrink-0" />
-                    <p className="text-sm text-gray-300">
-                      <span className="font-semibold text-white">Важно:</span> Только одна попытка на пользователя
-                    </p>
+
+                  <div className="p-4 bg-gradient-to-br from-red-500/10 to-orange-500/10 border border-red-400/30 rounded-xl">
+                    <h4 className="font-bold text-base mb-3 flex items-center gap-2 text-red-300">
+                      <Icon name="AlertCircle" size={20} />
+                      Важные условия
+                    </h4>
+                    <ul className="space-y-2 text-sm text-gray-300">
+                      <li className="flex items-start gap-2">
+                        <Icon name="Check" size={16} className="text-red-400 mt-0.5 shrink-0" />
+                        <span><strong className="text-white">Одна попытка</strong> — каждый пользователь может получить бонус только один раз</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <Icon name="Check" size={16} className="text-red-400 mt-0.5 shrink-0" />
+                        <span><strong className="text-white">Первое пополнение</strong> — бонус применяется только к первой транзакции после получения</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <Icon name="Check" size={16} className="text-red-400 mt-0.5 shrink-0" />
+                        <span><strong className="text-white">Минимум 30 USDT</strong> — минимальная сумма пополнения для активации бонуса</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <Icon name="Check" size={16} className="text-red-400 mt-0.5 shrink-0" />
+                        <span><strong className="text-white">Только TRC20</strong> — бонус работает только для пополнений в сети TRON (TRC20)</span>
+                      </li>
+                    </ul>
                   </div>
                 </div>
               </div>
