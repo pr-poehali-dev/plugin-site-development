@@ -162,6 +162,15 @@ const Header = ({
           {user ? (
             <>
               <div className="flex items-center gap-1.5 sm:gap-3">
+                <Button
+                  onClick={() => navigate('/christmas-tree')}
+                  className="relative bg-gradient-to-r from-red-600 to-green-600 hover:from-red-700 hover:to-green-700 text-white px-3 sm:px-4 py-2 rounded-lg shadow-lg animate-pulse"
+                  title="Новогодняя акция! Получите бонус до 100%"
+                >
+                  <span className="text-xl sm:text-2xl">🎄</span>
+                  <span className="hidden sm:inline ml-2 text-xs font-bold">АКЦИЯ</span>
+                </Button>
+                
                 <button 
                   onClick={onShowProfile}
                   className="relative group cursor-pointer"
