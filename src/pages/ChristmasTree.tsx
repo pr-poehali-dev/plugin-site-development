@@ -149,6 +149,14 @@ const ChristmasTree = () => {
             <div className="absolute -top-2 -right-2 sm:-top-4 sm:-right-4 text-4xl sm:text-6xl animate-bounce">🎄</div>
           </h1>
           
+          <div className="inline-flex items-center gap-2 mb-4 px-4 py-2 bg-gradient-to-r from-orange-500/20 to-red-500/20 border border-orange-400/40 rounded-lg">
+            <Icon name="Clock" size={16} className="text-orange-300" />
+            <p className="text-sm font-bold text-orange-200">
+              Акция действует с 27.12.2025 по 10.01.2025
+            </p>
+            <Icon name="Clock" size={16} className="text-orange-300" />
+          </div>
+          
           <p className="text-lg sm:text-2xl text-gray-300 mb-3 font-medium">
             {hasPlayed ? '🎁 Ваш новогодний подарок готов!' : '🎲 Получите скидку до 100%'}
           </p>

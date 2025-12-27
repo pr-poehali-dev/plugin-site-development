@@ -181,7 +181,7 @@ const Header = ({
                         </div>
                       </div>
                       <div className="hidden sm:block">
-                        <p className="text-[9px] text-yellow-300/80 font-medium uppercase tracking-wide leading-none">🎁 Акция</p>
+                        <p className="text-[9px] text-yellow-300/80 font-medium uppercase tracking-wide leading-none">🎁 до 10.01</p>
                         <p className="text-base font-semibold bg-gradient-to-r from-yellow-200 to-yellow-400 bg-clip-text text-transparent transition-all duration-300 leading-tight">
                           до 100%
                           <span className="text-[10px] ml-1 text-white/90 font-bold">БОНУС</span>
