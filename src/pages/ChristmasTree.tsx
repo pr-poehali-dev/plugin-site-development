@@ -26,7 +26,7 @@ const ChristmasTree = () => {
     }
   }, []);
 
-  const handleSpin = () => {
+  const handleSpin = async () => {
     if (hasPlayed) {
       toast.error('Вы уже получили свою скидку! Каждый пользователь может участвовать только один раз.', {
         duration: 4000,
@@ -42,7 +42,7 @@ const ChristmasTree = () => {
       counter++;
     }, 80);
 
-    setTimeout(() => {
+    setTimeout(async () => {
       clearInterval(interval);
       const randomBonus = BONUSES[Math.floor(Math.random() * BONUSES.length)];
       
@@ -54,6 +54,26 @@ const ChristmasTree = () => {
       
       localStorage.setItem('christmas_tree_played', 'true');
       localStorage.setItem('christmas_tree_bonus', randomBonus.toString());
+      
+      const savedUser = localStorage.getItem('user');
+      if (savedUser) {
+        const user = JSON.parse(savedUser);
+        try {
+          await fetch('https://functions.poehali.dev/2497448a-6aff-4df5-97ef-9181cf792f03', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-User-Id': user.id.toString()
+            },
+            body: JSON.stringify({
+              action: 'update_christmas_bonus',
+              bonus_percent: randomBonus
+            })
+          });
+        } catch (error) {
+          console.error('Failed to save bonus:', error);
+        }
+      }
       
       setTimeout(() => setShowConfetti(false), 3000);
       
@@ -217,7 +237,10 @@ const ChristmasTree = () => {
                   <p className="text-xl text-yellow-100 mb-6 font-medium">Ваша новогодняя скидка!</p>
                   
                   <Button
-                    onClick={() => navigate('/')}
+                    onClick={() => {
+                      localStorage.setItem('open_topup_dialog', 'true');
+                      navigate('/');
+                    }}
                     size="lg"
                     className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-bold text-lg shadow-lg hover:shadow-xl transition-all"
                   >

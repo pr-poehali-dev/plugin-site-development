@@ -101,6 +101,15 @@ const Index = () => {
       }, 100);
     }
     
+    const openTopUpDialog = localStorage.getItem('open_topup_dialog');
+    if (openTopUpDialog && state.user) {
+      localStorage.removeItem('open_topup_dialog');
+      localStorage.setItem('open_topup_with_tab', 'true');
+      setTimeout(() => {
+        state.setShowUserProfile(true);
+      }, 500);
+    }
+    
     const saveScrollPosition = () => {
       sessionStorage.setItem('scrollPosition', window.scrollY.toString());
     };

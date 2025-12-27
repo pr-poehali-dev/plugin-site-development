@@ -252,14 +252,41 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 )
                 
                 cur.execute(
+                    f"SELECT christmas_bonus_used FROM {SCHEMA}.users WHERE id = %s",
+                    (int(user_id),)
+                )
+                user_bonus = cur.fetchone()
+                
+                final_amount = float(payment['amount'])
+                bonus_info = ""
+                
+                if user_bonus and not user_bonus.get('christmas_bonus_used'):
+                    cur.execute(
+                        f"SELECT bonus_percent FROM {SCHEMA}.users WHERE id = %s",
+                        (int(user_id),)
+                    )
+                    bonus_data = cur.fetchone()
+                    
+                    if bonus_data and bonus_data.get('bonus_percent'):
+                        bonus_percent = int(bonus_data['bonus_percent'])
+                        bonus_amount = final_amount * (bonus_percent / 100)
+                        final_amount = final_amount + bonus_amount
+                        bonus_info = f" + бонус {bonus_percent}% ({bonus_amount:.2f} USDT)"
+                        
+                        cur.execute(
+                            f"UPDATE {SCHEMA}.users SET christmas_bonus_used = true WHERE id = %s",
+                            (int(user_id),)
+                        )
+                
+                cur.execute(
                     f"UPDATE {SCHEMA}.users SET balance = COALESCE(balance, 0) + %s WHERE id = %s RETURNING balance",
-                    (float(payment['amount']), int(user_id))
+                    (final_amount, int(user_id))
                 )
                 result = cur.fetchone()
                 
                 cur.execute(
                     f"INSERT INTO {SCHEMA}.transactions (user_id, amount, type, description) VALUES (%s, %s, %s, %s)",
-                    (int(user_id), float(payment['amount']), 'crypto_deposit', f"Пополнение через {payment['network']}")
+                    (int(user_id), final_amount, 'crypto_deposit', f"Пополнение через {payment['network']}{bonus_info}")
                 )
                 
                 # Get username for notification

@@ -56,6 +56,17 @@ const UserProfile = ({ user, isOwnProfile, onClose, onTopUpBalance, onUpdateProf
   }, [activeTab, isOwnProfile]);
 
   useEffect(() => {
+    const shouldOpenTopUp = localStorage.getItem('open_topup_with_tab');
+    if (shouldOpenTopUp && isOwnProfile) {
+      localStorage.removeItem('open_topup_with_tab');
+      setActiveTab('balance');
+      setTimeout(() => {
+        setShowTopUpDialog(true);
+      }, 300);
+    }
+  }, [isOwnProfile]);
+
+  useEffect(() => {
     if (isOwnProfile) {
       fetchUserStats();
     }
