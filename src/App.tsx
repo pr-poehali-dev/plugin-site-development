@@ -12,6 +12,7 @@ import ChristmasTree from "./pages/ChristmasTree";
 import NotFound from "./pages/NotFound";
 import { CookieProvider } from "./contexts/CookieContext";
 import Snowfall from "./components/Snowfall";
+import FloatingChristmasButton from "./components/FloatingChristmasButton";
 
 const queryClient = new QueryClient();
 
@@ -26,6 +27,7 @@ const App = () => (
           <meta name="description" content="Купить Flash USDT TRC20 - надежная платформа GitCrypto для покупки флеш криптовалюты. Смарт-контракты на блокчейне TRON, безопасные транзакции. Flash токены USDT TRC20 с мгновенной отправкой. Форум криптосообщества и плагины для разработчиков" />
         </Helmet>
         <Snowfall />
+        <FloatingChristmasButton />
         <Toaster />
         <Sonner />
         <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
