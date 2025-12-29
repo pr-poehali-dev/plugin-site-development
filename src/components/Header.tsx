@@ -164,12 +164,10 @@ const Header = ({
               <div className="flex items-center gap-1.5 sm:gap-3">
                 <button
                   onClick={() => navigate('/christmas-tree')}
-                  className="relative group cursor-pointer"
+                  className="relative cursor-pointer"
                   title="Новогодняя акция! Получите бонус до 100%"
                 >
-                  <div className="absolute inset-0 bg-gradient-to-r from-red-500/20 via-yellow-500/20 to-green-500/20 rounded-lg blur opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
-                  <div className="relative bg-gradient-to-r from-red-600/20 to-green-600/20 hover:from-red-600/30 hover:to-green-600/30 border border-red-500/30 hover:border-yellow-500/50 rounded-lg px-2 sm:px-4 py-1.5 sm:py-2 transition-all duration-200 group-hover:scale-105 backdrop-blur-sm shadow-md hover:shadow-lg hover:shadow-yellow-500/20">
+                  <div className="relative bg-gradient-to-r from-red-600/20 to-green-600/20 border border-red-500/30 rounded-lg px-2 sm:px-4 py-1.5 sm:py-2 backdrop-blur-sm shadow-md">
                     <div className="flex items-center gap-1 sm:gap-2">
                       <div className="relative w-6 h-6 sm:w-8 sm:h-8">
                         <div className="w-full h-full rounded-full bg-gradient-to-br from-red-500 to-green-500 flex items-center justify-center shadow-sm p-0.5 sm:p-1.5 animate-pulse">
