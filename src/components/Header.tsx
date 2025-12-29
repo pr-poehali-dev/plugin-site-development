@@ -164,7 +164,7 @@ const Header = ({
               <div className="flex items-center gap-1.5 sm:gap-3">
                 <button
                   onClick={() => navigate('/christmas-tree')}
-                  className="relative group cursor-pointer"
+                  className="relative group cursor-pointer hidden sm:block"
                   title="Новогодняя акция! Получите бонус до 100%"
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-red-500/20 via-yellow-500/20 to-green-500/20 rounded-lg blur opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
