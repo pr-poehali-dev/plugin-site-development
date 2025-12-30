@@ -49,7 +49,8 @@ const FlashUsdtShop = ({ user, onShowAuthDialog, onRefreshUserBalance }: FlashUs
       borderColor: 'border-blue-500/30',
       icon: 'Package',
       popular: false,
-      soldOut: false
+      soldOut: false,
+      vipOnly: true
     },
     {
       id: 2,
@@ -70,7 +71,8 @@ const FlashUsdtShop = ({ user, onShowAuthDialog, onRefreshUserBalance }: FlashUs
       color: 'from-orange-600 to-orange-800',
       borderColor: 'border-orange-500/30',
       icon: 'Warehouse',
-      popular: false
+      popular: false,
+      vipOnly: true
     },
     {
       id: 4,
@@ -81,7 +83,8 @@ const FlashUsdtShop = ({ user, onShowAuthDialog, onRefreshUserBalance }: FlashUs
       borderColor: 'border-red-500/30',
       icon: 'Building',
       popular: false,
-      soldOut: false
+      soldOut: false,
+      vipOnly: true
     }
   ];
 
