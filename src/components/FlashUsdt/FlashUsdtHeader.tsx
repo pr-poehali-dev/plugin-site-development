@@ -52,16 +52,16 @@ export const FlashUsdtHeader = ({ onTestPurchase }: FlashUsdtHeaderProps) => {
               </div>
             </div>
           </div>
-
-          <Button
-            onClick={onTestPurchase}
-            size="lg"
-            className="bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-6 rounded-xl text-base font-semibold shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40 transition-all"
-          >
-            <Icon name="Sparkles" size={20} className="mr-2" />
-            Тестовая покупка — 100 USDT
-          </Button>
         </div>
+
+        <Button
+          onClick={onTestPurchase}
+          size="lg"
+          className="bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-6 rounded-xl text-base font-semibold shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40 transition-all"
+        >
+          <Icon name="Sparkles" size={20} className="mr-2" />
+          Тестовая покупка — 100 USDT
+        </Button>
         
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

@@ -41,16 +41,16 @@ export const FlashBtcHeader = ({ onTestPurchase }: FlashBtcHeaderProps) => {
               <p className="text-xs text-muted-foreground">Работает на всех биржах</p>
             </div>
           </div>
-
-          <Button
-            onClick={onTestPurchase}
-            size="lg"
-            className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-6 rounded-xl text-base font-semibold shadow-lg shadow-orange-500/25 hover:shadow-orange-500/40 transition-all"
-          >
-            <Icon name="Sparkles" size={20} className="mr-2" />
-            Тестовая покупка — 0.001 BTC
-          </Button>
         </div>
+
+        <Button
+          onClick={onTestPurchase}
+          size="lg"
+          className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-6 rounded-xl text-base font-semibold shadow-lg shadow-orange-500/25 hover:shadow-orange-500/40 transition-all"
+        >
+          <Icon name="Sparkles" size={20} className="mr-2" />
+          Тестовая покупка — 0.001 BTC
+        </Button>
         
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
