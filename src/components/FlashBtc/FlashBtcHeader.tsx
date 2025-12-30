@@ -9,47 +9,84 @@ interface FlashBtcHeaderProps {
 
 export const FlashBtcHeader = ({ onTestPurchase }: FlashBtcHeaderProps) => {
   return (
-    <Card className="bg-gradient-to-br from-orange-500/10 to-orange-900/10 border-orange-500/20 p-4 sm:p-6 md:p-8 overflow-hidden relative">
-      <div className="absolute top-0 right-0 w-40 sm:w-64 md:w-96 h-40 sm:h-64 md:h-96 bg-orange-500/5 rounded-full blur-3xl -z-10" />
+    <div className="relative overflow-hidden rounded-3xl">
+      {/* Background with animated gradient */}
+      <div className="absolute inset-0 bg-gradient-to-br from-orange-500/10 via-amber-500/5 to-yellow-500/10"></div>
+      <div className="absolute top-0 right-0 w-96 h-96 bg-orange-500/10 rounded-full blur-3xl animate-pulse"></div>
+      <div className="absolute bottom-0 left-0 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl animate-pulse" style={{animationDelay: '1s'}}></div>
       
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-6">
-        <div className="space-y-2 sm:space-y-3 flex-1">
-          <div className="flex items-center gap-2 sm:gap-3">
-            <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-16 md:h-16 bg-gradient-to-br from-orange-500 to-orange-700 rounded-xl flex items-center justify-center shadow-lg shadow-orange-500/20">
-              <Icon name="Bitcoin" size={24} className="text-white sm:w-7 sm:h-7 md:w-10 md:h-10" />
-            </div>
+      <div className="relative z-10 p-6 sm:p-8 md:p-10 lg:p-12 space-y-8">
+        {/* Header section */}
+        <div className="space-y-4">
+          <Badge className="bg-orange-500/20 text-orange-300 border-orange-500/30 text-sm font-medium px-4 py-1.5">
+            <Icon name="Zap" size={16} className="mr-2" />
+            Специальное предложение
+          </Badge>
+          
+          <div className="space-y-3">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold bg-gradient-to-br from-orange-300 via-amber-300 to-yellow-300 bg-clip-text text-transparent leading-tight">
+              Flash BTC
+            </h1>
+            <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl">
+              Временный Bitcoin со скидкой до 86%
+            </p>
+          </div>
+
+          {/* Info badge */}
+          <div className="inline-flex items-start gap-3 p-4 rounded-2xl bg-gradient-to-br from-amber-500/10 to-orange-500/10 border border-orange-500/20 backdrop-blur-sm">
+            <Icon name="Bitcoin" size={24} className="text-orange-400 mt-0.5 flex-shrink-0" />
             <div>
-              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-orange-400 to-orange-600">
-                Flash BTC
-              </h1>
-              <p className="text-xs sm:text-sm md:text-base text-muted-foreground">Полная копия BTC на 42 дня</p>
+              <p className="text-sm font-medium text-orange-300">Полная копия BTC на 42 дня</p>
+              <p className="text-xs text-muted-foreground mt-1">Работает на всех площадках и биржах</p>
             </div>
           </div>
 
-          <div className="flex flex-wrap gap-2 sm:gap-3">
-            <Badge className="bg-orange-500/20 text-orange-400 border-orange-500/30 text-xs sm:text-sm px-2.5 sm:px-3 py-1 sm:py-1.5">
-              <Icon name="Zap" size={12} className="mr-1 sm:mr-1.5 sm:w-3.5 sm:h-3.5" />
-              Быстрая доставка
-            </Badge>
-            <Badge className="bg-green-500/20 text-green-400 border-green-500/30 text-xs sm:text-sm px-2.5 sm:px-3 py-1 sm:py-1.5">
-              <Icon name="Shield" size={12} className="mr-1 sm:mr-1.5 sm:w-3.5 sm:h-3.5" />
-              Безопасно
-            </Badge>
-            <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30 text-xs sm:text-sm px-2.5 sm:px-3 py-1 sm:py-1.5">
-              <Icon name="Clock" size={12} className="mr-1 sm:mr-1.5 sm:w-3.5 sm:h-3.5" />
-              42 дня
-            </Badge>
-          </div>
+          <Button
+            onClick={onTestPurchase}
+            className="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white shadow-xl shadow-orange-500/30 text-base font-semibold px-8 py-6 rounded-2xl"
+            size="lg"
+          >
+            <Icon name="TestTube" size={20} className="mr-2" />
+            Тестовая покупка — 0.001 BTC
+          </Button>
         </div>
-
-        <Button
-          onClick={onTestPurchase}
-          className="w-full sm:w-auto bg-gradient-to-r from-orange-600 to-orange-800 hover:opacity-90 shadow-lg shadow-orange-500/20 text-sm sm:text-base md:text-lg px-4 sm:px-6 md:px-8 py-2 sm:py-3 h-auto"
-        >
-          <Icon name="TestTube" size={18} className="mr-2 sm:w-5 sm:h-5" />
-          Тестовая покупка
-        </Button>
+        
+        {/* Stats cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <Card className="p-6 bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-xl border-orange-500/10 hover:border-orange-500/30 transition-all duration-300">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="p-2 bg-orange-500/10 rounded-xl">
+                <Icon name="Percent" size={24} className="text-orange-400" />
+              </div>
+              <h3 className="text-lg font-semibold">Скидка</h3>
+            </div>
+            <p className="text-4xl font-bold bg-gradient-to-r from-orange-400 to-amber-400 bg-clip-text text-transparent">до 86%</p>
+            <p className="text-sm text-muted-foreground mt-2">от рыночной цены</p>
+          </Card>
+          
+          <Card className="p-6 bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-xl border-amber-500/10 hover:border-amber-500/30 transition-all duration-300">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="p-2 bg-amber-500/10 rounded-xl">
+                <Icon name="Package" size={24} className="text-amber-400" />
+              </div>
+              <h3 className="text-lg font-semibold">Минимум</h3>
+            </div>
+            <p className="text-4xl font-bold bg-gradient-to-r from-amber-400 to-yellow-400 bg-clip-text text-transparent">1 BTC</p>
+            <p className="text-sm text-muted-foreground mt-2">Flash Bitcoin</p>
+          </Card>
+          
+          <Card className="p-6 bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-xl border-yellow-500/10 hover:border-yellow-500/30 transition-all duration-300">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="p-2 bg-yellow-500/10 rounded-xl">
+                <Icon name="Clock" size={24} className="text-yellow-400" />
+              </div>
+              <h3 className="text-lg font-semibold">Срок жизни</h3>
+            </div>
+            <p className="text-4xl font-bold bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent">42 дн</p>
+            <p className="text-sm text-muted-foreground mt-2">после активации</p>
+          </Card>
+        </div>
       </div>
-    </Card>
+    </div>
   );
 };

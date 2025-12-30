@@ -256,22 +256,43 @@ export const TonFlashPackages = ({ user, onShowAuthDialog, onRefreshUserBalance 
 
       <div className="max-w-7xl mx-auto p-4 md:p-6 animate-fade-in relative">
         {/* Заголовок */}
-        <div className="mb-10 text-center relative">
-          <div className="absolute inset-0 -z-10 bg-gradient-to-r from-transparent via-purple-500/5 to-transparent blur-xl"></div>
+        <div className="mb-12 relative overflow-hidden rounded-3xl">
+          {/* Background */}
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 via-purple-500/5 to-pink-500/10"></div>
+          <div className="absolute top-0 right-0 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute bottom-0 left-0 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse" style={{animationDelay: '1s'}}></div>
           
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <div className="p-4 rounded-2xl bg-gradient-to-br from-blue-500/30 via-purple-500/30 to-pink-500/30 border border-purple-500/50 shadow-2xl shadow-purple-500/30 backdrop-blur-sm animate-float">
-              <Icon name="Gem" size={40} className="text-purple-300" />
+          <div className="relative z-10 p-8 sm:p-10 md:p-12 text-center space-y-6">
+            <Badge className="bg-purple-500/20 text-purple-300 border-purple-500/30 text-sm font-medium px-4 py-1.5">
+              <Icon name="Gem" size={16} className="mr-2" />
+              Премиум коллекция
+            </Badge>
+            
+            <div className="space-y-3">
+              <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold bg-gradient-to-br from-blue-300 via-purple-300 to-pink-300 bg-clip-text text-transparent leading-tight">
+                TON Flash USDT
+              </h1>
+              <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto">
+                Премиальные пакеты Flash USDT на блокчейне TON
+              </p>
+              <div className="flex flex-wrap items-center justify-center gap-3 text-sm text-purple-400 font-medium">
+                <span className="flex items-center gap-1">
+                  <Icon name="Zap" size={16} />
+                  Мгновенная активация
+                </span>
+                <span>•</span>
+                <span className="flex items-center gap-1">
+                  <Icon name="TrendingUp" size={16} />
+                  Максимальная выгода
+                </span>
+                <span>•</span>
+                <span className="flex items-center gap-1">
+                  <Icon name="Shield" size={16} />
+                  TON блокчейн
+                </span>
+              </div>
             </div>
-            <h1 className="text-4xl md:text-5xl font-black bg-gradient-to-r from-blue-300 via-purple-300 to-pink-300 bg-clip-text text-transparent animate-gradient-x bg-[length:200%_auto] tracking-tight">
-              TON Flash USDT
-            </h1>
           </div>
-          
-          <p className="text-muted-foreground text-lg md:text-xl max-w-3xl mx-auto leading-relaxed">
-            Премиальные пакеты Flash USDT на блокчейне TON<br className="hidden md:block" />
-            <span className="text-purple-400 font-semibold">Мгновенная активация • Максимальная выгода</span>
-          </p>
         </div>
 
         {/* Сетка пакетов */}
