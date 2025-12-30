@@ -194,14 +194,11 @@ const FlashBtcShop = ({ user, onShowAuthDialog, onRefreshUserBalance }: FlashBtc
 
   return (
     <div className="relative w-full max-w-7xl mx-auto space-y-3 sm:space-y-4 md:space-y-6 animate-fade-in px-2 sm:px-0">
-      {/* Wave background - только для desktop */}
-      <div className="hidden lg:block fixed inset-0 pointer-events-none" style={{ zIndex: 0 }}>
-        <Waves 
-          className="w-full h-full" 
-          strokeColor="#ff880015" 
-          backgroundColor="transparent"
-          pointerSize={0.3}
-        />
+      {/* Background gradient */}
+      <div className="fixed inset-0 pointer-events-none" style={{ zIndex: 0 }}>
+        <div className="absolute inset-0 bg-gradient-to-br from-orange-500/5 via-background to-amber-500/5"></div>
+        <div className="absolute top-20 right-20 w-[600px] h-[600px] bg-orange-500/10 rounded-full blur-[120px]"></div>
+        <div className="absolute bottom-20 left-20 w-[600px] h-[600px] bg-amber-500/10 rounded-full blur-[120px]"></div>
       </div>
 
       {/* Content поверх эффекта */}
