@@ -32,6 +32,18 @@ const AdminBtcWithdrawalsTab = ({ withdrawals, currentUser, onRefresh }: AdminBt
   const [processing, setProcessing] = useState<number | null>(null);
   const [adminComment, setAdminComment] = useState<{ [key: number]: string }>({});
 
+  const getCryptoColor = (crypto: string) => {
+    const colors: Record<string, string> = {
+      'BTC': 'orange',
+      'ETH': 'blue',
+      'BNB': 'yellow',
+      'SOL': 'purple',
+      'XRP': 'cyan',
+      'TRX': 'red'
+    };
+    return colors[crypto] || 'gray';
+  };
+
   const handleProcessWithdrawal = async (withdrawalId: number, newStatus: 'completed' | 'rejected') => {
     setProcessing(withdrawalId);
 
@@ -85,17 +97,28 @@ const AdminBtcWithdrawalsTab = ({ withdrawals, currentUser, onRefresh }: AdminBt
 
   const pendingWithdrawals = withdrawals.filter(w => w.status === 'pending');
   const processedWithdrawals = withdrawals.filter(w => w.status !== 'pending');
+  
+  // Подсчёт по валютам
+  const cryptoCounts = pendingWithdrawals.reduce((acc, w) => {
+    const crypto = w.crypto_symbol || w.currency;
+    acc[crypto] = (acc[crypto] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+  
+  const cryptoSummary = Object.entries(cryptoCounts)
+    .map(([crypto, count]) => `${crypto}: ${count}`)
+    .join(' • ');
 
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
-        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500/20 to-orange-500/5 flex items-center justify-center">
-          <Icon name="Bitcoin" size={24} className="text-orange-500" />
+        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500/20 to-purple-500/5 flex items-center justify-center">
+          <Icon name="Coins" size={24} className="text-purple-500" />
         </div>
         <div>
-          <h2 className="text-2xl font-bold">Заявки на вывод BTC</h2>
+          <h2 className="text-2xl font-bold">Заявки на вывод криптовалют</h2>
           <p className="text-sm text-muted-foreground">
-            {pendingWithdrawals.length} в ожидании • {processedWithdrawals.length} обработано
+            {pendingWithdrawals.length} в ожидании {cryptoSummary ? `(${cryptoSummary})` : ''} • {processedWithdrawals.length} обработано
           </p>
         </div>
       </div>
@@ -106,28 +129,35 @@ const AdminBtcWithdrawalsTab = ({ withdrawals, currentUser, onRefresh }: AdminBt
             <Icon name="CheckCircle" size={32} className="text-muted-foreground" />
           </div>
           <h3 className="text-lg font-semibold mb-2">Нет активных заявок</h3>
-          <p className="text-sm text-muted-foreground">Все заявки на вывод BTC обработаны</p>
+          <p className="text-sm text-muted-foreground">Все заявки на вывод криптовалют обработаны</p>
         </Card>
       )}
 
       {pendingWithdrawals.length > 0 && (
         <div className="space-y-4">
           <h3 className="text-lg font-semibold">Ожидают обработки</h3>
-          {pendingWithdrawals.map((withdrawal) => (
-            <Card key={withdrawal.id} className="p-6 border-orange-500/30">
+          {pendingWithdrawals.map((withdrawal) => {
+            const crypto = withdrawal.crypto_symbol || withdrawal.currency;
+            const color = getCryptoColor(crypto);
+            
+            return (
+            <Card key={withdrawal.id} className={`p-6 border-${color}-500/30`}>
               <div className="space-y-4">
                 <div className="flex items-start justify-between">
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
                       <Icon name="User" size={16} className="text-muted-foreground" />
                       <span className="font-semibold">{withdrawal.username || `User #${withdrawal.user_id}`}</span>
+                      <span className={`px-2 py-0.5 text-xs font-bold rounded bg-${color}-500/20 text-${color}-400`}>
+                        {crypto}
+                      </span>
                     </div>
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <Icon name="Calendar" size={14} />
                       <span>{new Date(withdrawal.created_at).toLocaleString('ru-RU')}</span>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 px-3 py-1 bg-orange-500/20 text-orange-400 rounded-full text-sm font-medium">
+                  <div className={`flex items-center gap-2 px-3 py-1 bg-${color}-500/20 text-${color}-400 rounded-full text-sm font-medium`}>
                     <Icon name="Clock" size={14} />
                     Ожидает
                   </div>
@@ -136,10 +166,10 @@ const AdminBtcWithdrawalsTab = ({ withdrawals, currentUser, onRefresh }: AdminBt
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-muted/50 rounded-lg p-4">
                   <div>
                     <p className="text-xs text-muted-foreground mb-1">Сумма</p>
-                    <p className="text-lg font-bold text-orange-400">{Number(withdrawal.amount).toFixed(8)} {withdrawal.crypto_symbol || withdrawal.currency}</p>
+                    <p className={`text-lg font-bold text-${color}-400`}>{Number(withdrawal.amount).toFixed(8)} {crypto}</p>
                   </div>
                   <div>
-                    <p className="text-xs text-muted-foreground mb-1">{withdrawal.crypto_symbol || withdrawal.currency} адрес</p>
+                    <p className="text-xs text-muted-foreground mb-1">{crypto} адрес</p>
                     <p className="text-sm font-mono break-all">{withdrawal.address}</p>
                   </div>
                 </div>
@@ -193,7 +223,8 @@ const AdminBtcWithdrawalsTab = ({ withdrawals, currentUser, onRefresh }: AdminBt
                 </div>
               </div>
             </Card>
-          ))}
+          );
+          })}
         </div>
       )}
 

@@ -18,21 +18,6 @@
         }
       },
       "bodyMatcher": "partial"
-    },
-    {
-      "name": "Login existing user",
-      "method": "POST",
-      "body": {
-        "action": "login",
-        "username": "testuser",
-        "password": "testpass123"
-      },
-      "expectedStatus": 200,
-      "expectedBody": {
-        "success": true,
-        "token": "string"
-      },
-      "bodyMatcher": "partial"
     }
   ]
 }

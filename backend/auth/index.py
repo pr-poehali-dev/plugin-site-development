@@ -3,7 +3,7 @@ Business: Регистрация, авторизация пользовател�
 Args: event - dict с httpMethod, body, queryStringParameters
       context - объект с атрибутами: request_id, function_name
 Returns: HTTP response dict с токеном и данными пользователя
-Updated: 2025-12-31 - added process_btc_withdrawal handler
+Updated: 2025-12-31 - added crypto withdrawal system with admin approval
 '''
 
 import json
@@ -192,6 +192,48 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                         'transactions': paginated_transactions,
                         'total': total
                     }, default=str),
+                    'isBase64Encoded': False
+                }
+            
+            elif action == 'get_crypto_withdrawals':
+                headers = event.get('headers', {})
+                user_id = headers.get('X-User-Id') or headers.get('x-user-id')
+                
+                if not user_id:
+                    return {
+                        'statusCode': 401,
+                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({'error': 'Требуется авторизация'}),
+                        'isBase64Encoded': False
+                    }
+                
+                # Проверяем, что пользователь - админ
+                cur.execute(f"SELECT role FROM {SCHEMA}.users WHERE id = {int(user_id)}")
+                user_role = cur.fetchone()
+                
+                if not user_role or user_role['role'] != 'admin':
+                    return {
+                        'statusCode': 403,
+                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({'error': 'Access denied'}),
+                        'isBase64Encoded': False
+                    }
+                
+                # Получаем все заявки на вывод криптовалют
+                cur.execute(
+                    f"""
+                    SELECT w.*, u.username 
+                    FROM {SCHEMA}.withdrawals w
+                    LEFT JOIN {SCHEMA}.users u ON w.user_id = u.id
+                    ORDER BY w.created_at DESC
+                    """
+                )
+                withdrawals = cur.fetchall()
+                
+                return {
+                    'statusCode': 200,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'success': True, 'withdrawals': [dict(w) for w in withdrawals]}, default=str),
                     'isBase64Encoded': False
                 }
             
@@ -974,10 +1016,29 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             )
             
             cur.execute(
-                f"INSERT INTO {SCHEMA}.withdrawals (user_id, crypto_symbol, amount, address, status, created_at) VALUES ({int(user_id)}, {escape_sql_string(crypto_symbol.upper())}, {float(amount)}, {escape_sql_string(address)}, 'pending', NOW())"
+                f"INSERT INTO {SCHEMA}.withdrawals (user_id, crypto_symbol, amount, address, status, created_at) VALUES ({int(user_id)}, {escape_sql_string(crypto_symbol.upper())}, {float(amount)}, {escape_sql_string(address)}, 'pending', NOW()) RETURNING id"
+            )
+            
+            withdrawal_id = cur.fetchone()['id']
+            
+            # Получаем username для уведомления
+            cur.execute(f"SELECT username FROM {SCHEMA}.users WHERE id = {int(user_id)}")
+            user_info = cur.fetchone()
+            username = user_info['username'] if user_info else f"User #{user_id}"
+            
+            # Создаём уведомление для админа
+            cur.execute(
+                f"INSERT INTO {SCHEMA}.admin_notifications (type, title, message, related_id, related_type) VALUES ('crypto_withdrawal', '💰 Новая заявка на вывод', {escape_sql_string(f'Пользователь {username} создал заявку на вывод {amount} {crypto_symbol.upper()}')}, {withdrawal_id}, 'withdrawal')"
             )
             
             conn.commit()
+            
+            # Отправляем Telegram уведомление
+            send_telegram_notification(
+                'crypto_withdrawal',
+                {'username': username, 'user_id': user_id},
+                {'amount': amount, 'crypto': crypto_symbol.upper(), 'address': address, 'withdrawal_id': withdrawal_id}
+            )
             
             return {
                 'statusCode': 200,

@@ -16,6 +16,7 @@ interface AdminPanelProps {
 
 const FORUM_URL = 'https://functions.poehali.dev/045d6571-633c-4239-ae69-8d76c933532c';
 const ADMIN_URL = 'https://functions.poehali.dev/d4678b1c-2acd-40bb-b8c5-cefe8d14fad4';
+const AUTH_URL = 'https://functions.poehali.dev/2497448a-6aff-4df5-97ef-9181cf792f03';
 
 const WITHDRAWAL_URL = 'https://functions.poehali.dev/09f16983-ec42-41fe-a7bd-695752ee11c5';
 const CRYPTO_URL = 'https://functions.poehali.dev/8caa3b76-72e5-42b5-9415-91d1f9b05210';
@@ -206,7 +207,7 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
 
   const fetchBtcWithdrawals = async () => {
     try {
-      const response = await fetch(`${ADMIN_URL}?action=btc_withdrawals`, {
+      const response = await fetch(`${AUTH_URL}?action=get_crypto_withdrawals`, {
         headers: { 'X-User-Id': currentUser.id.toString() }
       });
       const data = await response.json();
@@ -214,7 +215,7 @@ const AdminPanel = ({ currentUser, onClose }: AdminPanelProps) => {
         setBtcWithdrawals(data.withdrawals || []);
       }
     } catch (error) {
-      console.error('Ошибка загрузки BTC заявок:', error);
+      console.error('Ошибка загрузки криптовыводов:', error);
     }
   };
 
