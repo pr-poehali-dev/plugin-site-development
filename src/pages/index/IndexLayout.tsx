@@ -41,6 +41,7 @@ interface IndexLayoutProps {
   onCreateComment: () => void;
   onUserClick: (userId: number) => void;
   onNavigateToForum: () => void;
+  onNavigateToFlashUsdt: () => void;
   onShowAuthDialog: () => void;
   onRefreshUserBalance: () => void;
 }
@@ -82,6 +83,7 @@ const IndexLayout = ({
   onCreateComment,
   onUserClick,
   onNavigateToForum,
+  onNavigateToFlashUsdt,
   onShowAuthDialog,
   onRefreshUserBalance
 }: IndexLayoutProps) => {
@@ -137,6 +139,7 @@ const IndexLayout = ({
           onCreateComment={onCreateComment}
           onUserClick={onUserClick}
           onNavigateToForum={onNavigateToForum}
+          onNavigateToFlashUsdt={onNavigateToFlashUsdt}
           onShowAuthDialog={onShowAuthDialog}
           onRefreshUserBalance={onRefreshUserBalance}
         />

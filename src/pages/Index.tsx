@@ -207,6 +207,10 @@ const Index = () => {
             onCreateComment={state.handleCreateComment}
             onUserClick={handlers.handleUserClick}
             onNavigateToForum={() => state.setActiveView('forum')}
+            onNavigateToFlashUsdt={() => {
+              state.setActiveView('plugins');
+              state.setActiveCategory('categories');
+            }}
             onShowAuthDialog={() => state.setAuthDialogOpen(true)}
             onRefreshUserBalance={handlers.refreshUserBalance}
           />

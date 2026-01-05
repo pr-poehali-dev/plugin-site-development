@@ -9,13 +9,15 @@ interface PluginsViewProps {
   plugins: Plugin[];
   categories: Category[];
   onNavigateToForum?: () => void;
+  onNavigateToFlashUsdt?: () => void;
 }
 
 export const PluginsView = ({
   activeCategory,
   plugins,
   categories,
-  onNavigateToForum
+  onNavigateToForum,
+  onNavigateToFlashUsdt
 }: PluginsViewProps) => {
   const isHomePage = activeCategory === 'all';
   const [scrollY, setScrollY] = useState(0);
@@ -142,6 +144,7 @@ export const PluginsView = ({
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
                   <Button 
                     size="lg" 
+                    onClick={onNavigateToFlashUsdt}
                     className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white px-8 py-6 text-lg rounded-xl shadow-lg shadow-emerald-500/20"
                   >
                     <Icon name="Zap" className="mr-2" />

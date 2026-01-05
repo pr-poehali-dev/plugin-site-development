@@ -35,6 +35,7 @@ interface MainContentProps {
   onCreateComment: () => void;
   onUserClick: (userId: number) => void;
   onNavigateToForum?: () => void;
+  onNavigateToFlashUsdt?: () => void;
   onShowAuthDialog: () => void;
   onRefreshUserBalance?: () => void;
 }
@@ -56,6 +57,7 @@ const MainContent = ({
   onCreateComment,
   onUserClick,
   onNavigateToForum,
+  onNavigateToFlashUsdt,
   onShowAuthDialog,
   onRefreshUserBalance,
 }: MainContentProps) => {
@@ -115,6 +117,7 @@ const MainContent = ({
             plugins={plugins}
             categories={categories}
             onNavigateToForum={onNavigateToForum}
+            onNavigateToFlashUsdt={onNavigateToFlashUsdt}
           />
         )
       ) : selectedTopic ? (
