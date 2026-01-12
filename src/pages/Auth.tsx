@@ -92,7 +92,10 @@ const Auth = () => {
       const response = await fetch(PASSWORD_RESET_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: resetEmail }),
+        body: JSON.stringify({ 
+          action: 'request_reset',
+          email: resetEmail 
+        }),
       });
 
       const data = await response.json();
