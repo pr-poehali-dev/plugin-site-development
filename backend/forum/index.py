@@ -209,11 +209,14 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             
             # Get user_id from headers (case-insensitive)
             headers = event.get('headers', {})
+            print(f"DEBUG: Received headers: {dict(headers)}")
             user_id = None
             for key, value in headers.items():
                 if key.lower() == 'x-user-id':
                     user_id = value
                     break
+            
+            print(f"DEBUG: Extracted user_id: {user_id}")
             
             if not user_id:
                 return {
