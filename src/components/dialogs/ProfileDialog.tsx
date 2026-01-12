@@ -201,7 +201,7 @@ export const ProfileDialog = ({
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-muted-foreground mb-1">Текущий баланс</p>
-                    <p className="text-4xl font-bold">{user.balance.toFixed(2)} USDT</p>
+                    <p className="text-4xl font-bold">{Number(user.balance).toFixed(2)} USDT</p>
                   </div>
                   <div className="p-4 rounded-full bg-primary/10">
                     <Icon name="Wallet" size={32} className="text-primary" />
