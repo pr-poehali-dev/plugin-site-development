@@ -229,7 +229,6 @@ const Index = () => {
               onProfileDialogChange={state.setShowProfileDialog}
               onUpdateProfile={handlers.handleUpdateProfile}
               onAuthDialogAttemptClose={handlers.handleAuthDialogAttemptClose}
-              onTopicCreated={handlers.refreshForumTopics}
             />
           </Suspense>
 

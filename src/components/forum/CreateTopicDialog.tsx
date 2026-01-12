@@ -124,7 +124,9 @@ const CreateTopicDialog = ({
         setContent('');
         setSelectedCategory(null);
         onOpenChange(false);
-        onTopicCreated();
+        if (onTopicCreated) {
+          onTopicCreated();
+        }
       } else {
         toast({
           title: 'Ошибка',
