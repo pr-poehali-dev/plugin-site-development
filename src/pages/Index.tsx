@@ -6,11 +6,11 @@ import { useIndexHandlers } from './index/IndexHandlers';
 import IndexLayout from './index/IndexLayout';
 import { CookieConsent } from '@/components/CookieConsent';
 import { userSyncManager } from '@/utils/userSync';
+import MessagesPanel from '@/components/MessagesPanel';
 
 const AdminPanel = lazy(() => import('@/components/AdminPanel'));
 const UserProfileDialog = lazy(() => import('@/components/UserProfileDialog'));
 const UserProfile = lazy(() => import('@/components/UserProfile'));
-const MessagesPanel = lazy(() => import('@/components/MessagesPanel'));
 const NotificationsPanel = lazy(() => import('@/components/NotificationsPanel'));
 const DDoSMonitor = lazy(() => import('@/components/DDoSMonitor'));
 const Dialogs = lazy(() => import('@/components/Dialogs'));
@@ -278,22 +278,24 @@ const Index = () => {
           </Suspense>
 
           {state.user && (
-            <Suspense fallback={null}>
-              <NotificationsPanel
-                key={`notif-${state.user.id}`}
-                open={state.showNotificationsPanel}
-                onOpenChange={(open) => {
-                  state.setShowNotificationsPanel(open);
-                  if (!open) {
-                    fetch(`${NOTIFICATIONS_URL}?action=notifications`, {
-                      headers: { 'X-User-Id': state.user!.id.toString() }
-                    }).then(res => res.json()).then(data => {
-                      state.setNotificationsUnread(data.unread_count || 0);
-                    }).catch(() => {});
-                  }
-                }}
-                userId={state.user.id}
-              />
+            <>
+              <Suspense fallback={null}>
+                <NotificationsPanel
+                  key={`notif-${state.user.id}`}
+                  open={state.showNotificationsPanel}
+                  onOpenChange={(open) => {
+                    state.setShowNotificationsPanel(open);
+                    if (!open) {
+                      fetch(`${NOTIFICATIONS_URL}?action=notifications`, {
+                        headers: { 'X-User-Id': state.user!.id.toString() }
+                      }).then(res => res.json()).then(data => {
+                        state.setNotificationsUnread(data.unread_count || 0);
+                      }).catch(() => {});
+                    }
+                  }}
+                  userId={state.user.id}
+                />
+              </Suspense>
               
               <MessagesPanel
                 key={`msg-${state.user.id}`}
@@ -314,7 +316,7 @@ const Index = () => {
                 initialRecipientId={state.messageRecipientId}
                 onUserClick={handlers.handleUserClick}
               />
-            </Suspense>
+            </>
           )}
         </>
       )}
