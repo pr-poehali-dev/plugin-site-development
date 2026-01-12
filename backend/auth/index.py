@@ -321,9 +321,10 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             
             password_hash = hash_password(password)
             
-            # Проверка существующего пользователя
+            # Проверка существующего пользователя (параметризированный запрос)
             cur.execute(
-                f"SELECT id FROM {SCHEMA}.users WHERE username = {escape_sql_string(username)} OR email = {escape_sql_string(email)}"
+                f"SELECT id FROM {SCHEMA}.users WHERE username = %s OR email = %s",
+                (username, email)
             )
             if cur.fetchone():
                 return {
@@ -333,20 +334,21 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'isBase64Encoded': False
                 }
             
-            # Проверка реферального кода
+            # Проверка реферального кода (параметризированный запрос)
             referrer_id = None
             if referral_code:
                 cur.execute(
-                    f"SELECT user_id FROM {SCHEMA}.referral_codes WHERE code = {escape_sql_string(referral_code)} AND is_active = TRUE"
+                    f"SELECT user_id FROM {SCHEMA}.referral_codes WHERE code = %s AND is_active = TRUE",
+                    (referral_code,)
                 )
                 referrer = cur.fetchone()
                 if referrer:
                     referrer_id = referrer['user_id']
             
-            # Создание пользователя
-            referred_by_value = escape_sql_string(referral_code) if referral_code else 'NULL'
+            # Создание пользователя (параметризированный запрос)
             cur.execute(
-                f"INSERT INTO {SCHEMA}.users (username, email, password_hash, referred_by_code, last_ip) VALUES ({escape_sql_string(username)}, {escape_sql_string(email)}, {escape_sql_string(password_hash)}, {referred_by_value}, {escape_sql_string(client_ip)}) RETURNING id, username, email, avatar_url, role, forum_role, balance, created_at, referred_by_code, referral_bonus_claimed, vip_until"
+                f"INSERT INTO {SCHEMA}.users (username, email, password_hash, referred_by_code, last_ip) VALUES (%s, %s, %s, %s, %s) RETURNING id, username, email, avatar_url, role, forum_role, balance, created_at, referred_by_code, referral_bonus_claimed, vip_until",
+                (username, email, password_hash, referral_code if referral_code else None, client_ip)
             )
             user = cur.fetchone()
             user_id = user['id']
@@ -424,8 +426,10 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             
             password_hash = hash_password(password)
             
+            # Параметризированный запрос для входа
             cur.execute(
-                f"SELECT id, username, email, avatar_url, role, forum_role, is_blocked, balance, created_at, referred_by_code, referral_bonus_claimed, vip_until, last_ip FROM {SCHEMA}.users WHERE username = {escape_sql_string(username)} AND password_hash = {escape_sql_string(password_hash)}"
+                f"SELECT id, username, email, avatar_url, role, forum_role, is_blocked, balance, created_at, referred_by_code, referral_bonus_claimed, vip_until, last_ip FROM {SCHEMA}.users WHERE username = %s AND password_hash = %s",
+                (username, password_hash)
             )
             user = cur.fetchone()
             
@@ -445,8 +449,11 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'isBase64Encoded': False
                 }
             
-            # Update last login and IP
-            cur.execute(f"UPDATE {SCHEMA}.users SET last_seen_at = CURRENT_TIMESTAMP, last_ip = {escape_sql_string(client_ip)} WHERE id = {user['id']}")
+            # Update last login and IP (параметризированный запрос)
+            cur.execute(
+                f"UPDATE {SCHEMA}.users SET last_seen_at = CURRENT_TIMESTAMP, last_ip = %s WHERE id = %s",
+                (client_ip, user['id'])
+            )
             conn.commit()
             
             token = generate_token()

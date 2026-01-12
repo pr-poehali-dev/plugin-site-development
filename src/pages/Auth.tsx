@@ -22,6 +22,21 @@ const Auth = () => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     
+    const email = formData.get('email') as string;
+    
+    // Валидация email при регистрации
+    if (authMode === 'register' && email) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        toast({
+          title: 'Ошибка',
+          description: 'Введите корректный email',
+          variant: 'destructive',
+        });
+        return;
+      }
+    }
+    
     try {
       const response = await fetch(AUTH_URL, {
         method: 'POST',
@@ -30,7 +45,7 @@ const Auth = () => {
           action: authMode,
           username: formData.get('username'),
           password: formData.get('password'),
-          email: authMode === 'register' ? formData.get('email') : undefined,
+          email: authMode === 'register' ? email : undefined,
           referral_code: authMode === 'register' ? formData.get('referral_code') : undefined,
         }),
       });
@@ -38,7 +53,7 @@ const Auth = () => {
       const data = await response.json();
 
       if (response.ok) {
-        localStorage.setItem('authToken', data.token);
+        localStorage.setItem('token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
         
         toast({
