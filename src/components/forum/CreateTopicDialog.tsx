@@ -102,17 +102,13 @@ const CreateTopicDialog = ({
         'X-User-Id': user.id.toString()
       };
       
-      console.log('Creating topic with:', { requestHeaders, requestBody });
-      
       const response = await fetch(FORUM_URL, {
         method: 'POST',
         headers: requestHeaders,
         body: JSON.stringify(requestBody)
       });
 
-      console.log('Response status:', response.status);
       const data = await response.json();
-      console.log('Response data:', data);
 
       if (data.success) {
         toast({

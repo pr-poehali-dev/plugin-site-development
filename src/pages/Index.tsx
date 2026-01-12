@@ -15,8 +15,6 @@ const NotificationsPanel = lazy(() => import('@/components/NotificationsPanel'))
 const DDoSMonitor = lazy(() => import('@/components/DDoSMonitor'));
 const Dialogs = lazy(() => import('@/components/Dialogs'));
 
-const NOTIFICATIONS_URL = 'https://functions.poehali.dev/6c968792-7d48-41a9-af0a-c92adb047acb';
-
 const Index = () => {
   const navigate = useNavigate();
   const state = useIndexState();

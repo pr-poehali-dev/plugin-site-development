@@ -204,19 +204,24 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 }
         
         elif method == 'POST':
-            body_data = json.loads(event.get('body', '{}'))
+            try:
+                body_data = json.loads(event.get('body', '{}'))
+            except json.JSONDecodeError:
+                return {
+                    'statusCode': 400,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'error': 'Неверный формат JSON'}),
+                    'isBase64Encoded': False
+                }
             action = body_data.get('action')
             
             # Get user_id from headers (case-insensitive)
             headers = event.get('headers', {})
-            print(f"DEBUG: Received headers: {dict(headers)}")
             user_id = None
             for key, value in headers.items():
                 if key.lower() == 'x-user-id':
                     user_id = value
                     break
-            
-            print(f"DEBUG: Extracted user_id: {user_id}")
             
             if not user_id:
                 return {
@@ -237,6 +242,22 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                         'statusCode': 400,
                         'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
                         'body': json.dumps({'error': 'Заполните все поля'}),
+                        'isBase64Encoded': False
+                    }
+                
+                if len(title) > 200:
+                    return {
+                        'statusCode': 400,
+                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({'error': 'Заголовок слишком длинный (макс. 200 символов)'}),
+                        'isBase64Encoded': False
+                    }
+                
+                if len(content) > 10000:
+                    return {
+                        'statusCode': 400,
+                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({'error': 'Контент слишком длинный (макс. 10000 символов)'}),
                         'isBase64Encoded': False
                     }
                 
@@ -301,6 +322,14 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                         'isBase64Encoded': False
                     }
                 
+                if len(content) > 5000:
+                    return {
+                        'statusCode': 400,
+                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({'error': 'Комментарий слишком длинный (макс. 5000 символов)'}),
+                        'isBase64Encoded': False
+                    }
+                
                 cur.execute("SELECT is_closed FROM forum_topics WHERE id = %s", (topic_id,))
                 topic = cur.fetchone()
                 
@@ -333,7 +362,12 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 """, (topic_id,))
                 topic_result = cur.fetchone()
                 
-                if topic_result and topic_result['author_id'] != int(user_id):
+                try:
+                    user_id_int = int(user_id)
+                except (ValueError, TypeError):
+                    user_id_int = None
+                
+                if topic_result and user_id_int and topic_result['author_id'] != user_id_int:
                     cur.execute("""
                         SELECT username FROM users WHERE id = %s
                     """, (user_id,))
