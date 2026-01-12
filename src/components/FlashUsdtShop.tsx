@@ -49,7 +49,8 @@ const FlashUsdtShop = ({ user, onShowAuthDialog, onRefreshUserBalance }: FlashUs
       borderColor: 'border-blue-500/30',
       icon: 'Package',
       popular: false,
-      soldOut: false,
+      soldOut: true,
+      soldOutDate: '12.01.2026',
       vipOnly: true
     },
     {
@@ -61,6 +62,8 @@ const FlashUsdtShop = ({ user, onShowAuthDialog, onRefreshUserBalance }: FlashUs
       borderColor: 'border-purple-500/30',
       icon: 'Boxes',
       popular: true,
+      soldOut: true,
+      soldOutDate: '12.01.2026',
       vipOnly: true
     },
     {
@@ -72,6 +75,8 @@ const FlashUsdtShop = ({ user, onShowAuthDialog, onRefreshUserBalance }: FlashUs
       borderColor: 'border-orange-500/30',
       icon: 'Warehouse',
       popular: false,
+      soldOut: true,
+      soldOutDate: '12.01.2026',
       vipOnly: true
     },
     {
@@ -83,7 +88,8 @@ const FlashUsdtShop = ({ user, onShowAuthDialog, onRefreshUserBalance }: FlashUs
       borderColor: 'border-red-500/30',
       icon: 'Building',
       popular: false,
-      soldOut: false,
+      soldOut: true,
+      soldOutDate: '12.01.2026',
       vipOnly: true
     }
   ];

@@ -31,7 +31,8 @@ const FlashBtcShop = ({ user, onShowAuthDialog, onRefreshUserBalance }: FlashBtc
       borderColor: 'border-orange-500/30',
       icon: 'Package',
       popular: false,
-      soldOut: false
+      soldOut: true,
+      soldOutDate: '12.01.2026'
     },
     {
       id: 2,
@@ -42,7 +43,8 @@ const FlashBtcShop = ({ user, onShowAuthDialog, onRefreshUserBalance }: FlashBtc
       borderColor: 'border-amber-500/30',
       icon: 'Boxes',
       popular: true,
-      soldOut: false
+      soldOut: true,
+      soldOutDate: '12.01.2026'
     },
     {
       id: 3,
@@ -53,7 +55,8 @@ const FlashBtcShop = ({ user, onShowAuthDialog, onRefreshUserBalance }: FlashBtc
       borderColor: 'border-yellow-500/30',
       icon: 'Warehouse',
       popular: false,
-      soldOut: false
+      soldOut: true,
+      soldOutDate: '12.01.2026'
     },
     {
       id: 4,
@@ -64,7 +67,8 @@ const FlashBtcShop = ({ user, onShowAuthDialog, onRefreshUserBalance }: FlashBtc
       borderColor: 'border-red-500/30',
       icon: 'Building',
       popular: false,
-      soldOut: false
+      soldOut: true,
+      soldOutDate: '12.01.2026'
     }
   ];
 

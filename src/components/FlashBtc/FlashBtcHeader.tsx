@@ -15,11 +15,25 @@ export const FlashBtcHeader = ({ onTestPurchase }: FlashBtcHeaderProps) => {
       <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-amber-500/5 rounded-full blur-3xl"></div>
       
       <div className="relative z-10 p-8 lg:p-12 space-y-10">
+        {/* Out of Stock Warning */}
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-red-500/20 via-orange-500/20 to-red-500/20 border-2 border-red-500/50 p-6 animate-pulse">
+          <div className="absolute inset-0 bg-gradient-to-r from-red-500/10 to-transparent"></div>
+          <div className="relative z-10 flex items-center gap-4">
+            <div className="flex items-center justify-center w-14 h-14 rounded-full bg-red-500/20 border-2 border-red-500/50">
+              <Icon name="AlertTriangle" size={28} className="text-red-400" />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-xl font-bold text-red-400 mb-1">Товар закончился</h3>
+              <p className="text-sm text-red-300/80">Все пакеты Flash BTC временно недоступны. Технические специалисты работают над созданием нового товара.</p>
+            </div>
+          </div>
+        </div>
+
         {/* Header */}
         <div className="space-y-6">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-orange-500/10 border border-orange-500/20">
-            <div className="w-2 h-2 rounded-full bg-orange-400 animate-pulse"></div>
-            <span className="text-sm font-medium text-orange-400">Активная акция</span>
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-red-500/10 border border-red-500/20">
+            <div className="w-2 h-2 rounded-full bg-red-400 animate-pulse"></div>
+            <span className="text-sm font-medium text-red-400">Нет в наличии</span>
           </div>
           
           <div className="space-y-4">
@@ -44,12 +58,12 @@ export const FlashBtcHeader = ({ onTestPurchase }: FlashBtcHeaderProps) => {
         </div>
 
         <Button
-          onClick={onTestPurchase}
+          disabled
           size="lg"
-          className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-6 rounded-xl text-base font-semibold shadow-lg shadow-orange-500/25 hover:shadow-orange-500/40 transition-all"
+          className="bg-gray-500 text-white px-8 py-6 rounded-xl text-base font-semibold opacity-50 cursor-not-allowed"
         >
-          <Icon name="Sparkles" size={20} className="mr-2" />
-          Тестовая покупка — 0.001 BTC
+          <Icon name="X" size={20} className="mr-2" />
+          Тестовая покупка недоступна
         </Button>
         
         {/* Stats */}
