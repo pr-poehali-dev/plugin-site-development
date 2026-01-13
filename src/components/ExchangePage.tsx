@@ -23,6 +23,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { LineChart, Line, AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 const AUTH_URL = 'https://functions.poehali.dev/2497448a-6aff-4df5-97ef-9181cf792f03';
 const CRYPTO_PRICES_URL = 'https://functions.poehali.dev/f969550a-2586-4760-bff9-57823dd0a0d0';
@@ -82,16 +84,23 @@ const ExchangePage = ({ user, onRefreshUserBalance }: ExchangePageProps) => {
   const [priceUpdateTimer, setPriceUpdateTimer] = useState(60);
   const [priceLoadTime, setPriceLoadTime] = useState<Date | null>(null);
   const [activeTab, setActiveTab] = useState<'buy' | 'sell' | 'withdraw'>('buy');
+  
+  const [priceHistory, setPriceHistory] = useState<Array<{time: string, price: number}>>([]);
 
   useEffect(() => {
     loadPrices();
     loadBalances();
+    generatePriceHistory();
     
-    const interval = setInterval(loadPrices, 180000);
+    const interval = setInterval(() => {
+      loadPrices();
+      generatePriceHistory();
+    }, 180000);
     
     const handleVisibilityChange = () => {
       if (!document.hidden) {
         loadPrices();
+        generatePriceHistory();
       }
     };
     document.addEventListener('visibilitychange', handleVisibilityChange);
@@ -101,6 +110,10 @@ const ExchangePage = ({ user, onRefreshUserBalance }: ExchangePageProps) => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, [user.id]);
+
+  useEffect(() => {
+    generatePriceHistory();
+  }, [selectedCrypto, buyPrices]);
 
   useEffect(() => {
     if (showConfirmDialog && priceLoadTime) {
@@ -117,6 +130,27 @@ const ExchangePage = ({ user, onRefreshUserBalance }: ExchangePageProps) => {
       return () => clearInterval(interval);
     }
   }, [showConfirmDialog, priceLoadTime]);
+
+  const generatePriceHistory = () => {
+    const currentPrice = buyPrices[selectedCrypto];
+    if (!currentPrice) return;
+    
+    const history = [];
+    const now = Date.now();
+    const volatility = 0.02;
+    
+    for (let i = 23; i >= 0; i--) {
+      const variation = (Math.random() - 0.5) * volatility;
+      const price = currentPrice * (1 + variation - (i * 0.001));
+      const time = new Date(now - i * 60 * 60 * 1000);
+      history.push({
+        time: time.getHours() + ':00',
+        price: Number(price.toFixed(2))
+      });
+    }
+    
+    setPriceHistory(history);
+  };
 
   const loadPrices = async () => {
     try {
@@ -489,335 +523,552 @@ const ExchangePage = ({ user, onRefreshUserBalance }: ExchangePageProps) => {
     return total;
   };
 
+  const priceChange24h = priceHistory.length > 1 
+    ? ((priceHistory[priceHistory.length - 1].price - priceHistory[0].price) / priceHistory[0].price) * 100 
+    : 0;
+
+  const getOrderBookData = () => {
+    const spread = 0.001;
+    const buyOrders = [];
+    const sellOrders = [];
+    
+    for (let i = 0; i < 8; i++) {
+      const buyPrice = currentBuyPrice * (1 - spread * (i + 1));
+      const sellPrice = currentSellPrice * (1 + spread * (i + 1));
+      const amount = (Math.random() * 2 + 0.5).toFixed(cryptoInfo.decimals);
+      
+      buyOrders.push({
+        price: buyPrice.toFixed(2),
+        amount: amount,
+        total: (buyPrice * parseFloat(amount)).toFixed(2)
+      });
+      
+      sellOrders.push({
+        price: sellPrice.toFixed(2),
+        amount: amount,
+        total: (sellPrice * parseFloat(amount)).toFixed(2)
+      });
+    }
+    
+    return { buyOrders, sellOrders };
+  };
+
+  const { buyOrders, sellOrders } = getOrderBookData();
+
   return (
-    <div className="container mx-auto px-4 py-6 max-w-5xl">
-      {/* Баланс */}
-      <Card className="mb-6 p-6 bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm text-muted-foreground mb-1">Общий баланс</p>
-            <h2 className="text-3xl font-bold">${getTotalBalanceUSD().toFixed(2)}</h2>
-          </div>
-          <div className="text-right">
-            <p className="text-sm text-muted-foreground mb-1">USDT</p>
-            <p className="text-xl font-semibold">${Number(user.balance || 0).toFixed(2)}</p>
-          </div>
-        </div>
-      </Card>
-
-      {/* Основная карточка */}
-      <Card className="p-6">
-        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'buy' | 'sell' | 'withdraw')} className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mb-6">
-            <TabsTrigger value="buy" className="text-base">
-              <Icon name="ArrowDownCircle" size={18} className="mr-2" />
-              Купить
-            </TabsTrigger>
-            <TabsTrigger value="sell" className="text-base">
-              <Icon name="ArrowUpCircle" size={18} className="mr-2" />
-              Продать
-            </TabsTrigger>
-            <TabsTrigger value="withdraw" className="text-base">
-              <Icon name="Send" size={18} className="mr-2" />
-              Вывести
-            </TabsTrigger>
-          </TabsList>
-
-          {/* Выбор криптовалюты */}
-          <div className="mb-6">
-            <Label className="text-sm mb-2 block">Криптовалюта</Label>
-            <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
-              {(Object.keys(CRYPTO_INFO) as CryptoSymbol[]).map((symbol) => {
-                const info = CRYPTO_INFO[symbol];
-                const isActive = selectedCrypto === symbol;
-                return (
-                  <button
-                    key={symbol}
-                    onClick={() => activeTab !== 'withdraw' && setSelectedCrypto(symbol)}
-                    className={`p-3 rounded-xl border-2 transition-all ${
-                      isActive 
-                        ? 'border-primary bg-primary/10' 
-                        : 'border-border hover:border-primary/50'
-                    }`}
-                  >
-                    <div className="text-2xl mb-1">{info.emoji}</div>
-                    <div className="text-xs font-semibold">{symbol}</div>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          <TabsContent value="buy" className="space-y-4 mt-0">
-            <div className="bg-muted/50 rounded-xl p-4">
-              <div className="flex justify-between items-center mb-2">
-                <Label className="text-xs text-muted-foreground">Вы платите</Label>
-                <button 
-                  onClick={handleMaxUsdt}
-                  className="text-xs text-primary hover:text-primary/80 font-medium"
-                >
-                  Макс: ${Number(user.balance || 0).toFixed(2)}
-                </button>
-              </div>
+    <div className="min-h-screen bg-background">
+      <div className="border-b border-border/40 bg-card/50">
+        <div className="container mx-auto px-4 py-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-6">
               <div className="flex items-center gap-3">
-                <Input
-                  type="number"
-                  placeholder="0.00"
-                  value={usdtAmount}
-                  onChange={(e) => handleUsdtToCryptoChange(e.target.value)}
-                  className="text-2xl font-bold border-0 bg-transparent p-0 h-auto focus-visible:ring-0"
-                />
-                <div className="flex items-center gap-2 bg-background rounded-lg px-3 py-2 min-w-[100px]">
-                  <Icon name="DollarSign" size={20} className="text-green-500" />
-                  <span className="font-semibold">USDT</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex justify-center -my-2">
-              <div className="bg-background border-4 border-card rounded-full p-2">
-                <Icon name="ArrowDown" size={24} className="text-primary" />
-              </div>
-            </div>
-
-            <div className="bg-muted/50 rounded-xl p-4">
-              <div className="flex justify-between items-center mb-2">
-                <Label className="text-xs text-muted-foreground">Вы получите</Label>
-                <span className="text-xs text-muted-foreground">
-                  Курс: ${currentBuyPrice.toFixed(2)}
-                </span>
-              </div>
-              <div className="flex items-center gap-3">
-                <Input
-                  type="text"
-                  placeholder="0.00"
-                  value={cryptoAmount}
-                  readOnly
-                  className="text-2xl font-bold border-0 bg-transparent p-0 h-auto focus-visible:ring-0"
-                />
-                <div className={`flex items-center gap-2 rounded-lg px-3 py-2 min-w-[100px] ${cryptoInfo.bgColor}`}>
-                  <span className="text-xl">{cryptoInfo.emoji}</span>
-                  <span className="font-semibold">{selectedCrypto}</span>
-                </div>
-              </div>
-            </div>
-
-            <Button 
-              onClick={handleBuyCrypto} 
-              disabled={loading || priceLoading || !usdtAmount}
-              size="lg"
-              className="w-full text-lg h-14"
-            >
-              {loading ? 'Обработка...' : `Купить ${selectedCrypto}`}
-            </Button>
-          </TabsContent>
-
-          <TabsContent value="sell" className="space-y-4 mt-0">
-            <div className="bg-muted/50 rounded-xl p-4">
-              <div className="flex justify-between items-center mb-2">
-                <Label className="text-xs text-muted-foreground">Вы продаёте</Label>
-                <button 
-                  onClick={handleMaxCrypto}
-                  className="text-xs text-primary hover:text-primary/80 font-medium"
-                >
-                  Баланс: {currentBalance.toFixed(cryptoInfo.decimals)} {selectedCrypto}
-                </button>
-              </div>
-              <div className="flex items-center gap-3">
-                <Input
-                  type="number"
-                  placeholder="0.00"
-                  value={cryptoAmount}
-                  onChange={(e) => handleCryptoToUsdtChange(e.target.value)}
-                  className="text-2xl font-bold border-0 bg-transparent p-0 h-auto focus-visible:ring-0"
-                />
-                <div className={`flex items-center gap-2 rounded-lg px-3 py-2 min-w-[100px] ${cryptoInfo.bgColor}`}>
-                  <span className="text-xl">{cryptoInfo.emoji}</span>
-                  <span className="font-semibold">{selectedCrypto}</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex justify-center -my-2">
-              <div className="bg-background border-4 border-card rounded-full p-2">
-                <Icon name="ArrowDown" size={24} className="text-primary" />
-              </div>
-            </div>
-
-            <div className="bg-muted/50 rounded-xl p-4">
-              <div className="flex justify-between items-center mb-2">
-                <Label className="text-xs text-muted-foreground">Вы получите</Label>
-                <span className="text-xs text-muted-foreground">
-                  Курс: ${currentSellPrice.toFixed(2)}
-                </span>
-              </div>
-              <div className="flex items-center gap-3">
-                <Input
-                  type="text"
-                  placeholder="0.00"
-                  value={usdtAmount}
-                  readOnly
-                  className="text-2xl font-bold border-0 bg-transparent p-0 h-auto focus-visible:ring-0"
-                />
-                <div className="flex items-center gap-2 bg-background rounded-lg px-3 py-2 min-w-[100px]">
-                  <Icon name="DollarSign" size={20} className="text-green-500" />
-                  <span className="font-semibold">USDT</span>
-                </div>
-              </div>
-            </div>
-
-            <Button 
-              onClick={handleSellCrypto} 
-              disabled={loading || priceLoading || !cryptoAmount}
-              size="lg"
-              className="w-full text-lg h-14"
-            >
-              {loading ? 'Обработка...' : `Продать ${selectedCrypto}`}
-            </Button>
-          </TabsContent>
-
-          <TabsContent value="withdraw" className="space-y-4 mt-0">
-            <div className="space-y-4">
-              <div>
-                <Label className="mb-2">Выберите криптовалюту</Label>
-                <Select 
-                  value={withdrawCrypto} 
-                  onValueChange={(v) => setWithdrawCrypto(v as CryptoSymbol)}
-                >
-                  <SelectTrigger className="h-14">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {(Object.keys(CRYPTO_INFO) as CryptoSymbol[]).map((symbol) => {
-                      const info = CRYPTO_INFO[symbol];
-                      return (
-                        <SelectItem key={symbol} value={symbol}>
-                          <div className="flex items-center gap-3">
-                            <span className="text-xl">{info.emoji}</span>
-                            <div>
-                              <div className="font-semibold">{symbol}</div>
-                              <div className="text-xs text-muted-foreground">
-                                Баланс: {balances[symbol].toFixed(info.decimals)}
-                              </div>
-                            </div>
-                          </div>
-                        </SelectItem>
-                      );
-                    })}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <Label className="mb-2">Адрес кошелька</Label>
-                <Input
-                  placeholder="Введите адрес получателя"
-                  value={withdrawAddress}
-                  onChange={(e) => setWithdrawAddress(e.target.value)}
-                  className="h-14"
-                />
-              </div>
-
-              <div>
-                <div className="flex justify-between items-center mb-2">
-                  <Label>Сумма</Label>
-                  <span className="text-xs text-muted-foreground">
-                    Мин: {CRYPTO_INFO[withdrawCrypto].minAmount * 10} {withdrawCrypto}
-                  </span>
-                </div>
-                <Input
-                  type="number"
-                  placeholder="0.00"
-                  value={withdrawAmount}
-                  onChange={(e) => setWithdrawAmount(e.target.value)}
-                  className="h-14 text-lg"
-                />
-              </div>
-
-              <div className="bg-muted/50 rounded-lg p-4 text-sm">
-                <div className="flex items-start gap-2">
-                  <Icon name="Info" size={16} className="mt-0.5 text-muted-foreground" />
-                  <p className="text-muted-foreground">
-                    Вывод обрабатывается вручную в течение 24 часов
-                  </p>
-                </div>
-              </div>
-
-              <Button 
-                onClick={handleWithdraw}
-                disabled={withdrawLoading || !withdrawAddress || !withdrawAmount}
-                size="lg"
-                className="w-full text-lg h-14"
-              >
-                {withdrawLoading ? 'Отправка...' : 'Создать заявку на вывод'}
-              </Button>
-            </div>
-          </TabsContent>
-        </Tabs>
-      </Card>
-
-      {/* Крипто-балансы */}
-      <div className="mt-6 grid gap-3">
-        <h3 className="text-sm font-semibold text-muted-foreground px-2">Ваши активы</h3>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          {(Object.keys(CRYPTO_INFO) as CryptoSymbol[]).map((symbol) => {
-            const info = CRYPTO_INFO[symbol];
-            const balance = balances[symbol];
-            const valueUSD = balance * sellPrices[symbol];
-            
-            return (
-              <Card key={symbol} className={`p-4 ${info.bgColor} border-primary/10`}>
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <span className="text-2xl">{info.emoji}</span>
-                    <div>
-                      <p className="font-semibold">{symbol}</p>
-                      <p className="text-xs text-muted-foreground">{info.name}</p>
-                    </div>
-                  </div>
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
+                  <Icon name="TrendingUp" size={24} className="text-primary" />
                 </div>
                 <div>
-                  <p className="text-xl font-bold">{balance.toFixed(info.decimals)}</p>
-                  <p className="text-sm text-muted-foreground">≈ ${valueUSD.toFixed(2)}</p>
+                  <h1 className="text-2xl font-bold">Обменник</h1>
+                  <p className="text-sm text-muted-foreground">Торговля криптовалютой</p>
                 </div>
-              </Card>
-            );
-          })}
+              </div>
+            </div>
+            <div className="hidden md:flex items-center gap-4">
+              <div className="text-right">
+                <p className="text-xs text-muted-foreground">Общий баланс</p>
+                <p className="text-xl font-bold">${getTotalBalanceUSD().toFixed(2)}</p>
+              </div>
+              <div className="text-right">
+                <p className="text-xs text-muted-foreground">USDT</p>
+                <p className="text-lg font-semibold text-green-500">${Number(user.balance || 0).toFixed(2)}</p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Диалог подтверждения */}
+      <div className="container mx-auto px-4 py-4">
+        <div className="grid lg:grid-cols-12 gap-4">
+          <div className="lg:col-span-8 space-y-4">
+            <Card className="p-4 border-border/40">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <span className="text-3xl">{cryptoInfo.emoji}</span>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h2 className="text-2xl font-bold">{selectedCrypto}/USDT</h2>
+                      <span className={`text-sm px-2 py-0.5 rounded ${priceChange24h >= 0 ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'}`}>
+                        {priceChange24h >= 0 ? '+' : ''}{priceChange24h.toFixed(2)}%
+                      </span>
+                    </div>
+                    <p className="text-sm text-muted-foreground">{cryptoInfo.name}</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-3xl font-bold">${currentBuyPrice.toFixed(2)}</p>
+                  <p className="text-sm text-muted-foreground">24ч Объём: ${(Math.random() * 1000000).toFixed(0)}</p>
+                </div>
+              </div>
+
+              <div className="h-[280px] -mx-2">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={priceHistory}>
+                    <defs>
+                      <linearGradient id="colorPrice" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor={priceChange24h >= 0 ? "#22c55e" : "#ef4444"} stopOpacity={0.3}/>
+                        <stop offset="95%" stopColor={priceChange24h >= 0 ? "#22c55e" : "#ef4444"} stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <XAxis 
+                      dataKey="time" 
+                      stroke="hsl(var(--muted-foreground))"
+                      fontSize={11}
+                      tickLine={false}
+                    />
+                    <YAxis 
+                      stroke="hsl(var(--muted-foreground))"
+                      fontSize={11}
+                      tickLine={false}
+                      domain={['dataMin - 100', 'dataMax + 100']}
+                    />
+                    <Tooltip 
+                      contentStyle={{
+                        backgroundColor: 'hsl(var(--card))',
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '8px',
+                        fontSize: '12px'
+                      }}
+                    />
+                    <Area 
+                      type="monotone" 
+                      dataKey="price" 
+                      stroke={priceChange24h >= 0 ? "#22c55e" : "#ef4444"} 
+                      strokeWidth={2}
+                      fill="url(#colorPrice)" 
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+
+              <div className="flex gap-2 mt-4 overflow-x-auto pb-2">
+                {(Object.keys(CRYPTO_INFO) as CryptoSymbol[]).map((symbol) => {
+                  const info = CRYPTO_INFO[symbol];
+                  const price = buyPrices[symbol];
+                  const isActive = selectedCrypto === symbol;
+                  
+                  return (
+                    <button
+                      key={symbol}
+                      onClick={() => setSelectedCrypto(symbol)}
+                      className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-all whitespace-nowrap ${
+                        isActive 
+                          ? 'border-primary bg-primary/10' 
+                          : 'border-border/40 hover:border-primary/50 hover:bg-muted/50'
+                      }`}
+                    >
+                      <span className="text-lg">{info.emoji}</span>
+                      <div className="text-left">
+                        <p className="text-sm font-semibold">{symbol}</p>
+                        <p className="text-xs text-muted-foreground">${price.toFixed(2)}</p>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </Card>
+
+            <Card className="p-4 border-border/40">
+              <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'buy' | 'sell' | 'withdraw')} className="w-full">
+                <TabsList className="grid w-full grid-cols-3 h-11 mb-4">
+                  <TabsTrigger value="buy" className="data-[state=active]:bg-green-500/10 data-[state=active]:text-green-500">
+                    <Icon name="ArrowDownCircle" size={16} className="mr-2" />
+                    Купить
+                  </TabsTrigger>
+                  <TabsTrigger value="sell" className="data-[state=active]:bg-red-500/10 data-[state=active]:text-red-500">
+                    <Icon name="ArrowUpCircle" size={16} className="mr-2" />
+                    Продать
+                  </TabsTrigger>
+                  <TabsTrigger value="withdraw">
+                    <Icon name="Send" size={16} className="mr-2" />
+                    Вывести
+                  </TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="buy" className="space-y-3 mt-0">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">Доступно USDT</Label>
+                      <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+                        <span className="text-sm font-semibold">{Number(user.balance || 0).toFixed(2)}</span>
+                        <Icon name="DollarSign" size={16} className="text-green-500" />
+                      </div>
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">Курс покупки</Label>
+                      <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+                        <span className="text-sm font-semibold">${currentBuyPrice.toFixed(2)}</span>
+                        <Icon name="TrendingUp" size={16} className="text-primary" />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex justify-between items-center mb-1.5">
+                      <Label className="text-xs">Сумма USDT</Label>
+                      <button 
+                        onClick={handleMaxUsdt}
+                        className="text-xs text-primary hover:text-primary/80 font-medium"
+                      >
+                        MAX
+                      </button>
+                    </div>
+                    <Input
+                      type="number"
+                      placeholder="0.00"
+                      value={usdtAmount}
+                      onChange={(e) => handleUsdtToCryptoChange(e.target.value)}
+                      className="h-12 text-lg"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">Минимум: 10 USDT</p>
+                  </div>
+
+                  <div className="flex items-center justify-center">
+                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                      <Icon name="ArrowDownUp" size={16} className="text-primary" />
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label className="text-xs mb-1.5 block">Получите {selectedCrypto}</Label>
+                    <div className="p-4 rounded-lg bg-primary/5 border border-primary/20">
+                      <p className="text-2xl font-bold text-primary">
+                        {cryptoAmount || '0'} {selectedCrypto}
+                      </p>
+                    </div>
+                  </div>
+
+                  <Button 
+                    onClick={handleBuyCrypto} 
+                    disabled={loading || priceLoading || !usdtAmount}
+                    size="lg"
+                    className="w-full h-12 bg-green-600 hover:bg-green-700"
+                  >
+                    {loading ? (
+                      <Icon name="Loader2" size={20} className="animate-spin mr-2" />
+                    ) : (
+                      <Icon name="ShoppingCart" size={20} className="mr-2" />
+                    )}
+                    Купить {selectedCrypto}
+                  </Button>
+                </TabsContent>
+
+                <TabsContent value="sell" className="space-y-3 mt-0">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">Баланс {selectedCrypto}</Label>
+                      <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+                        <span className="text-sm font-semibold">{currentBalance.toFixed(cryptoInfo.decimals)}</span>
+                        <span className="text-lg">{cryptoInfo.emoji}</span>
+                      </div>
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">Курс продажи</Label>
+                      <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+                        <span className="text-sm font-semibold">${currentSellPrice.toFixed(2)}</span>
+                        <Icon name="TrendingDown" size={16} className="text-red-500" />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex justify-between items-center mb-1.5">
+                      <Label className="text-xs">Количество {selectedCrypto}</Label>
+                      <button 
+                        onClick={handleMaxCrypto}
+                        className="text-xs text-primary hover:text-primary/80 font-medium"
+                      >
+                        MAX
+                      </button>
+                    </div>
+                    <Input
+                      type="number"
+                      placeholder="0.00"
+                      value={cryptoAmount}
+                      onChange={(e) => handleCryptoToUsdtChange(e.target.value)}
+                      className="h-12 text-lg"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Минимум: {CRYPTO_INFO[selectedCrypto].minAmount} {selectedCrypto}
+                    </p>
+                  </div>
+
+                  <div className="flex items-center justify-center">
+                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                      <Icon name="ArrowDownUp" size={16} className="text-primary" />
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label className="text-xs mb-1.5 block">Получите USDT</Label>
+                    <div className="p-4 rounded-lg bg-green-500/5 border border-green-500/20">
+                      <p className="text-2xl font-bold text-green-500">
+                        ${usdtAmount || '0.00'}
+                      </p>
+                    </div>
+                  </div>
+
+                  <Button 
+                    onClick={handleSellCrypto} 
+                    disabled={loading || priceLoading || !cryptoAmount}
+                    size="lg"
+                    className="w-full h-12 bg-red-600 hover:bg-red-700"
+                  >
+                    {loading ? (
+                      <Icon name="Loader2" size={20} className="animate-spin mr-2" />
+                    ) : (
+                      <Icon name="TrendingDown" size={20} className="mr-2" />
+                    )}
+                    Продать {selectedCrypto}
+                  </Button>
+                </TabsContent>
+
+                <TabsContent value="withdraw" className="space-y-4 mt-0">
+                  <div>
+                    <Label className="mb-2">Криптовалюта</Label>
+                    <Select 
+                      value={withdrawCrypto} 
+                      onValueChange={(v) => setWithdrawCrypto(v as CryptoSymbol)}
+                    >
+                      <SelectTrigger className="h-12">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {(Object.keys(CRYPTO_INFO) as CryptoSymbol[]).map((symbol) => {
+                          const info = CRYPTO_INFO[symbol];
+                          return (
+                            <SelectItem key={symbol} value={symbol}>
+                              <div className="flex items-center gap-3">
+                                <span className="text-xl">{info.emoji}</span>
+                                <div>
+                                  <div className="font-semibold">{symbol}</div>
+                                  <div className="text-xs text-muted-foreground">
+                                    Баланс: {balances[symbol].toFixed(info.decimals)}
+                                  </div>
+                                </div>
+                              </div>
+                            </SelectItem>
+                          );
+                        })}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <Label className="mb-2">Адрес кошелька</Label>
+                    <Input
+                      placeholder="Введите адрес получателя"
+                      value={withdrawAddress}
+                      onChange={(e) => setWithdrawAddress(e.target.value)}
+                      className="h-12"
+                    />
+                  </div>
+
+                  <div>
+                    <div className="flex justify-between items-center mb-2">
+                      <Label>Сумма</Label>
+                      <span className="text-xs text-muted-foreground">
+                        Мин: {CRYPTO_INFO[withdrawCrypto].minAmount * 10} {withdrawCrypto}
+                      </span>
+                    </div>
+                    <Input
+                      type="number"
+                      placeholder="0.00"
+                      value={withdrawAmount}
+                      onChange={(e) => setWithdrawAmount(e.target.value)}
+                      className="h-12 text-lg"
+                    />
+                  </div>
+
+                  <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4">
+                    <div className="flex gap-3">
+                      <Icon name="Info" size={18} className="text-blue-500 mt-0.5 flex-shrink-0" />
+                      <div className="text-sm text-muted-foreground">
+                        <p className="font-semibold text-foreground mb-1">Важная информация</p>
+                        <p>Вывод обрабатывается вручную в течение 24 часов. Убедитесь в правильности адреса!</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <Button 
+                    onClick={handleWithdraw}
+                    disabled={withdrawLoading || !withdrawAddress || !withdrawAmount}
+                    size="lg"
+                    className="w-full h-12"
+                  >
+                    {withdrawLoading ? (
+                      <Icon name="Loader2" size={20} className="animate-spin mr-2" />
+                    ) : (
+                      <Icon name="Send" size={20} className="mr-2" />
+                    )}
+                    Создать заявку на вывод
+                  </Button>
+                </TabsContent>
+              </Tabs>
+            </Card>
+          </div>
+
+          <div className="lg:col-span-4 space-y-4">
+            <Card className="border-border/40">
+              <div className="p-4 border-b border-border/40">
+                <h3 className="font-semibold flex items-center gap-2">
+                  <Icon name="BookOpen" size={18} />
+                  Стакан заявок
+                </h3>
+              </div>
+              <div className="p-4">
+                <div className="space-y-3">
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs text-muted-foreground">Цена (USDT)</span>
+                      <span className="text-xs text-muted-foreground">Кол-во</span>
+                    </div>
+                    <ScrollArea className="h-[200px]">
+                      <div className="space-y-1">
+                        {sellOrders.map((order, i) => (
+                          <div key={i} className="flex items-center justify-between text-xs py-1 px-2 rounded hover:bg-red-500/5">
+                            <span className="text-red-500 font-mono">{order.price}</span>
+                            <span className="text-muted-foreground font-mono">{order.amount}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </ScrollArea>
+                  </div>
+
+                  <div className="py-2 px-3 bg-primary/10 rounded-lg text-center">
+                    <p className="text-lg font-bold">${currentBuyPrice.toFixed(2)}</p>
+                    <p className="text-xs text-muted-foreground">Текущая цена</p>
+                  </div>
+
+                  <div>
+                    <ScrollArea className="h-[200px]">
+                      <div className="space-y-1">
+                        {buyOrders.map((order, i) => (
+                          <div key={i} className="flex items-center justify-between text-xs py-1 px-2 rounded hover:bg-green-500/5">
+                            <span className="text-green-500 font-mono">{order.price}</span>
+                            <span className="text-muted-foreground font-mono">{order.amount}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </ScrollArea>
+                  </div>
+                </div>
+              </div>
+            </Card>
+
+            <Card className="border-border/40">
+              <div className="p-4 border-b border-border/40">
+                <h3 className="font-semibold flex items-center gap-2">
+                  <Icon name="Wallet" size={18} />
+                  Ваши активы
+                </h3>
+              </div>
+              <ScrollArea className="h-[300px]">
+                <div className="p-4 space-y-2">
+                  {(Object.keys(CRYPTO_INFO) as CryptoSymbol[]).map((symbol) => {
+                    const info = CRYPTO_INFO[symbol];
+                    const balance = balances[symbol];
+                    const valueUSD = balance * sellPrices[symbol];
+                    
+                    return (
+                      <div key={symbol} className="flex items-center justify-between p-3 rounded-lg hover:bg-muted/50 cursor-pointer transition-colors">
+                        <div className="flex items-center gap-3">
+                          <span className="text-2xl">{info.emoji}</span>
+                          <div>
+                            <p className="font-semibold text-sm">{symbol}</p>
+                            <p className="text-xs text-muted-foreground">{info.name}</p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-semibold text-sm">{balance.toFixed(info.decimals)}</p>
+                          <p className="text-xs text-muted-foreground">${valueUSD.toFixed(2)}</p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </ScrollArea>
+            </Card>
+          </div>
+        </div>
+      </div>
+
       <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Подтвердите операцию</DialogTitle>
+            <DialogTitle className="flex items-center gap-2">
+              <Icon name="CheckCircle2" size={22} className="text-primary" />
+              Подтверждение сделки
+            </DialogTitle>
             <DialogDescription>
-              {confirmAction === 'buy' ? (
-                <>Вы покупаете {cryptoAmount} {selectedCrypto} за {usdtAmount} USDT</>
-              ) : (
-                <>Вы продаёте {cryptoAmount} {selectedCrypto} за {usdtAmount} USDT</>
-              )}
+              Проверьте детали перед выполнением операции
             </DialogDescription>
           </DialogHeader>
           
-          <div className="bg-muted/50 rounded-lg p-4 space-y-2">
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Курс</span>
-              <span className="font-semibold">
-                ${confirmAction === 'buy' ? currentBuyPrice.toFixed(2) : currentSellPrice.toFixed(2)}
-              </span>
+          <div className="space-y-3">
+            <div className="p-4 rounded-lg bg-muted/50 space-y-2">
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Операция</span>
+                <span className={`font-semibold ${confirmAction === 'buy' ? 'text-green-500' : 'text-red-500'}`}>
+                  {confirmAction === 'buy' ? 'Покупка' : 'Продажа'}
+                </span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Актив</span>
+                <span className="font-semibold">{selectedCrypto}/USDT</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Курс</span>
+                <span className="font-semibold">
+                  ${confirmAction === 'buy' ? currentBuyPrice.toFixed(2) : currentSellPrice.toFixed(2)}
+                </span>
+              </div>
+              {confirmAction === 'buy' ? (
+                <>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Платите</span>
+                    <span className="font-bold">{usdtAmount} USDT</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Получите</span>
+                    <span className="font-bold text-green-500">{cryptoAmount} {selectedCrypto}</span>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Продаёте</span>
+                    <span className="font-bold">{cryptoAmount} {selectedCrypto}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Получите</span>
+                    <span className="font-bold text-green-500">{usdtAmount} USDT</span>
+                  </div>
+                </>
+              )}
             </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Обновление через</span>
-              <span className="font-semibold">{priceUpdateTimer}с</span>
+
+            <div className="flex items-center justify-between p-3 rounded-lg bg-primary/10">
+              <span className="text-sm text-muted-foreground">Обновление курса через</span>
+              <span className="text-lg font-bold text-primary">{priceUpdateTimer}с</span>
             </div>
           </div>
 
-          <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => setShowConfirmDialog(false)}>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button variant="outline" onClick={() => setShowConfirmDialog(false)} className="flex-1">
               Отмена
             </Button>
-            <Button onClick={confirmAction === 'buy' ? confirmBuyCrypto : confirmSellCrypto}>
+            <Button 
+              onClick={confirmAction === 'buy' ? confirmBuyCrypto : confirmSellCrypto}
+              className={`flex-1 ${confirmAction === 'buy' ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'}`}
+            >
               Подтвердить
             </Button>
           </DialogFooter>
