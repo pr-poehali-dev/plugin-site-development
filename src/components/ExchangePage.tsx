@@ -48,12 +48,12 @@ interface CryptoInfo {
 }
 
 const CRYPTO_INFO: Record<CryptoSymbol, CryptoInfo> = {
-  BTC: { name: 'Bitcoin', icon: 'Bitcoin', emoji: '₿', logo: 'https://cryptologos.cc/logos/bitcoin-btc-logo.png', color: 'text-orange-400', bgColor: 'bg-orange-500/10', decimals: 8, minAmount: 0.0001 },
-  ETH: { name: 'Ethereum', icon: 'Gem', emoji: 'Ξ', logo: 'https://cryptologos.cc/logos/ethereum-eth-logo.png', color: 'text-purple-400', bgColor: 'bg-purple-500/10', decimals: 6, minAmount: 0.001 },
-  BNB: { name: 'BNB', icon: 'Coins', emoji: '◆', logo: 'https://cryptologos.cc/logos/bnb-bnb-logo.png', color: 'text-yellow-400', bgColor: 'bg-yellow-500/10', decimals: 5, minAmount: 0.01 },
-  SOL: { name: 'Solana', icon: 'Zap', emoji: '◎', logo: 'https://cryptologos.cc/logos/solana-sol-logo.png', color: 'text-blue-400', bgColor: 'bg-blue-500/10', decimals: 5, minAmount: 0.01 },
-  XRP: { name: 'Ripple', icon: 'Waves', emoji: '✕', logo: 'https://cryptologos.cc/logos/xrp-xrp-logo.png', color: 'text-cyan-300', bgColor: 'bg-cyan-400/15', decimals: 4, minAmount: 1 },
-  TRX: { name: 'Tron', icon: 'Triangle', emoji: '▲', logo: 'https://cryptologos.cc/logos/tron-trx-logo.png', color: 'text-red-400', bgColor: 'bg-red-500/10', decimals: 2, minAmount: 10 }
+  BTC: { name: 'Bitcoin', icon: 'Bitcoin', emoji: '₿', logo: 'https://cryptologos.cc/logos/bitcoin-btc-logo.svg', color: 'text-orange-400', bgColor: 'bg-orange-500/10', decimals: 8, minAmount: 0.0001 },
+  ETH: { name: 'Ethereum', icon: 'Gem', emoji: 'Ξ', logo: 'https://cryptologos.cc/logos/ethereum-eth-logo.svg', color: 'text-purple-400', bgColor: 'bg-purple-500/10', decimals: 6, minAmount: 0.001 },
+  BNB: { name: 'BNB', icon: 'Coins', emoji: '◆', logo: 'https://cryptologos.cc/logos/bnb-bnb-logo.svg', color: 'text-yellow-400', bgColor: 'bg-yellow-500/10', decimals: 5, minAmount: 0.01 },
+  SOL: { name: 'Solana', icon: 'Zap', emoji: '◎', logo: 'https://cryptologos.cc/logos/solana-sol-logo.svg', color: 'text-blue-400', bgColor: 'bg-blue-500/10', decimals: 5, minAmount: 0.01 },
+  XRP: { name: 'Ripple', icon: 'Waves', emoji: '✕', logo: 'https://cryptologos.cc/logos/xrp-xrp-logo.svg', color: 'text-cyan-300', bgColor: 'bg-cyan-400/15', decimals: 4, minAmount: 1 },
+  TRX: { name: 'Tron', icon: 'Triangle', emoji: '▲', logo: 'https://cryptologos.cc/logos/tron-trx-logo.svg', color: 'text-red-400', bgColor: 'bg-red-500/10', decimals: 2, minAmount: 10 }
 };
 
 const ExchangePage = ({ user, onRefreshUserBalance }: ExchangePageProps) => {
@@ -591,7 +591,7 @@ const ExchangePage = ({ user, onRefreshUserBalance }: ExchangePageProps) => {
             <Card className="p-4 border-border/40">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
-                  <span className="text-3xl">{cryptoInfo.emoji}</span>
+                  <img src={cryptoInfo.logo} alt={cryptoInfo.name} className="w-10 h-10" />
                   <div>
                     <div className="flex items-center gap-2">
                       <h2 className="text-2xl font-bold">{selectedCrypto}/USDT</h2>
@@ -664,7 +664,7 @@ const ExchangePage = ({ user, onRefreshUserBalance }: ExchangePageProps) => {
                           : 'border-border/40 hover:border-primary/50 hover:bg-muted/50'
                       }`}
                     >
-                      <span className="text-lg">{info.emoji}</span>
+                      <img src={info.logo} alt={info.name} className="w-6 h-6" />
                       <div className="text-left">
                         <p className="text-sm font-semibold">{symbol}</p>
                         <p className="text-xs text-muted-foreground">${price.toFixed(2)}</p>
@@ -766,7 +766,7 @@ const ExchangePage = ({ user, onRefreshUserBalance }: ExchangePageProps) => {
                       <Label className="text-xs text-muted-foreground mb-1.5 block">Баланс {selectedCrypto}</Label>
                       <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
                         <span className="text-sm font-semibold">{currentBalance.toFixed(cryptoInfo.decimals)}</span>
-                        <span className="text-lg">{cryptoInfo.emoji}</span>
+                        <img src={cryptoInfo.logo} alt={cryptoInfo.name} className="w-5 h-5" />
                       </div>
                     </div>
                     <div>
@@ -846,7 +846,7 @@ const ExchangePage = ({ user, onRefreshUserBalance }: ExchangePageProps) => {
                           return (
                             <SelectItem key={symbol} value={symbol}>
                               <div className="flex items-center gap-3">
-                                <span className="text-xl">{info.emoji}</span>
+                                <img src={info.logo} alt={info.name} className="w-6 h-6" />
                                 <div>
                                   <div className="font-semibold">{symbol}</div>
                                   <div className="text-xs text-muted-foreground">
@@ -980,7 +980,7 @@ const ExchangePage = ({ user, onRefreshUserBalance }: ExchangePageProps) => {
                     return (
                       <div key={symbol} className="flex items-center justify-between p-3 rounded-lg hover:bg-muted/50 cursor-pointer transition-colors">
                         <div className="flex items-center gap-3">
-                          <span className="text-2xl">{info.emoji}</span>
+                          <img src={info.logo} alt={info.name} className="w-8 h-8" />
                           <div>
                             <p className="font-semibold text-sm">{symbol}</p>
                             <p className="text-xs text-muted-foreground">{info.name}</p>
