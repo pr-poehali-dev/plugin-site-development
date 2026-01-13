@@ -16,6 +16,9 @@ from typing import Dict, Any, Optional
 import psycopg2
 from psycopg2.extras import RealDictCursor
 import requests
+import sys
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+from cors_helper import handle_cors_preflight, create_response, fix_cors_response
 
 SCHEMA = 't_p32599880_plugin_site_developm'
 
@@ -114,17 +117,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     
     # CORS preflight
     if method == 'OPTIONS':
-        return {
-            'statusCode': 200,
-            'headers': {
-                'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-                'Access-Control-Allow-Headers': 'Content-Type, X-User-Id, X-Auth-Token',
-                'Access-Control-Max-Age': '86400'
-            },
-            'body': '',
-            'isBase64Encoded': False
-        }
+        return handle_cors_preflight(event)
     
     conn = get_db_connection()
     cur = conn.cursor()
@@ -1780,3 +1773,12 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     finally:
         cur.close()
         conn.close()
+
+
+# CORS Middleware - автоматически исправляет CORS во всех ответах
+_original_handler = handler
+
+def handler(event, context):
+    """Wrapper для автоматического исправления CORS"""
+    response = _original_handler(event, context)
+    return fix_cors_response(response, event, include_credentials=True)
