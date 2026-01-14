@@ -25,6 +25,7 @@ import {
 } from '@/components/ui/dialog';
 import { LineChart, Line, AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import * as XLSX from 'xlsx';
 
 const AUTH_URL = 'https://functions.poehali.dev/2497448a-6aff-4df5-97ef-9181cf792f03';
 const CRYPTO_PRICES_URL = 'https://functions.poehali.dev/f969550a-2586-4760-bff9-57823dd0a0d0';
@@ -600,6 +601,84 @@ const ExchangePage = ({ user, onRefreshUserBalance }: ExchangePageProps) => {
     return total;
   };
 
+  const exportToExcel = () => {
+    const data = transactions.map(tx => ({
+      'Дата': tx.timestamp.toLocaleString('ru-RU', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      }),
+      'Тип': tx.type === 'buy' ? 'Покупка' : tx.type === 'sell' ? 'Продажа' : 'Вывод',
+      'Криптовалюта': tx.crypto,
+      'Количество': tx.amount,
+      'Цена': tx.price,
+      'Сумма (USDT)': tx.total,
+      'Статус': tx.status === 'completed' ? 'Выполнено' : tx.status === 'pending' ? 'В обработке' : 'Отменено',
+      'Адрес': tx.address || '-'
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Транзакции');
+    
+    const colWidths = [
+      { wch: 18 },
+      { wch: 10 },
+      { wch: 15 },
+      { wch: 15 },
+      { wch: 12 },
+      { wch: 15 },
+      { wch: 12 },
+      { wch: 40 }
+    ];
+    ws['!cols'] = colWidths;
+    
+    XLSX.writeFile(wb, `transactions_${new Date().toISOString().split('T')[0]}.xlsx`);
+    
+    toast({
+      title: '✅ Экспорт выполнен',
+      description: 'История транзакций сохранена в Excel'
+    });
+  };
+
+  const exportToCSV = () => {
+    const headers = ['Дата', 'Тип', 'Криптовалюта', 'Количество', 'Цена', 'Сумма (USDT)', 'Статус', 'Адрес'];
+    const rows = transactions.map(tx => [
+      tx.timestamp.toLocaleString('ru-RU', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      }),
+      tx.type === 'buy' ? 'Покупка' : tx.type === 'sell' ? 'Продажа' : 'Вывод',
+      tx.crypto,
+      tx.amount,
+      tx.price,
+      tx.total,
+      tx.status === 'completed' ? 'Выполнено' : tx.status === 'pending' ? 'В обработке' : 'Отменено',
+      tx.address || '-'
+    ]);
+
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
+    ].join('\\n');
+
+    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `transactions_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+    
+    toast({
+      title: '✅ Экспорт выполнен',
+      description: 'История транзакций сохранена в CSV'
+    });
+  };
+
   const priceChange24h = priceHistory.length > 1 
     ? ((priceHistory[priceHistory.length - 1].price - priceHistory[0].price) / priceHistory[0].price) * 100 
     : 0;
@@ -1155,10 +1234,34 @@ const ExchangePage = ({ user, onRefreshUserBalance }: ExchangePageProps) => {
       <div className="container mx-auto px-4 py-8">
         <Card className="border-2 border-primary/20 shadow-2xl bg-gradient-to-br from-card via-card to-primary/5">
           <div className="p-4 border-b border-primary/20 bg-gradient-to-r from-transparent to-primary/5">
-            <h3 className="font-semibold flex items-center gap-2 text-xl">
-              <Icon name="History" size={22} className="text-primary" />
-              История транзакций
-            </h3>
+            <div className="flex items-center justify-between">
+              <h3 className="font-semibold flex items-center gap-2 text-xl">
+                <Icon name="History" size={22} className="text-primary" />
+                История транзакций
+              </h3>
+              {transactions.length > 0 && (
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => exportToExcel()}
+                    className="gap-2"
+                  >
+                    <Icon name="FileSpreadsheet" size={16} />
+                    Excel
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => exportToCSV()}
+                    className="gap-2"
+                  >
+                    <Icon name="FileText" size={16} />
+                    CSV
+                  </Button>
+                </div>
+              )}
+            </div>
           </div>
           <ScrollArea className="h-[500px]">
             <div className="p-4">
