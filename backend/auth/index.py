@@ -662,6 +662,30 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 'isBase64Encoded': False
             }
         
+        elif action == 'get_crypto_transactions':
+            headers = event.get('headers', {})
+            user_id = headers.get('X-User-Id') or headers.get('x-user-id')
+            
+            if not user_id:
+                return {
+                    'statusCode': 401,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'error': 'Требуется авторизация'}),
+                    'isBase64Encoded': False
+                }
+            
+            cur.execute(
+                f"SELECT id, transaction_type, crypto_symbol, amount, price, total, status, wallet_address, created_at FROM {SCHEMA}.crypto_transactions WHERE user_id = {int(user_id)} ORDER BY created_at DESC LIMIT 100"
+            )
+            transactions = cur.fetchall()
+            
+            return {
+                'statusCode': 200,
+                'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                'body': json.dumps({'success': True, 'transactions': [dict(t) for t in transactions]}, default=str),
+                'isBase64Encoded': False
+            }
+        
         elif action == 'place_bet':
             headers = event.get('headers', {})
             user_id = headers.get('X-User-Id') or headers.get('x-user-id')
@@ -841,6 +865,10 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 f"INSERT INTO {SCHEMA}.transactions (user_id, amount, type, description) VALUES ({int(user_id)}, {-float(usdt_amount)}, 'exchange', {escape_sql_string(f'Обмен {usdt_amount} USDT на {crypto_amount:.8f} {crypto_symbol}')})"
             )
             
+            cur.execute(
+                f"INSERT INTO {SCHEMA}.crypto_transactions (user_id, transaction_type, crypto_symbol, amount, price, total, status) VALUES ({int(user_id)}, 'buy', {escape_sql_string(crypto_symbol)}, {float(crypto_amount)}, {float(crypto_price)}, {float(usdt_amount)}, 'completed')"
+            )
+            
             conn.commit()
             
             # Получаем информацию о пользователе для уведомления
@@ -929,6 +957,10 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             
             cur.execute(
                 f"INSERT INTO {SCHEMA}.transactions (user_id, amount, type, description) VALUES ({int(user_id)}, {float(usdt_amount)}, 'exchange', {escape_sql_string(f'Обмен {crypto_amount:.8f} {crypto_symbol} на {usdt_amount} USDT')})"
+            )
+            
+            cur.execute(
+                f"INSERT INTO {SCHEMA}.crypto_transactions (user_id, transaction_type, crypto_symbol, amount, price, total, status) VALUES ({int(user_id)}, 'sell', {escape_sql_string(crypto_symbol)}, {float(crypto_amount)}, {float(crypto_price)}, {float(usdt_amount)}, 'completed')"
             )
             
             conn.commit()
@@ -1047,6 +1079,16 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             cur.execute(f"SELECT username FROM {SCHEMA}.users WHERE id = {int(user_id)}")
             user_info = cur.fetchone()
             username = user_info['username'] if user_info else f"User #{user_id}"
+            
+            # Получаем текущую цену для crypto_transactions
+            cur.execute(f"SELECT price FROM {SCHEMA}.crypto_transactions WHERE crypto_symbol = {escape_sql_string(crypto_symbol)} ORDER BY created_at DESC LIMIT 1")
+            price_data = cur.fetchone()
+            current_price = float(price_data['price']) if price_data else 0
+            
+            # Сохраняем в crypto_transactions
+            cur.execute(
+                f"INSERT INTO {SCHEMA}.crypto_transactions (user_id, transaction_type, crypto_symbol, amount, price, total, status, wallet_address) VALUES ({int(user_id)}, 'withdraw', {escape_sql_string(crypto_symbol)}, {float(amount)}, {float(current_price)}, {float(amount * current_price)}, 'pending', {escape_sql_string(address)})"
+            )
             
             # Создаём уведомление для админа
             cur.execute(

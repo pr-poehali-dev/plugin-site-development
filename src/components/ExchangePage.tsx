@@ -104,6 +104,7 @@ const ExchangePage = ({ user, onRefreshUserBalance }: ExchangePageProps) => {
   useEffect(() => {
     loadPrices();
     loadBalances();
+    loadTransactions();
     generatePriceHistory();
     
     const interval = setInterval(() => {
@@ -115,6 +116,7 @@ const ExchangePage = ({ user, onRefreshUserBalance }: ExchangePageProps) => {
       if (!document.hidden) {
         loadPrices();
         generatePriceHistory();
+        loadTransactions();
       }
     };
     document.addEventListener('visibilitychange', handleVisibilityChange);
@@ -203,6 +205,39 @@ const ExchangePage = ({ user, onRefreshUserBalance }: ExchangePageProps) => {
       }
     } catch (error) {
       console.error('Ошибка загрузки балансов:', error);
+    }
+  };
+
+  const loadTransactions = async () => {
+    try {
+      const response = await fetch(AUTH_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-User-Id': user.id.toString()
+        },
+        body: JSON.stringify({
+          action: 'get_crypto_transactions'
+        })
+      });
+
+      const data = await response.json();
+      if (data.success && data.transactions) {
+        const formattedTransactions: Transaction[] = data.transactions.map((t: any) => ({
+          id: t.id.toString(),
+          type: t.transaction_type,
+          crypto: t.crypto_symbol,
+          amount: parseFloat(t.amount),
+          price: parseFloat(t.price),
+          total: parseFloat(t.total),
+          timestamp: new Date(t.created_at),
+          status: t.status,
+          address: t.wallet_address
+        }));
+        setTransactions(formattedTransactions);
+      }
+    } catch (error) {
+      console.error('Ошибка загрузки истории:', error);
     }
   };
 
@@ -315,6 +350,7 @@ const ExchangePage = ({ user, onRefreshUserBalance }: ExchangePageProps) => {
             onRefreshUserBalance();
           }
           loadBalances();
+          loadTransactions();
         }, 5000);
         
         setUsdtAmount('');
@@ -419,6 +455,7 @@ const ExchangePage = ({ user, onRefreshUserBalance }: ExchangePageProps) => {
             onRefreshUserBalance();
           }
           loadBalances();
+          loadTransactions();
         }, 5000);
         
         setUsdtAmount('');
@@ -526,6 +563,7 @@ const ExchangePage = ({ user, onRefreshUserBalance }: ExchangePageProps) => {
             onRefreshUserBalance();
           }
           loadBalances();
+          loadTransactions();
         }, 5000);
         
         setWithdrawAddress('');
